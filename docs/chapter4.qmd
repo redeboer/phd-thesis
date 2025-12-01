@@ -1,0 +1,486 @@
+---
+aliases:
+  - "4"
+  - 4.html
+  - ch4
+  - chapter4
+  - computational-techniques
+  - computational-techniques.html
+---
+
+# Computational techniques {#sec-computational-techniques}
+
+In the past decades, scattering experiments have produced steadily growing datasets. These larger samples allow us to apply more sophisticated parametrisations without overfitting. However, this progress comes at a cost: the complexity of these amplitude models as well as the increased size of the data samples requires significantly more computational power.
+
+This chapter explores some of the modern techniques for high-performance computing that have become available in recent years and that have been employed for this work within the [ComPWA](https://compwa.github.io) project (@sec-compwa). It first outlines how advancements in computing hardware have driven the popularity of array-oriented programming libraries that are nowadays commonplace in data analysis and Machine Learning. It then examines how Computer Algebra Systems can simplify the formulation of amplitude models and generate code for fast numerical computations over large data arrays. The chapter concludes by showing how a dynamic programming language like Python enables the generation of publication-ready content directly from the analysis codebase, with symbolic expressions naturally complementing this approach.
+
+## Array-oriented programming {#sec-array-oriented}
+
+Traditionally, most analyses in high-energy physics and hadron spectroscopy have been written in performance-focused languages like {{< meta var.cxx >}} and Fortran. These languages dominated because they offered fine-grained control and precision at a time when particle physics began producing large volumes of collision data&nbsp;[@Brun:1997pa; @Antcheva:2009zz], see @fig-programming-languages. In many cases, {{< meta var.cxx >}} is a good choice for high-performance computing, as it allows for low-level control over memory and processor usage and can therefore implement any kind of logic efficiently. Beyond raw performance, {{< meta var.cxx >}} offered stronger support for abstraction and modularity through features like namespaces and object-oriented design&nbsp;[@Stroustrup:2007-EvolvingLanguage], which made it well suited for the growing complexity of large-scale physics software. Since the early 2000s, however, there has been a broader shift across scientific computing towards higher-level languages such as Python, which trade low-level control for better readability, flexibility, and easier tool integration.
+
+:::{#fig-programming-languages}
+[![](./images/chapter4/programming-languages.svg)]{.light-content}[![](./images/chapter4/programming-languages-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Popularity of C, {{< meta var.cxx >}}, Python, and Fortran since 1985 according to TIOBE [@TIOBE:2025-TIOBEIndex]. The lower the index, the higher the popularity of the language.
+:::
+
+### Code complexity and hardware diversity
+
+The challenge with these performant, low-level languages is that it often results in complex, verbose code. This is especially problematic in analysis code that repetitively performs similar mathematical operations over columnar data. The mathematical operations of interest have to be implemented through iterative loops over the data (often called "scalar-based loops"), which makes it is hard to recognise the physics formulas that are being implemented&nbsp;[@Press:1992-NumericalRecipesC], although modern language extensions partly alleviate these issues&nbsp;[@Iglberger:2012-ExpressionTemplatesRevisited]. This makes it particularly challenging to express amplitude models in these traditional high-performance languages. <!-- cspell:ignore Iglberger -->
+
+An additional difficulty in scientific computing is that low-level implementations in languages like {{< meta var.cxx >}} or Fortran are difficult for the broader programming community to maintain across the diversity of modern hardware architectures. In recent decades, chips are hitting physical limits, which prompts hardware manufacturers to develop a great variety of chips and accelerators that often have to be parallelised to achieve higher performance. With the advent of GPUs, TPUs, and other specialised accelerators, the need for code that can run efficiently on various types of parallelised hardware has therefore become increasingly important.
+
+Furthermore, the widespread use of mobile devices that prioritise energy efficiency has driven the broad adoption of Reduced Instruction Set Computer (RISC) chip architectures like ARM. These chips feature a distinct memory hierarchy and instruction set compared to the more prevalent Complex Instruction Set Computer (CISC) architectures like x86-64 that are found in desktop and server CPUs. ARM chips are therefore increasingly adopted in cloud computing services as well, as they are more energy-efficient and can be scaled to larger numbers of cores at lower cost.
+
+Amplitude analysis almost always involves those repetitive, scalar-based loops, where the amplitude model is evaluated uniformly over each event in a dataset. This process is inherently parallel, as the evaluation of the amplitude model for one event does not rely on the outcome of any other -- a scenario often described as "embarrassingly parallel"&nbsp;[@Herlihy:2012-ArtMultiprocessorProgramming, p.14]. The parallel nature of amplitude model evaluations therefore allows us to distribute the data sample over the memory of different computational devices and performing the scalar evaluations concurrently over different processors, which is ideal in an age of multi-core CPUs and hardware accelerators like GPUs.
+
+### Arrays and code conciseness {#sec-code-conciseness}
+
+Parallelism naturally lends itself to **array programming**. Instead of treating each event as an isolated scalar computation executed in a loop, array-oriented programming conceptualises the entire dataset as a single, contiguous entity -- an "**array**". Arrays can be multidimensional and are therefore also called **tensors**. Each dimension corresponds to an **axis**, a direction along which the array can be indexed, and together the axis lengths define the **shape** of the array. For example, a <span class="nowrap">$4\times3$&nbsp;array</span> has shape `(4, 3)`, meaning two axes (rows and columns), and is therefore a rank‑2 tensor. As can be seen in @fig-array, an array consists of a continuous block of memory (typically of a uniform type), along with metadata for interpreting the data stored in it. The metadata provides a pointer to the start of the memory block, a data type, a shape, and strides that define how to move through the memory block to access the elements&nbsp;[@vanderWalt:2011bqk; @Harris:2020xlr]. As such, arrays are essentially recipes for nested loops over memory blocks that represent multidimensional data structures, which array libraries then optimise to improve memory locality and parallel execution&nbsp;[@Wolf:1991-DataLocalityOptimizing].
+
+:::{#fig-array}
+[![](./images/chapter4/array-memory.svg)]{.light-content}[![](./images/chapter4/array-memory-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Memory layout of a rank-2 array of shape $4\times3$ with 12&nbsp;integers. The strides and data type tell the machine how to iterate over the memory block, while the shape tells the size of the array in each dimension. Adapted from&nbsp;[@Harris:2020xlr, Figure 1a].
+:::
+
+In array-oriented programming languages or libraries, the operations are defined in terms of these arrays, which allows for more concise and readable code. For example, in the following code, we see how an array of 12&nbsp;integers, organised in a $4 \times 3$ shape, are defined as a single variable&nbsp;`x`. In this chapter, the return value of the last line in each code cell is shown as output directly beneath it.
+
+```{python}
+import numpy as np
+
+size = 12
+x = np.arange(size).reshape((4, 3))
+x
+```
+
+The code to generate this array is not important for this example: the array could be also be generated with a random-number generator or imported from a data file. Rather, the fact that the array is represented as a single variable allows for concise and readable code and highlights array-oriented thinking&nbsp;[@Iverson:1980-NotationToolThought]. For example, a simple polynomial evaluation $x^2-7x+3$ can be written as:
+
+```{python}
+x**2 - 7*x + 3
+```
+
+Behind the scenes, the array library takes care of the nested loops over the memory block. Operations that are less arithmetic can be performed through functions provided by the library:
+
+```{python}
+np.sqrt(x)
+```
+
+`\noindent`{=latex}
+This also allows us to perform operations that pertain to certain axes of the array. For instance, the following example computes the mean along the first axis (that is, across the rows), using the [`mean()`](https://numpy.org/doc/2.1/reference/generated/numpy.ndarray.mean.html) method of the array.
+
+```{python}
+x.mean(axis=0)
+```
+
+Array libraries can also automatically handle arrays of different dimension or different shapes. This is called **broadcasting** and allows us to perform operations on array objects without specifying the operation in a loop. In many cases, the array library will further optimise the computation by reusing memory and avoiding unnecessary copies. A simple example of broadcasting is multiplying an array times a scalar, as happens in the examples above. Broadcasting also happens when the value type of the array has to be modified, for instance when multiplying an integer times a float.
+
+The following example uses broadcasting to add two arrays of different shapes. The first array is a rank-1 array of shape `(3,)` and the second is a rank-2 array of shape&nbsp;`(4, 3)`. The library automatically expands the first array to match the shape of the second array, so that the operation can be carried out element-wise. In this case, the rank‑1 array&nbsp;`a` is turned into a rank‑2 array of shape&nbsp;`(3, 1)` (column vector) and multiplied with each row of&nbsp;`b`, resulting in a <span class="nowrap">$3\times4$&nbsp;array</span> where every row of&nbsp;`b` is scaled by the corresponding entry of&nbsp;`a`. <!-- cspell:ignore newaxis -->
+
+```{python}
+a = np.array([1, 2, 3])
+b = np.array([[4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]])
+a[np.newaxis].T * b
+```
+
+Broadcasting is powerful because it scales seamlessly to arrays of much larger size and applies the same operation just as well to higher-rank tensors. This flexibility makes array code agnostic to the shape of the data, removing the need to manually reorganise loops when the input changes.
+
+### Vectorisation and parallelism
+
+Crucially, a key benefit of writing concise array-based code, is that it naturally exposes opportunities for parallel execution and other optimisations. In other words, the same design choices that improve [readability](#sec-code-conciseness) also make it easier for the array library to take advantage of modern hardware. The Python code we have seen is the set of instructions that we want to apply to each element, or axis of elements, in the array. Under the hood, the computational loops over the array are automatically implemented in low-level, highly optimised routines (often written in C, {{< meta var.cxx >}}, or Fortran). To make these routines readily available, Python extension modules are typically distributed as pre-compiled binaries (["wheels"](https://peps.python.org/pep-0427)[ or ["wheel variants"](https://astral.sh/blog/wheel-variants) for hardware accelerators]{.content-visible when-format="html"}), so the user does not need to compile them locally.
+
+This approach of delegating repetitive work to specialised routines is generally referred to as **vectorisation** and opens the door to several optimisations. The core idea of vectorisation is that computational operations can be applied to all elements of an array without caring about their order, if computation on each element is independent of previous iterations. This allows the array library to reorder operations, execute them in parallel across multiple cores or vector units, and optimise memory access patterns.
+
+A simple example of parallel processing is Single Instruction, Multiple Data (SIMD), which applies the same instruction to multiple data elements simultaneously on a CPU&nbsp;[@Flynn:1972-ComputerOrganizations]. Modern CPUs have larger registers that can hold several data elements at once, and SIMD instructions operate on all elements in the register simultaneously (see @fig-sisd-vs-simd). In low-level languages, one typically relies on the compiler to detect which parts of the code can be vectorised (this behaviour can be tuned with compiler optimisation flags such as [`-O3`](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html)). By contrast, array-oriented code naturally assumes uniform input data, making it much easier to translate the code directly into SIMD instructions. To take advantage of this, array libraries include optimisations for different vector instruction sets, such as SSE and AVX-512. Advanced Vector Extensions (AVX) like these are a CPU feature that implement the SIMD principle by allowing registers to hold more data elements at once and by introducing operations that act on all of them simultaneously, so arithmetic (such as addition or multiplication) can be carried out on many numbers in parallel. In practice, these libraries automatically detect the available CPU features and use the most efficient instructions, so the same code runs optimally on different machines.
+
+:::{#fig-sisd-vs-simd layout-ncol=2 layout-valign=bottom}
+![SISD](/images/chapter4/sisd.svg){#fig-sisd}
+
+![SIMD](/images/chapter4/simd.svg){#fig-simd}
+
+Comparison between Single Instruction, Single Data (SISD) and Single Instruction, Multiple Data (SIMD) processing. In SISD, a single instruction is executed on a single data element, while in SIMD, a single instruction is executed on multiple data elements.
+:::
+
+### Memory locality {#sec-memory-locality}
+
+The parallel nature of arrays also allows for multi-core and multi-threaded computations. In this case, the array library distributes work across several cores that share the same memory space. This is conceptually similar to SIMD in that the same operation is applied to many elements, but here it is carried out on different cores or threads rather than within a single register.
+
+Additionally, these lower-level routines can also optimise memory access patterns, since arrays are typically stored in a compact, contiguous block of memory. Because modern processors are built around deeply layered memory hierarchies, their performance strongly depends on keeping data close to the processing units in fast caches rather than repeatedly fetching it from slower main memory, which lies relatively far away from the processor on the scale of microchips. If data is stored in a continuous block and accessed in order, processors can cache it more efficiently. This is especially important when arrays are large, as memory bandwidth often becomes the limiting factor in numerical calculations. By contrast, naive implementations of scalar loops may scatter data in ways that are harder to optimise. The **locality** of arrays therefore inherently results in better computational performance.
+
+### Accelerated linear algebra
+
+Many of these optimisations come together in operations that involve linear algebra operations or reductions on certain axes of the array. These operations are usually outsourced to highly optimised libraries like BLAS (Basic Linear Algebra Subprograms, see @Lawson:1979-BLAS) and LAPACK (Linear Algebra PACKage, see @Angerson:1990-LAPACK). BLAS and LAPACK not only make use of SIMD and parallelism, but also optimise usage of the memory hierarchy and multi-level caches (L1, L2, and L3) while evaluating operations over subsets (tiles) of the arrays. Similarly to SIMD, these linear algebra operations also usually include hand-tuned assembly code for the specific hardware on which the compiled code runs. Some library offer additional optimisations like constant folding and algebraic simplifications. <!-- cspell:ignore Angerson -->
+
+### Hardware accelerators {#sec-hardware-accelerators}
+
+Finally, array-oriented libraries can offload computations to domain-specific accelerator hardware, such as GPUs. Traditionally, code is compiled for Central Processing Units (CPUs), which are ideal for general-purpose, logical tasks. CPUs have a powerful Control Unit (CU), Arithmetic Logic Units (ALUs), and hierarchical caches that can run complex, branching code efficiently (see @fig-gpu-architecture). By contrast Graphics Processing Units (GPUs) are designed for parallel, arithmetic-heavy tasks. GPUs contain thousands of smaller CUDA cores (NVIDIA) or Stream Processors (AMD) that are optimised for running the same instruction on many uniform data elements in parallel. Both CPUs and GPUs get their input data from Random Access Memory (RAM), but GPUs use this random access to feed many cores in parallel, while CPUs use it to feed its ALUs cores with complex, branching code.
+
+:::{#fig-gpu-architecture layout="[[1,1.3]]" layout-valign="center"}
+![](./images/chapter4/cpu.svg){fig-align="center"}
+
+![](./images/chapter4/gpu.svg){fig-align="center"}
+
+Architecture of a Central Processing Unit (CPU) on the left and a Graphics Processing Unit (GPU) on the right. Both have one or more multi-purpose Control Units (<font color="#ee99aa">pink</font>), Arithmetic Logic Units (<font color="#6699cc">blue</font>), and caches (<font color="#eecc66">yellow</font>).
+:::
+
+The growing interest and investment into Machine Learning (ML) and training of Large Language Models (LLMs) has driven the development of even more specialised hardware accelerators. Prompted by the high operational costs of running hardware clusters, companies are starting to design their own in-house chip architectures that are designed to handle specific ML workloads. An early example of this are Google's Tensor Processing Units (TPUs), which are specialised in running matrix multiplications at even higher throughput at the cost of lower machine precision&nbsp;[@Jouppi:2017-InDatacenterPerformanceAnalysis]. The key point is that, while high-performance computing is moving towards a highly heterogeneous landscape of chip architectures, array libraries are continuously adapting to these changes. <!-- cspell:ignore Datacenter jouppi -->
+
+NumPy itself can delegate certain operations to GPUs through add-on libraries (e.g., [CuPy](https://cupy.dev)), while other popular array-oriented frameworks (like TensorFlow, PyTorch, or JAX) are built from the ground up to harness GPU and TPU acceleration. Using such devices directly is far from trivial, as they have their own separate memory, data transfers are relatively slow, and one normally has to work with vendor-specific programming models such as CUDA or OpenCL. Array libraries take care of these complexities: thanks to the uniform array abstraction, switching between CPU and GPU can be as simple as moving your data to a GPU-backed array. They also integrate with specialised backends, ranging from device-specific libraries like [cuBLAS](https://developer.nvidia.com/cublas) to compiler frameworks such as [XLA](https://openxla.org) (Accelerated Linear Algebra), which generate optimised kernels for the selected hardware. The code itself remains unchanged, since these libraries still provide high-level instructions that operate on arrays.
+
+### JIT-compilation and lazy evaluation
+
+In some libraries, further optimisations come from lazy evaluation -- deferring certain calculations until they are strictly necessary -- so that the library can fuse multiple operations into a single, optimised kernel call (**kernel fusion**). This approach reduces the overhead of running many small, separate operations and having to store the intermediate results in memory. Although NumPy does not provide lazy evaluation, frameworks such as JAX or Dask do&nbsp;[@Sapunov:2024-DeepLearningJAX]. The core idea is consistent across these tools: writing code in terms of entire arrays makes it easier for the underlying engine to schedule, parallelise, and optimise the calculations.
+
+<!-- cspell:ignore sapunov -->
+
+A natural complement to lazy evaluation is Just-in-Time (JIT) compilation, which analyses high-level operations right before execution and compiles them into efficient, low-level machine code. In the context of array-oriented programming, this approach allows the compiler to specialise the resulting code to the exact shapes and data types of the input arrays. By knowing at compile time how large an array is and what data type it holds, JIT compilers can prepare and optimise memory access patterns based on the resources that the hardware has available. JIT compilers designed for hardware accelerators also use the incoming array information to minimise copy operations between the CPU and the accelerator, which can be a significant bottleneck in heterogeneous computations.
+
+JIT compilation is even useful for operations that are not easily vectorised, such as if-else logic. Vectorised programs and hardware accelerators are inefficient at handling conditional logic, because they require all elements of the array to be processed in the same way. A common solution is to use **masks**, which are arrays of boolean values that select elements from another array. This produces a new view of the data block in which only the relevant elements remain, so the processor can run straight through without branching. In this way, conditional logic is turned into parallel operations, where masking operations replace explicit if-else statements -- a style known as **branchless programming**. Such branchless formulations are a must for fast numerical performance on SIMD architectures and hardware accelerators, where conditional logic reduces the number of cores that can be used in parallel&nbsp; [@Harris:2020xlr].
+
+### Automatic differentiation {#sec-autodiff}
+
+Another benefit of array-oriented programming is that it naturally lends itself to automatic differentiation (AD, or "autodiff"). This technique makes it possible to compute the partial derivative of a function with respect to the input variables of interest. This is particularly useful in Machine Learning, where the derivative of the loss function with respect to the model parameters is used to update the model parameters through gradient descent.
+
+The same technique can be applied in physics analyses, where we usually minimise the log-likelihood function for the amplitude model over large, unbinned data sets using a gradient-descent algorithm. Traditionally, the gradient at the current evaluation point is computed numerically by evaluating the function at multiple points around the current evaluation point and taking the finite difference&nbsp;[@James:1975dr]. These finite-difference approximations are easier to implement, but become computationally expensive and numerically unstable when the number of parameters or the size of the data sample grows&nbsp;[@Griewank:2008-EvaluatingDerivatives]. So far it has however been the only option in amplitude analysis, as it is almost impossible to manually derive and implement the gradient of chained, nested, and non-linear amplitude formulas.
+
+The core idea of AD is to break down the function into a series of elementary operations, for which the derivative is known. By applying the chain rule, the derivative of the function can be computed by combining the derivatives of the elementary operations. In array-oriented programming, the function is already expressed in terms of operations to uniform arrays, which makes it easier to break down the function into elementary operations. This is why many Machine Learning frameworks, like TensorFlow, PyTorch, and JAX, provide automatic differentiation as a core feature.
+
+Automatic differentiation uses the chain rule of calculus to compute exact derivatives without symbolic manipulation in two distinct modes:
+
+- **Forward-mode AD** propagates derivatives with respect to each function parameter "forward" through the computational graph. It does so by defining a dual space algebra, with the first element in each dual number being the function value and the second element being the derivative, and propagating the operation of each node in the function forward through the graph. This makes forward-mode efficient when the number of inputs (parameters) is small compared to the number of outputs.
+- **Reverse-mode AD** (often referred to as "backpropagation" in the context of neural networks) instead starts from the outputs and propagates derivatives "backward" through the graph. At each node, the chain rule distributes the contribution of the node to all of its inputs, so that in the end the derivative of the output with respect to every input parameter has been accumulated. This approach is efficient when the number of inputs is large but the number of outputs is small, as in amplitude analysis or maximum-likelihood fits, where we optimise a single scalar function (the likelihood) with respect to many parameters. Most machine-learning libraries, including TensorFlow, JAX, and PyTorch, implement reverse-mode AD under the hood to allow efficient gradient computation at scale.
+
+@fig-ad-modes illustrates the difference between reverse-mode and forward-mode automatic differentiation for a composite <span class="nowrap">function&nbsp;$f(g(x,y))$.</span> In reverse-mode (left), the computation first evaluates the inner function $g(x,y)$ and then applies $f$ to its result. The <span class="nowrap">derivative&nbsp;$\tfrac{\partial f}{\partial g}$</span> is propagated backward <span class="nowrap">to&nbsp;$g$,</span> which is then multiplied by the partial <span class="nowrap">derivatives&nbsp;$\tfrac{\partial g}{\partial x}$</span> and $\tfrac{\partial g}{\partial y}$ to yield $\tfrac{\partial f}{\partial x}$ <span class="nowrap">and&nbsp;$\tfrac{\partial f}{\partial y}$.</span> In forward-mode (right), the procedure begins by attaching derivative information to each input (dual space), such as $\tfrac{\partial x}{\partial x} = 1$ <span class="nowrap">and&nbsp;$\tfrac{\partial y}{\partial x} = 0$.</span> This information is propagated forward <span class="nowrap">through&nbsp;$g(x,y)$,</span> producing <span class="nowrap">both&nbsp;$g$</span> <span class="nowrap">and&nbsp;$\tfrac{\partial g}{\partial x}$.</span> Finally, <span class="nowrap">applying&nbsp;$f$</span> to this dual information yields not <span class="nowrap">only&nbsp;$f(g(x,y))$</span> but also the <span class="nowrap">derivative&nbsp;$\tfrac{\partial f}{\partial x}$.</span>
+
+:::{#fig-ad-modes layout-ncol=2 layout-valign=bottom}
+![](images/chapter4/autodiff-reverse-mode.svg){fig-align="center"}
+
+![](images/chapter4/autodiff-forward-mode.svg){fig-align="center"}
+
+Comparison between reverse-mode AD (left) and forward-mode AD (right).
+:::
+
+Employing AD in an array-oriented framework involves writing a function that accepts arrays and returns one or more arrays or scalars. The framework "traces" the function -- either during execution (eager tracing) or via a separate compilation stage -- and constructs a computational graph that records how each output depends on each input. It then applies the chain rule to this graph to compute partial derivatives.
+
+As an example, the code below derives the gradient of
+
+\begin{equation*}
+f(x, y, z) = x^2 \sin(y) + \log(1 + z^2) / y
+\end{equation*}
+
+`\noindent`{=latex}
+using JAX. The function is defined in Python with arithmetic from the [`jax.numpy`](https://docs.jax.dev/en/latest/jax.numpy.html) module, which allows JAX to trace the operations and build a computational graph. Calling [`jax.jacrev`](https://docs.jax.dev/en/latest/_autosummary/jax.jacrev.html) with respect to the <span class="nowrap">arguments&nbsp;$(x, y)$</span> (indices&nbsp;`0` and&nbsp;`1`) applies reverse-mode AD to evaluate the partial derivatives $\tfrac{\partial f}{\partial x}$ <span class="nowrap">and&nbsp;$\tfrac{\partial f}{\partial y}$.</span> The example also illustrates broadcasting: $x$ is given as a one-dimensional array, while $y$ is a scalar, so JAX computes the gradient element-wise. The resulting `f_gradient` function returns two arrays: a <span class="nowrap">$4\times 4$&nbsp;Jacobian</span> with respect to the input <span class="nowrap">array&nbsp;$x$,</span> since each of the four outputs depends on every element of $x$, and a length‑4 array with derivatives with respect to the <span class="nowrap">scalar&nbsp;$y$.</span> The output is returned as JAX arrays, so every operation remains part of the computational graph and can be extended with further calculations, including gradients, for efficient execution on the chosen hardware accelerator.
+
+```{python}
+#| echo: false
+import jax
+import jax.numpy as jnp
+
+jax.config.update("jax_enable_x64", True)
+jnp.set_printoptions(edgeitems=1, precision=3)  # cspell:ignore edgeitems
+```
+
+```{python}
+import jax
+import jax.numpy as jnp
+
+def f(x, y, z):
+    return x**2 * jnp.sin(y) + jnp.log(1 + z**2) / y
+
+f_gradient = jax.jacrev(f, argnums=(0, 1))
+x_array = jnp.array([-1.8, 3.1, -0.7, 2.5])
+y_value = 0.5
+z_value = -1.5
+f_gradient(x_array, y_value, z_value)
+```
+
+What makes this particularly powerful for high-performance computing is that AD benefits from all of the hardware optimisations that have been described so far. The parallelisation schemes apply equally to the constructed computational graph of the gradient function and JIT-compilation can fuse both the forward pass (function evaluation) and backward pass (derivative evaluation) into efficient kernels. Frameworks like JAX further optimise the derivative pass by reusing intermediate results from the forward pass.
+
+---
+
+`\noindent`{=latex}
+In summary, abstracting away the scalar-based loops in terms of arrays allows us to outsource the work of writing machine-specific, optimised code to the array library. Driven by the surge in data analysis, Machine Learning, and training of Large Language Models (LLMs), arrays have become the standard data container for parallelisation and hardware accelerators. Array programming has become a popular paradigm in many programming languages. The popularity of array-oriented programming is therefore not limited to Python, but is also present in other languages like Julia and even {{< meta var.cxx >}}, where libraries like [JuliaDiff](https://juliadiff.org), [SIMD.jl](https://github.com/eschnett/SIMD.jl), [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page), and [Armadillo](https://arma.sourceforge.net/) provide similar functionality. The challenge for the developers of all these libraries and languages is to tailor compilation to the plethora of hardware architectures that are becoming available. This device abstraction makes it possible to keep the array-based code that formulates physics models unaffected, as the libraries that power the computations adapt to the advances in computational techniques. <!-- cspell:ignore Eigen -->
+
+## Computer Algebra Systems {#sec-cas}
+
+The previous section introduced array-oriented programming as a means to express calculations concisely, while leveraging modern hardware for performance gains. Array-oriented code already bridges the gap between theory and code quite well, but it turns out that symbolic representations offer a structured intermediate step before numerical evaluation. This is especially true in the context of amplitude analysis, where the mathematical expressions can be complicated and involve many parameters.
+
+Computer Algebra Systems (CAS) allow us to define and manipulate amplitude models symbolically before implementing them in numerical computations. This "**CAS-assisted model building**" enables us to explore the mathematical structure of the amplitude model, simplify sub-expressions, and ensure correctness before transitioning to efficient numerical evaluation. This section explores these ideas using SymPy as a CAS, and using JAX and NumPy as numerical backends. As we will see in @sec-application-to-data, the combination of SymPy with JAX turned out to work best for large-scale amplitude analyses.
+
+### Mathematical expressions as trees {#sec-expression-trees}
+
+Computer Algebra Systems emerged in the 1960s as tools for performing symbolic mathematical manipulations, mostly driven by the needs of physics and engineering&nbsp;[@Moses:2012-Macsyma]. Early systems like MACSYMA&nbsp;[@Martin:1971-MACSYMA] and REDUCE pioneered symbolic computation by introducing algebraic manipulation techniques that enabled automated mathematical reasoning. Mathematica&nbsp;[@Wolfram:1988-Mathematica] later expanded these capabilities with an interactive, user-friendly environment and a broad range of built-in symbolic and numerical functions, making symbolic computation more accessible to scientists and engineers. In the world of Python, SymPy&nbsp;[@Meurer:2017yhf] has become the most popular CAS that provides similar interactive experience since the advent of Jupyter notebooks (see @sec-self-documenting and the examples below). <!-- cspell:ignore Meurer -->
+
+The key idea of a CAS is that mathematical expressions are treated as **expression trees**, where each node represents an operation (e.g., addition, multiplication, differentiation), and the leaves represent variables or constants. This representation allows CAS to perform exact algebraic manipulations by applying standard transformations to the leaves and branches of the tree. Crucially, such CAS operations are exact, meaning that they preserve the mathematical structure of the expression without introducing numerical errors. This is in contrast to numerical computations, which are subject to floating-point approximations and rounding errors.
+
+The following example demonstrates how SymPy builds a simple Breit–Wigner expression as an expression tree. It shows the Python code, the automatically rendered formula, and the corresponding expression tree. The fundamental building blocks are symbols ($s, m_0, \Gamma_0$, indicated in <font color="#4169e1">blue</font>), constants (${-}1, 2, i$, indicated in <font color="#808080">grey</font>), and algebraic operations (multiplication, addition, and exponentiation, indicated in <font color="black">black</font>). The graph is a rendering of the hierarchical structure with which SymPy inherently represents the expression. Note that SymPy reorders commutative terms alphabetically, which is why both the expression tree and the [$\mathrm{\LaTeX}$]{.content-visible unless-format="pdf"}[$\text{\LaTeX}$]{.content-visible when-format="pdf"} rendering differ slightly from the code.
+
+```{python}
+#| output: false
+import sympy as sp
+s, mass, width = sp.symbols("s m0 Gamma0")
+expression = mass * width / (mass**2 - s - sp.I * width * mass)
+expression
+```
+
+```{python}
+#| echo: false
+# cspell:ignore bgcolor dotprint fontcolor fontsize royalblue
+import graphviz
+from IPython.display import display
+
+def show_expression_tree(expr: sp.Expr, *, size: float, show_expr: bool=False) -> graphviz.Source:
+    style = [
+        (sp.Basic, dict(fillcolor="white", fontsize="22pt", style="filled")),
+        (sp.Atom, dict(color="grey", fontcolor="grey")),
+        (sp.Symbol, dict(color="royalblue", fontcolor="royalblue")),
+    ]
+    src = sp.dotprint(expr, bgcolor="transparent", ratio="compress", size=size, styles=style)
+    if show_expr:
+        display(expr)
+    return graphviz.Source(src)
+
+show_expression_tree(expression, show_expr=True, size=4.2)
+```
+
+`\vspace{0.5\baselineskip}`{=latex}
+When substituting symbols with numerical values, the CAS applies exact, algebraic transformations to the relevant branches in the expression tree. In the following example, the symbols $m_0$ and $\Gamma_0$ in the Breit–Wigner expression are replaced with numerical values. Even though these values are floating-point numbers, the result of the substitution is still an exact symbolic expression, so that floating-point errors are avoided. This is achieved through the arbitrary-precision floating-point library [`mpmath`](https://mpmath.org)&nbsp;[@mpmath:2023]. Importantly, the expression tree corresponding to the result of the substitution has a simpler structure with fewer mathematical nodes[, which will be relevant in @sec-code-generation-html]{.content-visible when-format="html"}. <!-- cspell:ignore mpmath -->
+
+```{python}
+expression.subs({mass: 0.980, width: 0.06})
+```
+
+```{python}
+#| echo: false
+show_expression_tree(expression.subs({mass: 0.980, width: 0.06}).n(3), size=2.5)
+```
+
+Beyond algebraic computations, most CAS systems also provide tensor algebras, symbolic integration techniques, series expansions, and differential equation solvers. Within hadron spectroscopy, CAS systems like Mathematica and Maple are therefore popular with theorists in particular for verifying analytical properties of functions, such as identifying singularities in resonance models or ensuring symmetry constraints in decay amplitudes.
+
+As a simple example, the following code snippet demonstrates how a CAS can derive the simple Breit–Wigner expression from above directly from a one-dimensional <span class="nowrap">$K$‑matrix.</span> First, we construct the symbolic <span class="nowrap">$\mathbfit{T}$‑matrix</span> in terms of the <span class="nowrap">$\mathbfit{K}$‑matrix,</span> using symbolic placeholders that represent the full matrices rather than individual entries. This way, the algebraic relation $\mathbfit{T} = \mathbfit{K}\,(1 - i\,\mathbfit{K})^{-1}$ is preserved at the matrix level and would also work for larger matrices&nbsp;[@Poepping:2024-MScThesis]. In the final line, we expand the result explicitly and extract the element <span class="nowrap">`T[0, 0]`</span> (denoted mathematically <span class="nowrap">as&nbsp;$T_{11}$).</span> <!-- cspell:ignore Poepping -->
+
+```{python}
+dimension = 1
+I = sp.Identity(n=dimension)
+K = sp.MatrixSymbol("K", m=dimension, n=dimension)
+T = K / (I - sp.I * K)
+T.as_explicit()[0, 0]
+```
+
+`\vspace{0.75\baselineskip}`{=latex}
+Next, the <span class="nowrap">$\mathbfit{K}$‑matrix</span> elements are parametrised in terms of a single pole <span class="nowrap">position&nbsp;$m_0$</span> and a <span class="nowrap">coupling&nbsp;$g$</span>, and then substituted into the <span class="nowrap">$\mathbfit{T}$‑matrix</span> expression. Since $m_0$ and $s$ were defined earlier, the only new symbol here is the <span class="nowrap">coupling&nbsp;$g$,</span> which must be declared first.
+
+```{python}
+g = sp.Symbol("g")
+K_parametrisation = {
+    K[0, 0]: g**2 / (mass**2 - s),
+}
+T_expr = T.as_explicit().subs(K_parametrisation)[0, 0]
+T_expr
+```
+
+`\vspace{0.75\baselineskip}`{=latex}
+Finally, we can derive that the this single-pole, single-channel expression for the <span class="nowrap">$\mathbfit{T}$‑matrix</span> is the same as the Breit–Wigner expression constructed earlier, by setting the coupling to $g^2 = m_0 \Gamma_0$. In the expression rendering, the minus sign has been pulled before the fraction, but this is mathematically equivalent.
+
+```{python}
+BW_expr = T_expr.subs(g**2, mass * width)
+BW_expr.simplify()
+```
+
+`\vspace{0.75\baselineskip}`{=latex}
+`\noindent`{=latex}
+The CAS simplifies the expression to a more compact form, which is not only more recognisable, but also more computationally numerically, as its expression tree contains fewer mathematical operations.
+
+:::{.content-visible when-format="html"}
+The SymPy function [`count_ops()`](https://docs.sympy.org/latest/modules/core.html#sympy.core.basic.Basic.count_ops) can be used to compare the number of algebraic operations before and after simplification.
+
+```{python}
+sp.count_ops(BW_expr)
+```
+
+```{python}
+sp.count_ops(BW_expr.simplify())
+```
+
+```{python}
+#| echo: false
+#| output: false
+assert sp.count_ops(BW_expr.simplify()) < sp.count_ops(BW_expr)
+```
+
+:::
+
+:::{.content-visible when-format="html"}
+
+### Code generation {#sec-code-generation-html}
+
+:::
+:::{.content-visible unless-format="html"}
+
+### Code generation, lambdification, and numerical computations {#sec-code-generation-pdf}
+
+:::
+
+While a CAS excels at symbolic manipulation and algebraic exactness, it is not designed for high-performance numerical computations. To bridge this gap, CAS-generated expressions can be converted into efficient numerical code. In SymPy, this is known as **code generation**. The CAS goes over the expression tree and serialises the mathematical nodes to numerical code. Subtrees are naturally grouped with the required brackets and parentheses and common subexpressions are identified and reused.
+
+SymPy provides code generation for a variety of programming languages, including Python, {{< meta var.cxx >}}, Fortran, Julia, and Rust, but the printing mechanism can be extended for any custom language or format&nbsp;[@Schmitt:2022-sympy2c]. The following demonstrates how the Breit–Wigner expression [from @sec-expression-trees]{.content-visible when-format="html"} translates to some of the popular languages.
+
+<!-- cspell:ignore cxxcode fcode pycode -->
+
+```{python}
+print(sp.pycode(expression))
+```
+
+```{python}
+print(sp.cxxcode(expression, standard="c++17"))
+```
+
+```{python}
+print(sp.fcode(expression).strip())
+```
+
+```{python}
+print(sp.julia_code(expression))
+```
+
+```{python}
+print(sp.rust_code(expression))
+```
+
+:::{.content-visible when-format="html"}
+
+### Lambdification and computations {#sec-lambdification}
+
+:::
+
+These example code snippets are not necessarily evaluatable, because the variables that appear, are undefined. SymPy therefore offers a more extensive code generation mechanism, that embeds the generated code in numerical functions. SymPy refers to this process as **lambdification**, because the result is not just source code, but a Python function object. This object is anonymous (commonly called a "lambda" function, after <span class="nowrap">$\lambda$&nbsp;calculus)</span> and can be assigned to a variable and called like any regular function. The following code snippet demonstrates how the earlier Breit–Wigner expression is lambdified to a JAX function, with the symbols $s$, $m_0$, <span class="nowrap">and&nbsp;$\Gamma_0$</span> marked as arguments to the generated function. The names of the function arguments come from the symbol names (e.g. `Gamma0`), not the names of the corresponding symbol objects (e.g.&nbsp;`width`).
+
+```{python}
+func = sp.lambdify(args=(s, mass, width), expr=expression, modules="jax")
+```
+
+```{python}
+#| echo: false
+# cspell: ignore getsource
+import inspect
+src = inspect.getsource(func)
+print(src)
+```
+
+`\noindent`{=latex}
+The generated function has the same array-oriented form as the Python function defined in the[&nbsp;first]{.content-visible unless-format="html"} JAX example [in @sec-autodiff]{.content-visible when-format="html"} and can be used to evaluate the Breit–Wigner expression over large data arrays. As a simple example, the snippet below defines an array of <span class="nowrap">$10\,000$&nbsp;real</span> values between $0$ <span class="nowrap">and&nbsp;$10$</span> as input for the <span class="nowrap">variable&nbsp;$s$,</span> while $m_0$ and $\Gamma_0$ are fixed to scalar constants. The function then returns an array of <span class="nowrap">$10\,000$&nbsp;complex</span> values, corresponding to the Breit–Wigner evaluated at <span class="nowrap">each&nbsp;$s$.</span>
+
+<!-- cspell:ignore linspace -->
+
+```{python}
+s_array = jnp.linspace(0, 10, num=10_000)
+func(s_array, m0=0.98, Gamma0=0.06)
+```
+
+The lambdified function is also compatible with JAX's JIT compilation and automatic differentiation[ that we have seen in @sec-array-oriented]{.content-visible when-format="html"}, enabling both efficient numerical evaluation and gradient computation. In the example below, we use reverse-mode AD to compute derivatives of the Breit–Wigner function with respect to $m_0$ and $\Gamma_0$ (arguments&nbsp;`1` and&nbsp;`2`). Because the Breit–Wigner is complex-valued, the function is marked as holomorphic so that JAX applies the correct rules for complex differentiation. The resulting gradient function is then JIT-compiled and evaluated at the same point in parameter space.
+
+```{python}
+gradient = jax.jacrev(func, argnums=(1, 2), holomorphic=True)
+jit_gradient = jax.jit(gradient)
+jit_gradient(s_array, 0.98+0j, 0.06+0j)
+```
+
+Since the numerical function is generated from a symbolic expression, its gradient can also be obtained analytically. This provides a straightforward way to check the correctness of the numerical gradient, and may in some cases even yield higher numerical precision thanks to algebraic simplifications. The example below shows this for the Breit–Wigner expression, where the gradients with respect to $m_0$ <span class="nowrap">and&nbsp;$\Gamma_0$</span> are derived and simplified symbolically.
+
+```{python}
+derivative_m0 = sp.diff(expression, mass).simplify()
+```
+
+```{python}
+#| echo: false
+derivative_m0
+```
+
+```{python}
+derivative_w0 = sp.diff(expression, width).simplify()
+```
+
+```{python}
+#| echo: false
+derivative_w0
+```
+
+`\vspace{0.75\baselineskip}`{=latex}
+`\noindent`{=latex}
+These symbolic derivatives can then again be lambdified into numerical functions, making them directly usable in the same JAX-based workflow as the original expression. When evaluated over the <span class="nowrap">$10\,000$&nbsp;values</span> <span class="nowrap">of&nbsp;$s$</span>, the analytically derived gradients indeed agree with those obtained through automatic differentiation.
+
+<!-- cspell:ignore dfunc -->
+
+```{python}
+df_dm = sp.lambdify(args=(s, mass, width), expr=derivative_m0, modules="jax")
+df_dw = sp.lambdify(args=(s, mass, width), expr=derivative_w0, modules="jax")
+df_dm(s_array, 0.98, 0.06), df_dw(s_array, 0.98, 0.06)
+```
+
+```{python}
+#| echo: false
+#| output: false
+np.testing.assert_array_almost_equal(
+    jit_gradient(s_array, 0.98+0j, 0.06+0j)[0],
+    df_dm(s_array, 0.98, 0.06),
+    decimal=14,
+)
+```
+
+:::{.content-visible when-format="html"}
+
+### CAS-assisted model building
+
+:::
+:::{.content-visible unless-format="html"}
+
+---
+
+:::
+
+`\noindent`{=latex}
+As we have seen in @sec-scattering-theory, amplitude models involve complex analytical functions composed of polynomials, exponentials, and trigonometric terms, particularly those arising from <span class="nowrap">Wigner&nbsp;$D$</span>-functions in relativistic spin formalisms[ (see @sec-helicity-formalism)]{.content-visible when-format="html"}. Writing these models directly in numerical code is cumbersome and can obscure their structure. The examples from the previous sections demonstrate how a CAS can be used to simplify the formulation of these models, inspect the structure of the expressions, and generate efficient numerical code for large-scale computations. In @sec-compwa, we will see that this also applies for the more complex models that are used in amplitude analysis and that the remarkable performance of array libraries is still available through code generation. In addition, SymPy can simplify trigonometric identities that emerge in angular momentum recoupling and verify that model expressions are correctly formulated before they are transformed into efficient computational implementations. Similar "symbolic-numeric approaches" have been applied using SymForce&nbsp;[@Martiros:2022-SymForceSymbolicComputation] and Julia&nbsp;[@Gowda:2024-SymbolicnumericProgrammingScientific], but we are not aware of similar approaches in high-energy physics or hadron spectroscopy. <!-- cspell:ignore Symbolicnumeric gowda martiros -->
+
+For large expression trees, CAS-assisted model effectively serves as an additional layer of compiler optimisations. This is comparable to XLA in JAX, which is a hardware-aware optimisation. A CAS is specialised in algebraic simplification, which may result in more efficient numerical function trees and higher numerical precision. An example of this is Linnea&nbsp;[@Barthels:2021-LinneaAutomaticGeneration], where a CAS is used to even further speed up linear algebra kernels like BLAS. The combination of CAS and array-oriented programming therefore provides a powerful toolset for high-performance computing in amplitude analysis. <!-- cspell:ignore Barthels -->
+
+## Self-documenting workflow {#sec-self-documenting}
+
+The developments in hadron spectroscopy of the passed few decades have reached a point where transparency, adaptability, and verifiability are not just desirable, but necessary. The increasing complexity of amplitude models, combined with the availability of larger datasets from high-luminosity experiments, requires workflows that ensure that the results are reliable and reproducible, while remaining flexible enough to accommodate new theoretical insights, as well as new computational techniques. The combination of CAS-assisted model building and array programming can make it easier to construct workflows that not only speed up computations, but also document their assumptions, derivations, and numerical implementations in a self-explanatory manner.
+
+### Reproducibility {#sec-reproducibility}
+
+The "replicability crisis", which was initially identified in medical and social sciences&nbsp;[@Ioannidis:2005-WhyMostPublished], has increasingly affected the natural sciences, including physics and computational research. Studies have shown that a significant portion of published findings cannot be reproduced due to inadequate documentation, inconsistencies in data handling, or reliance on proprietary software&nbsp;[@Baker:2016-1500ScientistsLift]. Scientific disciplines that rely on computational methods, may seem less susceptible to these issues due to the deterministic nature of numerical calculations. High-performance computing, however, introduces additional complexities, such as parallelism, hardware dependencies, and software versioning, that can lead to subtle errors and discrepancies&nbsp;[@Antunes:2024-Reproducibility]. In the case of amplitude analysis, there is the additional challenge of quickly integrating theoretical insights with new experimental data, which often leads to ad-hoc workflows that are difficult to reproduce.
+
+In industry, practices such as automated testing, continuous integration, and environment management have long been the standard for software development, ensuring that code remains stable and deployable across different platforms. The scientific community has started to adopt many of these software development practices&nbsp;[@Wilson:2017-GoodEnoughPractices; @Kitzes:2018-PracticeReproducibleResearch], such as version control and automated testing through continuous integration (CI). It has also led to initiatives for archiving code in a way that makes it permanently accessible, either simply through Git repository hosting services like GitHub, or through dedicated platforms like Zenodo&nbsp;[@Stodden:2013-ReproducibleComputationalResearch]. More initiatives that specifically tailor to particle physics are being developed&nbsp;[@Khoo:2022pja; @Bierlich:2019rhm]. <!-- cspell:ignore Khoo kitzes stodden -->
+
+In addition, containerisation technologies such as Docker, Singularity, and Podman have become popular for creating reproducible computational environments. These tools allow researchers to package their code, dependencies, and environment settings into a single, shareable image that can be run on any platform that supports the container runtime&nbsp;[@Stodden:2014-BestPracticesComputational]. However, containers have the limitation that they are not always compatible with high-performance computing environments, because their virtualisation overhead can slow down computations. In addition, containers have a tendency to become black boxes that cannot be extended later.
+
+An alternative solution in the form of **lock files** may be more suitable for high-performance computing environments, as they capture the specific versions of all declared dependencies used in an analysis. Examples are [`Cargo.lock`](https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html) in Rust, [`Manifest.toml`](https://pkgdocs.julialang.org/v1/toml-files) in Julia, [`conan.lock`](https://docs.conan.io) for {{< meta var.cxx >}}, and [`pylock.lock`](https://peps.python.org/pep-0751) for Python. Lock files make it possible to reconstruct the same software environment across machines and over time, though not necessarily with identical binaries&nbsp;[@Gamage:2025-LockFiles]. They therefore support reproducible software outputs, even if compilers or system libraries differ. At the level of the analysis results, numerical outcomes may vary slightly due to differences in hardware and build configurations. Such variations are usually well within statistical or systematic uncertainties and can themselves be studied across different devices. In this way, lock files provide a reproducible and extensible basis for software, whereas containers go further by freezing entire toolchains. The goal is not strict bitwise equivalence of the software stack, but reproducibility of analyses up to the usual numerical variations.
+
+In @sec-compwa and @sec-application-to-data, we see how lock files are used to offer reproducibility and extensibility when using array-oriented programming libraries with CAS-assisted model building in the Python ecosystem.
+
+### Methodological clarity {#sec-methodological-clarity}
+
+Ultimately, scientists need to share their computational work in publishable form. To a large degree, such publications still come out in their traditional, static form that can be printed, even if they are distributed electronically. Even though there are initiatives to provide a more interactive, interlinked, and dynamic form of publication&nbsp;[@Procko:2024-SemanticScience; @Heer:2023-LivingPapers], there remains a need to clearly document the computational methods that have led to the published analysis results. <!-- cspell:ignore heer procko -->
+
+One of the first notable attempts to strengthen the link between code implementation and the eventual publication is the concept of "literate programming"&nbsp;[@Knuth:1984-LiterateProgramming]. Literate programming encourages the programmer to write code in a way that is readable and understandable to humans, rather than to the computer. The code is interspersed with explanatory text, which can be formatted in a way that is suitable for publication. The code and text are then "tangled" into a machine-readable form that can be executed by the computer.
+
+While "literate programming" has had its influence on analyses that were written in Pascal and C, its application remained limited to the translation of code to [$\mathrm{\LaTeX}$]{.content-visible when-format="html"}[$\text{\LaTeX}$]{.content-visible unless-format="html"}-only documents that are not necessarily publication-ready. In addition, these tools have the limitation that they are not interactive and do not allow for the exploration of the code in a dynamic way. In parallel, [Org-mode](https://orgmode.org) for Emacs&nbsp;[@Schulte:2012-OrgMode] extended the paradigm to a multi-language environment, in which source code, text, and publication-quality output could be woven into an executable document. The increasing popularity of dynamic languages like Python and R led to more widely adopted interactive tools such as R&nbsp;Markdown, IPython&nbsp;[@Perez:2007emg; @Perkel:2022-CopyPasteTyranny], and Jupyter notebooks&nbsp;[@Kluyver:2016-JupyterNotebooks], which allow the interleaving of code, text, and visualisations in a single document that can be executed and inspected interactively. <!-- cspell:ignore Kluyver Perez Schulte -->
+
+These tools starkly remind of CAS systems like Mathematica, Sage, Maxima, and Maple, but offer the additional benefit that they are open-source and can be extended with custom code in popular programming languages. This more interactive form of computational science has been termed "literate computing"&nbsp;[@Millman:2018-DevelopingOpenSourceScientific], because they open the door to more extensive software development behind the interactive environment. As an example, a typical workflow in our experience starts with trying out new ideas in a Jupyter notebook using SymPy, NumPy, and JAX, and then extracting common functionality into an underlying Python package as the implementations become more advanced. The eventual analysis still naturally evolves along in the notebooks as the underlying codebase matures and can be tested using the continuous integration techniques [mentioned in @sec-reproducibility]{.content-visible when-format="html"}[as mentioned earlier]{.content-visible unless-format="html"}. <!-- cspell:ignore Millman -->
+
+Motivated by a surge in data science and Machine Learning, Jupyter notebooks are also gaining traction in data-rich, high-performance environments&nbsp;[@Perkel:2018-WhyJupyter]. Jupyter notebooks separate the user interface from the computation: the notebook interface runs in a local client (such as a browser), while a dedicated kernel can run on a remote server or high-performance cluster. This makes it possible to carry out heavy computations on powerful hardware, while the user still interacts with them through the same notebook interface. For instance, CERN has developed the [SWAN service](https://swan.cern.ch) that allows users to run Jupyter notebooks on the CERN computing grid. And with tools like [Dask](https://www.dask.org), computations over array-based data can be scaled and parallelised behind the scenes, while the user still interacts with the data in a familiar way. The web-based server approach also makes it easier to collaborate on the same analysis, whether through [shared kernels](https://jupyterlab-realtime-collaboration.readthedocs.io) or through platforms like [Binder](https://mybinder.readthedocs.io), which encourages transparency and reproducibility. More broadly, this separation of interface and computation aligns with a larger shift in industry toward cloud computing, where machine learning and other high-performance workloads are executed on specialised remote infrastructure rather than on local machines. <!-- cspell:ignore perkel -->
+
+Finally, the original spirit of "literate programming" is still alive in these more interactive and scaled environments. Tools and platforms like Quarto, the Executable Book Project, Curvenote, and Stencila can render collections of analysis notebooks to a variety of formats, including [$\mathrm{\LaTeX}$]{.content-visible when-format="html"}[$\text{\LaTeX}$]{.content-visible unless-format="html"}, Portable Document Format (PDF), and static HTML pages&nbsp;[@Allaire_Quarto_2024; @Cockett:2024-ContinuousToolsScientific]. The continuous deployment of these notebooks to a publishable form encourages to continuously consider reproducibility and methodological clarity from the start of the analysis, rather than as an afterthought&nbsp;[@Antunes:2024-Reproducibility]. <!-- cspell:ignore allaire -->
+
+The combination of CAS-assisted model building and array-oriented programming in an interactive Jupyter environment therefore provides a powerful toolset for high-performance computing in amplitude analysis. Symbolic amplitude models can directly be inspected in both the interactive environment as well as the static rendering. High-performance computations can be scaled and parallelised behind the scenes through array computations, and common implementations can be extracted and published in the form of a Python package. The resulting workflow is not only efficient, but also transparent, reproducible, and methodologically clear.
+
+### Knowledge transfer and academic continuity {#sec-academic-continuity}
+
+The hadron spectroscopy community covers a wide range of expertise across theory and experiment, which often makes it difficult to communicate results. When amplitude analyses are performed with CAS-assisted model building and published using the tools described [in @sec-methodological-clarity]{.content-visible when-format="html"}[above]{.content-visible unless-format="html"}, they not only present the implemented mathematics in a readable mathematical form, but also enable the reader to inspect the implementation if formulations are discipline-specific. Offering ways to launch the code repository and the Jupyter notebooks in a cloud environment, like Binder, can further offer the possibility to try out and modify the analysis to gain a better understanding of the results. This is especially important when communicating results between theorists and experimentalists and between different experimental collaborations.
+
+In addition, code generation using CAS models can be used to serialise models to human-readable, hierarchical formats like JSON that can be parsed into other programming languages or analysis frameworks. This not only allows for cross-verifiability, but also makes it possible to pick up analyses at a much later stage, when implementations are no longer supported or when the original authors are no longer active in the field. The JSON format can also be used to store the model in a database, which can be queried and analysed in a more structured way. This can be particularly useful for large-scale analyses that involve many different models, or for analyses that are performed over long periods of time and need to be revisited and updated.
+
+The latter point touches on a more societal aspect of the field. The hadron spectroscopy community is relatively small and, like many academic disciplines, has a high turnover rate, with many researchers transitioning to other fields after a few years. This makes it essential to document and preserve knowledge systematically to prevent the loss of expertise. The combination of CAS-assisted model building and ability to continuously document analyses can help to bridge the gap between theoretical understanding and practical implementation, and allow future generations of researchers to pick up and extend existing analyses.
+
+This shift is also more generally relevant in the continuous cycle of education and knowledge transfer, where students, graduates, and postdocs must continually familiarise themselves with the computational and theoretical intricacies of the field. The more transparent and self-explanatory the computational workflows are, the easier it is to bring new researchers on board, so that they can more quickly make the step to correctly apply amplitude analysis techniques to the rapidly growing experimental datasets.

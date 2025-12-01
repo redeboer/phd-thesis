@@ -1,0 +1,5 @@
+:::{#fig-lambda-c-intensity-projections}
+[![](images/chapter7/polarimetry-model-intensity-1d.svg)]{.light-content when-format="html"}[![](images/chapter7/polarimetry-model-intensity-1d-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Projections of the intensity distribution for the "default" DPD amplitude model of $\varLambda_c^+ \to p K^- \pi^+$ to the invariant mass of the subsystems <span class="nowrap">$K^-\pi^+$&nbsp;(left),</span> <span class="nowrap">$pK^-$&nbsp;(middle),</span> and <span class="nowrap">$p\pi^+$&nbsp;(right).</span>
+:::

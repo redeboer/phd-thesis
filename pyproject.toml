@@ -1,0 +1,110 @@
+[project]
+authors = [{name = "Remco de Boer"}]
+dependencies = [
+    "ampform-dpd~=0.3.0",
+    "ampform~=0.15.0",
+    "graphviz",
+    "jax",
+    "jupyter-cache",
+    "kaleido",
+    "matplotlib",
+    "numpy",
+    "plotly",
+    "qrules[viz]",
+    "quarto-cli",
+    "sympy",
+    "tensorwaves[jax,pwa]",
+]
+license = {file = "LICENSE"}
+name = "phd-thesis"
+requires-python = "~=3.13.0"
+version = "0.0.0"
+
+[tool.poe]
+env = {JAX_PLATFORMS = "cpu"}
+executor.type = "uv"
+
+[tool.poe.tasks._render]
+cmd = "quarto render docs --no-clean --to=${format}"
+help = "Render the project with Quarto to a specific format"
+
+[[tool.poe.tasks._render.args]]
+default = "html"
+help = "Output format passed to Quarto, see https://quarto.org/docs/output-formats/all-formats.html"
+name = "format"
+positional = true
+type = "string"
+
+[tool.poe.tasks._tex]
+help = "Build source files for LaTeX"
+ref = "_render latex"
+
+[tool.poe.tasks._zip]
+cmd = """
+uv run python -c 'import shutil; shutil.make_archive("phd-thesis", "zip", "book-latex")'
+"""
+cwd = "docs/_build/html"
+
+[tool.poe.tasks.all]
+help = "Run all continuous integration (CI) tasks locally"
+sequence = [
+    {cmd = "git clean -xdf docs"},
+    "style",
+    "doc",
+]
+
+[tool.poe.tasks.doc]
+help = "Build all output formats"
+sequence = ["epub", "pdf", "hardcover", "paperback", "tex", "html"]
+
+[tool.poe.tasks.doclive]
+cmd = "quarto preview docs --no-clean --port 7000 --to=html"
+help = "Set up a server to directly preview changes to the HTML pages"
+
+[tool.poe.tasks.epub]
+help = "Build ePub"
+ref = "_render epub"
+
+[tool.poe.tasks.hardcover]
+cmd = "quarto render docs --no-clean --profile=hardcover --to=pdf"
+help = "Build PDF for printing as hardcover book"
+
+[tool.poe.tasks.html]
+help = "Build HTML pages"
+ref = "_render html"
+
+[tool.poe.tasks.paperback]
+cmd = "quarto render docs --no-clean --profile=paperback --to=pdf"
+help = "Build PDF for printing as paperback with low colour usage"
+
+[tool.poe.tasks.pdf]
+help = "Build PDF"
+ref = "_render pdf"
+
+[tool.poe.tasks.pdflive]
+cmd = "quarto preview docs --no-clean --no-serve --render pdf"
+help = "Rerender the PDF build on changes to the source code"
+
+[tool.poe.tasks.printlive]
+cmd = "quarto preview docs --no-clean --no-serve --render pdf"
+env = {QUARTO_PROFILE = "hardcover"}
+help = "Rerender the PDF for printing on changes to the source code"
+
+[tool.poe.tasks.style]
+cmd = "pre-commit run --all-files"
+help = "Perform all linting, formatting, and spelling checks"
+
+[tool.poe.tasks.tex]
+help = "Build source files for LaTeX and create ZIP file"
+sequence = [
+    {ref = "_render latex"},
+    "_zip",
+]
+
+[tool.tomlsort]
+all = false
+ignore_case = true
+in_place = true
+sort_first = ["project"]
+spaces_indent_inline_array = 4
+trailing_comma_inline_array = true

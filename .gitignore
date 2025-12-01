@@ -1,0 +1,14 @@
+.cache/
+.fuse_*
+.idea/
+.venv/
+*.aux
+*.egg-info/
+*.log
+*.tex
+*.toc
+**.code-workspace
+*build/
+/.luarc.json
+dist/
+site_libs/

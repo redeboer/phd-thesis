@@ -1,0 +1,107 @@
+\usepackage[british]{babel}
+\usepackage{braket}
+\usepackage{changepage}
+\usepackage{epigraph}
+\usepackage{etoolbox}
+\usepackage{fontspec}
+\usepackage{lscape}
+\usepackage[automark,headsepline]{scrlayer-scrpage}
+\usepackage{tikz}
+
+\babelhyphenation{Zerfalls-daten}
+
+% --== Avoid orphan lines at bottom or top ==-- %
+\clubpenalty=5000
+\widowpenalty=5000
+\raggedbottom % don't stretch spaces between paragraphs
+
+% --== Epigraph setup ==-- %
+\makeatletter
+\newlength\epitextskip
+\pretocmd{\@epitext}{\em}{}{}
+\apptocmd{\@epitext}{\em}{}{}
+\patchcmd{\epigraph}{\@epitext{#1}\\}{\@epitext{#1}\\[\epitextskip]}{}{}
+\makeatother
+
+\newfontfamily{\epigraphfont}{EB Garamond}
+\setlength\epigraphrule{0pt}
+\setlength\epitextskip{1ex}
+\setlength\epigraphwidth{.48\textwidth}
+
+% --== Unicode character remapping ==-- %
+\usepackage{pifont}
+\catcode`\✅=\active
+\def✅{\ding{51}}  % ✔️
+\catcode`\❌=\active
+\def❌{}  % empty
+
+% --== Bold and italic bookmark levels ==-- %
+\usepackage{bookmark}
+\makeatletter
+\renewcommand*{\Hy@numberline}[1]{#1\ifnum\Hy@toclevel=-1\else.\fi\space}
+\makeatother
+\newif\ifboldPDFchapters
+\newif\ifitalicPDFchapters
+\bookmarksetup{
+  open,
+  addtohook={%
+      \ifnum\bookmarkget{level}=0 %
+        \ifboldPDFchapters
+          \bookmarksetup{bold}%
+        \fi
+      \fi
+    },
+  addtohook={%
+      \ifnum\bookmarkget{level}=0 %
+        \ifitalicPDFchapters
+          \bookmarksetup{italic}%
+        \fi
+      \fi
+    }
+}
+
+% --== Font for chapter and section titles ==-- %
+\addtokomafont{disposition}{\rmfamily}
+\renewcommand*{\chapterformat}{{%
+      \Huge\thechapter\enskip
+      \textcolor{gray!50}{\rule[-2.5\dp\strutbox]{4pt}{2\baselineskip}}\enskip
+    }}
+
+% --== Figure and table captions ==-- %
+\usepackage{caption}
+\captionsetup[figure]{labelsep=space}
+\captionsetup[subfigure]{labelformat=empty}
+\captionsetup[table]{labelsep=space}
+
+% --== Typesetting "C++" names ==-- %
+\usepackage{relsize}
+\usepackage{xspace}
+\DeclareRobustCommand{\plusplus}[1]{%
+  \texorpdfstring{%
+    \mbox{%
+      #1\nolinebreak\hspace{-.05em}%
+      \raisebox{.4ex}{\relsize{-3}{\textbf{+}}}\nolinebreak%
+      \hspace{-.10em}%
+      \raisebox{.4ex}{\relsize{-3}{\textbf{+}}}%
+    }%
+  }{#1++}%
+  \xspace
+}
+\newcommand{\cxx}{\plusplus{C}}
+
+% --== Define colors ==-- %
+\usepackage{xcolor}
+% https://matplotlib.org/3.10.6/gallery/color/color_cycle_default.html
+\definecolor{C0}{RGB}{31, 119, 180}
+\definecolor{C1}{RGB}{255, 127, 14}
+% https://sronpersonalpages.nl/~pault
+\definecolor{MyBlue}{RGB}{0, 68, 136}
+\definecolor{MyYellow}{RGB}{221, 170, 51}
+\definecolor{MyRed}{RGB}{187, 85, 102}
+% https://services.ruhr-uni-bochum.de/de/rub-farben
+\definecolor{RUBblue}{RGB}{0, 53, 96}
+\definecolor{RUBgreen}{RGB}{141, 174, 16}
+\definecolor{RUBgray}{RGB}{231, 231, 231}
+
+% No PDF page numbers on title page
+\renewcommand{\thepage}{}

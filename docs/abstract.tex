@@ -1,0 +1,32 @@
+\custompagebreak
+\clearpairofpagestyles
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+\bookmarksetupnext{italic}
+\pdfbookmark[0]{Abstract}{abstract}
+\section*{Abstract}
+Amplitude analysis is a key technique in hadron physics, linking experimental observables to the underlying dynamics of scattering and decay processes. This thesis pursues two complementary aims: to advance the computational workflow for formulating and evaluating amplitude models and to apply these methods to baryonic decays in experimental data.
+
+On the computational side, the work introduces a novel approach in which amplitude models are first expressed symbolically in a Computer Algebra System and then automatically translated into array-oriented code for highly parallelised numerical evaluation. Implemented in the widely used dynamic language Python, this approach lowers the barrier for model development and integrates naturally with modern scientific software ecosystems. In addition to accelerating computations, the workflow produces self-documenting amplitude models that make analysis steps transparent and reproducible.
+
+On the physics side, the work establishes a consistent formulation of amplitude models for three-body decays involving final states with spin, particularly baryons, using the Dalitz-plot decomposition method. The approach is validated in two case studies. First, a polarimetry analysis of the decay $\varLambda_c \to p K^- \pi^+$, based on LHCb results, demonstrates numerical correctness to floating-point precision when benchmarked against implementations in \cxx and Julia, while enabling efficient uncertainty propagation through large-scale parallelised parameter sampling. Second, an amplitude analysis of $J/\psi \to \bar{p} K^0_S \varSigma^+$ with BESIII data shows that spin-aligned amplitude models provide an improved description of the data compared to earlier analyses that neglected spin-induced interference between topologically distinct decay chains.
+
+The results demonstrate that symbolic, spin-aligned amplitude models achieve both reliable computational performance and correct descriptions of baryonic decay data, while the self-documenting workflow ensures that the models used can be transparently inspected and reproduced.
+
+\custompagebreak
+
+\bookmarksetupnext{italic}
+\pdfbookmark[0]{Zusammenfassung}{zusammenfassung}
+\section*{Zusammenfassung}
+\begin{otherlanguage}{german}
+  {\righthyphenmin=3
+    Die Amplitudenanalyse ist eine Schlüsseltechnik der Hadronphysik, da sie experimentelle Observablen mit den zugrunde liegenden Dynamiken von Streu- und Zerfallsprozessen verknüpft. Diese Dissertation hat zwei komplementäre Ziele: die Weiterentwicklung des rechnerischen Arbeitsablaufes zur Formulierung und Auswertung von Amplitudenmodellen sowie die Anwendung dieser Methoden auf baryonische Zerfälle in experimentellen Daten.
+
+    Auf der methodischen Seite führt die Arbeit einen neuartigen Ansatz ein, bei dem Amplitudenmodelle zunächst symbolisch in einem Computeralgebrasystem formuliert und anschließend automatisch in array-orientierten Code für hochgradig parallelisierte numerische Auswertungen übersetzt werden. Implementiert in der weit verbreiteten dynamischen Sprache Python, senkt dieser Ansatz die Hürden für die Entwicklung von Amplitudenmodellen und integriert sich nahtlos in moderne Softwareumgebungen. Neben der Beschleunigung der Berechnungen können die Amplitudenmodelle direkt als Formeln eingesehen werden, die die einzelnen Analyseschritte transparent und reproduzierbar machen.
+
+    Auf der physikalischen Seite wird im Rahmen dieser Arbeit eine konsistente Formulierung von Amplitudenmodellen für Drei-Teilchen-Zerfälle mit spinbehafteten Endzuständen, insbesondere für Baryonen, unter Verwendung der Dalitz-Plot-Dekompositionsmethode bereitgestellt und anhand zweier Fallstudien validiert. Erstens zeigt eine Polarimetrie-Analyse des Zerfalls $\varLambda_c \to p K^- \pi^+$, basierend auf LHCb-Daten, numerische Übereinstimmung bis zur Gleitkommapräzision im Vergleich mit Implementierungen in \cxx und Julia und ermöglicht eine effiziente Berechnung von Unsicherheiten. Zweitens zeigt eine Amplitudenanalyse von $J/\psi \to \bar{p} K^0_S \varSigma^+$ mit BESIII-Daten, dass Amplitudenmodelle mit Berücksichtigung der Spin-Ausrichtung die Daten besser beschreiben als frühere Analysen, die spininduzierte Interferenzen zwischen topologisch verschiedenen Zerfallsketten vernachlässigt hatten.
+
+    Die Ergebnisse zeigen, dass symbolische Amplitudenmodelle mit Berücksichtigung der Spin-Ausrichtung sowohl eine verlässliche rechnerische Leistungsfähigkeit als auch korrekte Beschreibungen baryonischer Zerfallsdaten liefern, während die Darstellung in Form von Formeln sicherstellt, dass die verwendeten Modelle leicht überprüft und reproduziert werden können.
+  }
+\end{otherlanguage}

@@ -1,0 +1,37 @@
+a:hover {
+  color: #8dae10 !important;
+}
+.navbar-logo {
+  height: 30px;
+  margin-right: 60px;
+}
+.dropdown-item:hover {
+  color: #ffffff !important;
+  background: #8dae10 !important;
+}
+.nav-link.active,
+.sidebar-link.active {
+  color: #8dae10 !important;
+}
+.navbar-brand-container {
+  max-width: calc(100% - 26px);
+}
+.navbar-title {
+  font-size: large;
+}
+.bi:hover,
+.navbar-title:hover,
+.nav-link:hover,
+.sidebar-link:hover {
+  color: #ffcc00 !important;
+}
+
+/* https://groups.google.com/g/mathjax-users/c/uA1gHQFNMGU/m/9GSDY0fQAQAJ */
+.nowrap {
+  white-space: nowrap;
+}
+
+/* https://github.com/redeboer/phd-thesis-archive/issues/142 */
+.quarto-figure-center {
+  margin-bottom: 2px;
+}

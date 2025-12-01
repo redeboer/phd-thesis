@@ -1,0 +1,696 @@
+---
+aliases:
+  - "5"
+  - 5.html
+  - ch5
+  - chapter5
+  - compwa
+  - compwa.html
+format:
+  html:
+    toc-expand: 2
+---
+
+# The ComPWA project {#sec-compwa}
+
+<!-- cspell:ignore asdot aslatex fontcolor isinstance penwidth preorder phasespace preorder xreplace -->
+
+In this chapter, we discuss how the Common Partial-Wave Analysis (ComPWA) project has evolved from a single {{< meta var.cxx >}} framework for amplitude analysis to a collection of more dynamic Python tools and documentation workflows that use the techniques described in @sec-computational-techniques. The end of the chapter describes how we exposed and extended different functionalities of the original ComPWA framework as easily installable Python packages that can be used independently of each other.
+
+## {{< meta var.cxx >}} origins {#sec-compwa-cpp}
+
+[As described in @sec-array-oriented, m]{.content-visible when-format="html"}[M]{.content-visible unless-format="html"}ost analysis code in high-energy physics and amplitude analysis is written in {{< meta var.cxx >}} to facilitate efficient computation and manipulation of large datasets. However, the complexity of {{< meta var.cxx >}} can be a barrier to implement and extend large amplitude models. To address this, many projects organise their analysis code as a framework that (1) can build up amplitude models dynamically at runtime and (2) offers a high-level interface for users to define these models through a configuration file that is loaded at runtime without requiring recompilation.
+
+Originally, the Common Partial-Wave Analysis (ComPWA) project also started as a single {{< meta var.cxx >}}&nbsp;framework for amplitude analysis. The initial requirement specifications were drafted in 2012 with the intention of designing a collaboration-independent framework that could formulate arbitrary amplitude models, can be flexibly configured, and documents the model in a human-readable format&nbsp;[@ComPWA:2012-RequirementSpecifications]. Inspiration was taken from frameworks like Tara for the Crystal Barrel experiment&nbsp;[@DEGENER199934], PWA2000&nbsp;[@Cummings:2003-ObjectOrientedPWA], [ROOTPWA](https://github.com/ROOTPWA-Maintainers/ROOTPWA) for the COMPASS experiment, GPUPWA for BESIII&nbsp;[@Berger:2011rx], and {{< meta var.lauraplusplus >}} for BaBar and LHCb&nbsp;[@Back:2017zqt]. The idea was to design a framework with a more modular design, with interfaces that are abstract enough to allow for different implementations for different spin formalisms, estimator methods, minimiser strategies and algorithms, and data sample formats for different collaborations&nbsp;[@Michel:2014nza]. <!-- cspell:ignore BaBar DEGENER GPUPWA ROOTPWA lauraplusplus -->
+
+@fig-compwa-modules shows the core modules of the original ComPWA framework. Further details can be found in the doctoral theses of M.&nbsp;Michel, P.&nbsp;Weidenkaff, and S.&nbsp;Pflüger [@Michel:2016acw; @Weidenkaff:2017cux; @Pfluger:2017ybr]. The modules provide interfaces that could essentially operate independently of each other and served as protocols for streaming data through the framework. Four-momenta **data** could be either loaded from different file formats or generated using different Monte Carlo generators. **Physics**, such as coherent sum of amplitudes, would be implemented through a function tree (model) that can operate on that data. Different **estimator** implementations could quantise the discrepancy between the model and the data sample. And finally, different **optimiser** implementations could tweak the parameters in the function in order to minimise the estimator value. The key part is that interfaces were general and simple enough that they encapsulated the expected data flow, but still allowed for extending the functionality through specific implementations of the interfaces. ComPWA followed the classic definition of a framework as an object-oriented _abstract_ design, with the preference that classes inherit from an (abstract) base class at most&nbsp;[@Johnson:1988-DesigningReusableClasses; @Michel:2016acw, Section 3.5]. <!-- cspell:ignore Pfluger Pflüger Weidenkaff -->
+
+:::{#fig-compwa-modules}
+[![](images/chapter5/compwa-modules.svg)]{.light-content}[![](images/chapter5/compwa-modules-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Main modules of the ComPWA framework. Inspired by&nbsp;[@Michel:2016acw].
+:::
+
+The concept of a **function tree** deserves special attention. As we will see later, the concept is widely used in other computational frameworks. ComPWA implemented models in the physics module as tree-like representations, with the nodes representing mathematical operations on branches (data points or numbers) or other nodes. This not only provided an interface that can be called agnostically by other modules, but also to facilitate techniques to optimise computations. A case in point is that one can track which nodes depend on certain parameters. If parameters are kept fixed during a minimisation process, the corresponding nodes can be precomputed and cached. In addition, specific nodes can be optimised directly based on their structure. For example, a node with one child can be directly 'collapsed' (restructured) into a single node. Initial tests showed that the speed-ups for certain parameter combinations could be up to 50 times faster&nbsp;[@Michel:2016acw, p.82].
+
+Function trees could also be easily serialised, which was intended as a way to document an analysis as well as to export and modify models for reevaluation, as intended by the original requirement specifications&nbsp;[@ComPWA:2012-RequirementSpecifications]. The fact that function trees could be built up from a human-readable format led to the idea of an "expert system" that could automatically generate models based on a set of rules. In the case of amplitude analysis, this means generating decay topologies based on quantum number conservation rules and using that as a template to build up a function tree for the amplitude model.
+
+Finally, a Python interface, [`pycompwa`](https://github.com/ComPWA/pycompwa), was developed to provide a more dynamic workflow with the ComPWA framework&nbsp;[@ComPWA-pycompwa-2019]. First, it provided Python bindings to the {{< meta var.cxx >}} implementations of each of the core modules, so that the user could interact with the framework through Python scripts and Jupyter notebooks without having to compile the {{< meta var.cxx >}} code. Second, it was complemented by the [`expertsystem`](https://github.com/ComPWA/expertsystem), which was implemented purely in Python&nbsp;[@Pfluger:2021-PWAExpertSystem]. The combination of the bindings and the [`expertsystem`](https://github.com/ComPWA/expertsystem) allowed for a more dynamic workflow with higher-level analysis code. <!-- cspell:ignore expertsystem -->
+
+## Transition to Python {#sec-compwa-python}
+
+[As discussed in @sec-array-oriented, a]{.content-visible when-format="html"}[A]{.content-visible unless-format="html"}rray programming allows for concise and expressive code that is easier to read and write. While array-oriented code has been popular in the Python community since the 2000s with libraries like NumPy, it gained more traction with the emergence of Machine Learning (ML) libraries like Numba since 2012&nbsp;[@Lam:2015bfh], TensorFlow in 2015&nbsp;[@Abadi:2016kic], PyTorch in 2016&nbsp;[@Paszke:2019xhz], and JAX in 2018&nbsp;[@jax2018github]. Importantly, these libraries represent their computations (such as neural networks) in the form of a computational graph, which is similar to the function tree concept in ComPWA. Computational graphs, however, usually provide the more advanced features discussed in @sec-array-oriented, such as optimisations through backtracing on the JIT-compiled functions that those graphs represent, or automatic differentiation. <!-- cspell:ignore Abadi rray Paszke tensorflow -->
+
+The popularity of these ML frameworks and the fact that they are developed by companies and large groups of professional software developers, makes the effort to maintain an own implementation of a function tree futile. In 2020, it was therefore decided to reimplement the ComPWA framework purely using the Python APIs of those libraries. The decision was further encouraged by initiatives like [TensorFlowAnalysis](https://gitlab.cern.ch/poluekt/TensorFlowAnalysis) and its follow-up [AmpliTF](https://github.com/apoluekt/AmpliTF) for the amplitude analysis community&nbsp;[@Poluektov:2021-TFA; @Poluektov:2022-AmpliTF], as well as [`zfit`](https://zfit.readthedocs.io), which serves as an alternative to RooFit with TensorFlow as computational backend&nbsp;[@Eschle:2019jmu]. <!-- cspell:ignore amplitf Eschle poluektov zfit -->
+
+As a first step, we reimplemented the ComPWA framework using only TensorFlow as computational backend, following the design of @fig-compwa-modules. The first release candidate was able to reproduce the standard test cases of the original ComPWA framework and demonstrated that similar fit performance could be achieved with TensorFlow as computational backend. A first release candidate was released on July 9<sup>th</sup>, 2020, see [v0.0.0-alpha0](https://github.com/ComPWA/tensorwaves/releases/tag/0.0.0-alpha0). Unit tests and tutorial examples of the [repository at that point in time](https://github.com/ComPWA/tensorwaves/tree/0.0.0-alpha0) showed the feasibility of the reimplementation.
+
+The TensorFlow computational graphs were still built up from the same XML files generated from the [`expertsystem`](https://github.com/ComPWA/expertsystem) that were used as input for the ComPWA {{< meta var.cxx >}} framework, which we used as a cross-check for the new implementation. This led us to the realisation that we could use the same input file for constructing computational graphs with different computational libraries. Similarly to AmpliTF, we therefore implemented the amplitude model builder with JAX, next to the existing TensorFlow implementation.
+
+As a final step that led towards the adoption of a CAS (@sec-cas), we explored alternative representations of the XML format for the generated amplitude model. The fact that amplitude models are inherently large mathematical expressions suggested that we adopt a standardised format, such as MathML, for serialising such expressions. Constructing a tree of mathematical nodes to serve as a template for such a serialisation format is essentially a reimplementation of the expression trees used in Computer Algebra Systems, or for instance Python's built-in [`operator`](https://docs.python.org/3/library/operator.html) module&nbsp;[@ComPWA-ExpertSystem-ADR001]. We therefore decided formulate the amplitude model in the [`expertsystem`](https://github.com/ComPWA/expertsystem) using SymPy.
+
+[As noted in @sec-code-generation-html, ]{.content-visible when-format="html"}SymPy has the additional benefit that it already provides code generation capabilities for expression serialisation as well as for different programming languages. The rest of the software packages therefore became more of a wrapper around SymPy code generation that streamlines the process of performing amplitude analyses with different computational backends, following the original design of the ComPWA framework of @fig-compwa-modules. All in all, the transition to Python and the adoption of a CAS removed the workload of maintaining a computational backend, while opening the door to more flexible workflows, a much easier developer experience[ (@sec-compwa-dx)]{.content-visible when-format="html"}, and the more advanced computational features described in @sec-array-oriented. This lead us to transition the project completely to Python.
+
+## Main Python packages {#sec-compwa-python-packages}
+
+Python makes it easier to split up frameworks into smaller, specialised packages and allows for a fast release flow. Naturally, during the transition to Python, the ComPWA framework evolved into a collection of dedicated Python packages that can mostly be used independently of each other. @fig-python-packages shows the components of the original {{< meta var.cxx >}} framework and the new core packages that the ComPWA project has evolved into. The ComPWA framework provided Python bindings to its {{< meta var.cxx >}} backend through the [`pycompwa`](https://compwa.github.io/pycompwa) package. This package was replaced by the Python-only TensorWaves package, which streamlines the conversion of SymPy expressions to numerical functions and provides additional functionality for performing amplitude analyses. The [`expertsystem`](https://github.com/ComPWA/expertsystem) was split into the QRules and Ampform packages, which together provide the necessary tools for formulating symbolic amplitude models. All packages are all available on [PyPI](https://pypi.org) as well as [conda-forge](https://conda-forge.org), so that they can be easily installed or used as libraries in downstream projects.
+
+:::{#fig-python-packages}
+![](images/chapter5/compwa-python-transition.svg)
+
+ComPWA {{< meta var.cxx >}} framework and related Python packages before the transition for Python (left) and the recent main Python packages (right). The <font color="#DDAA33">yellow</font> arrows indicate from which original framework components the new packages evolved. While the original framework mainly revolved around the {{< meta var.cxx >}} framework, the new packages are implemented fully in Python.
+:::
+
+### QRules
+
+Many steps in the construction of an amplitude model can be standardised, especially once a decay is modelled with the helicity formalism (@sec-helicity-formalism). Deciding which decays are allowed, and what resonances one can expect, is something one can work out on paper using quantum conservation laws. This is, however, error-prone and something that can be automated. Already at the inception of the ComPWA project&nbsp;[@ComPWA:2012-RequirementSpecifications], this led to the idea of developing a rule-based "expert system" that can automatically generate decay topologies based on quantum number conservation rules.
+
+An expert system emulates the decision-making ability of a human expert. It consists of two main components: a knowledge base and an inference engine. In the case of formulating particle decays, the knowledge base consists of conservation laws, such as charge conservation, and input information about the decay, such as the initial state and final state. The inference engine can be any algorithm that deduces what kind of decay topologies can connect the initial and final state, based on the facts and rules in the knowledge base. The "expert" implements knowledge through the knowledge base, while a user can use the inference engine to query ("ask advice") the knowledge base.
+
+The inference engine can be implemented in many ways, such as a decision tree, a set of rules, or a neural network. The latter has become more popular in recent years. At the time of writing, the main inference engine used in the ComPWA project is a Constraint Satisfaction Problem (CSP) solver&nbsp;[@python-constraint-v1.4.0]. In most cases, the user specifies outside constraints, such as initial and final state, expected decay topology types, and the conservation rules that apply (such as parity conservation in the case of a strong-force decay). The CSP then tries to satisfy these constraints by building decay topologies and filling them with quantum numbers that comply with the conservation rules.
+
+[As described in @sec-compwa-cpp, t]{.content-visible when-format="html"}[T]{.content-visible unless-format="html"}he ComPWA framework originally included a package named [`expertsystem`](https://github.com/ComPWA/expertsystem). However, since this also had the responsibility of formulating amplitude models and exporting them to XML, we extracted a specialised package called QRules with (PyPI name [`qrules`](https://pypi.org/project/qrules)) that only contains the particle reaction solver&nbsp;[@ComPWA-QRules-v0.10.5].
+
+As an example, the following code (@lst-qrules-problem-definition) shows how a user can request QRules to find which decays can occur in a $J/\psi$ meson decaying to $K^0_S$, $\varSigma^+$, and $\bar{p}$ if one assumes sequential two-body decays (isobar) and applies conservation rules for the strong force. QRules works with flavour eigenstates, because it can only handle the quantum numbers of the particles. In this case, the user has to select $K^0$ instead of the short-lived mass eigenstate $K^0_S$. Additional information, such as the maximum angular momentum and a factor that specifies how far resonance may lay outside the kinematically allowed phase space, can be optionally be specified.
+
+```{python}
+#| echo: false
+import logging
+logging.getLogger("ampform.sympy._cache").setLevel(logging.ERROR)
+logging.getLogger("qrules.transition").setLevel(logging.ERROR)
+```
+
+:::{#lst-qrules-problem-definition}
+
+```{python}
+import qrules
+
+reaction = qrules.generate_transitions(
+    initial_state=[("J/psi(1S)", (-1, +1))],
+    final_state=["K0", "Sigma+", "p~"],
+    allowed_interaction_types="strong",
+    mass_conservation_factor=0.0,
+    max_angular_momentum=3,
+    topology_building="isobar",
+)
+```
+
+Problem definition for QRules to find allowed decays for $J/\psi \to K^0_S \varSigma^+ \bar{p}$.
+:::
+
+```{python}
+#| echo: false
+from qrules.particle import create_particle
+
+PDG = qrules.load_pdg()
+new_definitions = {
+    "J/psi(1S)": dict(name="J/ψ", latex=R"J/\psi"),
+    "K0": dict(name="K⁰", latex="K^0_S"),
+    "Sigma+": dict(name="Σ⁺", latex=R"\varSigma^+"),
+    "p~": dict(name="p̅"),
+}
+for name, kwargs in new_definitions.items():
+    old = PDG[name]
+    new = create_particle(old, **kwargs)
+    PDG.remove(old)
+    PDG.add(new)
+# cspell:ignore nstar sigmas startswith
+for old in set(PDG):
+    new = create_particle(
+        old,
+        name=old.name.replace("Sigma", "Σ").replace("~-", "⁻").replace("+", "⁺"),
+        mass=f"{old.mass:g}",
+        width=f"{old.width:g}",
+    )
+    PDG.remove(old)
+    PDG.add(new)
+nucleons = {p for p in PDG if p.name in {"N(1700)⁺", "N(1710)⁺", "N(1720)⁺"}}
+assert len(nucleons) == 3
+for i, p in enumerate(sorted(nucleons, key=lambda p: p.mass), 1):
+    PDG.remove(p)
+    PDG.add(create_particle(p, latex=f"N^*_{{{i}}}"))
+sigmas = {p for p in PDG if p.name in {"Σ(1660)⁻", "Σ(1670)⁻", "Σ(1750)⁻", "Σ(1775)⁻"}}
+assert len(sigmas) == 4
+for i, p in enumerate(sorted(sigmas, key=lambda p: p.mass), -1):
+    PDG.remove(p)
+    PDG.add(create_particle(p, latex=Rf"\varSigma^*_{{{i}}}"))
+PDG = PDG.filter(lambda p: p.spin <= 3)
+```
+
+```{python}
+#| echo: false
+from ampform_dpd.adapter.qrules import normalize_state_ids
+
+reaction = qrules.generate_transitions(
+    initial_state=[("J/ψ", (-1, +1))],
+    final_state=["K⁰", "Σ⁺", "p̅"],
+    allowed_interaction_types="strong",
+    mass_conservation_factor=0.0,
+    particle_db=PDG,
+)
+reaction = normalize_state_ids(reaction)
+```
+
+In this example, the user has specified that the initial state does not have longitudinal polarisation, which is indicated by the `(-1, +1)` in the initial state. This is the case in the BESIII experiment, where the $J/\psi$ meson is produced in <span class="nowrap">$e^+ e^-$&nbsp;collisions.</span> The `allowed_interaction_types` argument specifies which conservation rules (@tbl-conservation-laws) are enforced at each node of the sequential decay chains built in the "isobar" topology (two-body decay chain). The CSP solver is then instructed to restrict intermediate states to those with an orbital angular momentum of at most <span class="nowrap">$L=3$</span> and a mass conservation factor <span class="nowrap">of&nbsp;$f=0$</span>, which means that any intermediate <span class="nowrap">state&nbsp;$r$</span> must lie within $m_r \pm f \, \Gamma_r$ of the available kinematic phase space.
+
+```{python}
+#| echo: false
+#| output: false
+import graphviz
+from qrules.io import asdot
+from qrules.topology import create_isobar_topologies
+
+dot_style = dict(
+    edge_style={
+        "color": "#DDAA33",
+        "fontcolor": "#004488",
+        "penwidth": 2,
+    },
+    node_style={
+        "fontcolor": "#004488",
+    },
+)
+topology1, = create_isobar_topologies(3)
+topology1 = normalize_state_ids(topology1)
+topology2 = topology1.swap_edges(1, 2)
+topology3 = topology1.swap_edges(3, 2)
+render = lambda t, p: graphviz.Source(asdot(t, render_initial_state_id=True, **dot_style)).render(p, format="svg")
+render(topology1, "output/topology1")
+render(topology2, "output/topology2")
+render(topology3, "output/topology3")
+```
+
+:::{#fig-allowed-topologies layout-ncol=3}
+![](output/topology1.svg){fig-align="center"}
+
+![](output/topology2.svg){fig-align="center"}
+
+![](output/topology3.svg){fig-align="center"}
+
+Allowed decay topologies that QRules finds for the decay $J/\psi \to K^0_S(1)\,\varSigma^+(2)\,\bar{p}(3)$. QRules renders the topologies with [Graphviz](https://qrules.readthedocs.io/0.10.5/usage/visualize.html) in the form of Feynman-like directed graphs, with the initial state on the left and the final state on the right. The edges represent states (particles, or propagators) and the nodes (labelled&nbsp;`(0)` and&nbsp;`(1)`) represent decay vertices with information like angular momentum.
+:::
+
+Internally, QRules first builds a list of all possible decay topologies for three-body decay (@fig-allowed-topologies). It then fetches the quantum numbers of the initial- and final-state particles (outer edges) that the user has specified in the definition of the problem. By default, this information is obtained from the Particle Data Group&nbsp;[@ParticleDataGroup:2024cfk] through the [`particle`](https://github.com/scikit-hep/particle) package&nbsp;[@scikit-hep/particle-v0.25.2], but the user can also provide a database of custom particle definitions when searching for unknown or exotic resonances. Next, QRules fills the inner edges of the topologies with quantum numbers, conservation rules, and expected quantum number domains.
+
+@fig-qrules-problem-set shows a QRules rendering of one such filled topology. It represents only one of many possible graphs, since the CSP inference engine explores the full set of topologies from @fig-allowed-topologies as well as different combinations of quantum numbers. The outer edges correspond to the initial- and final-state particles, with one particular set of allowed spin projections shown in brackets. Each node and intermediate edge is annotated with conservation rules, together with priorities that determine the order in which they are applied. They also specify domains for each quantum number type considered at that node or edge during the CSP solving process. For instance, baryon number conservation has the highest priority at both nodes, with possible values of –1, 0, or&nbsp;+1 on the intermediate edge. Strangeness has slightly lower priority and can take values from –3 to&nbsp;+3.
+
+```{=latex}
+\begin{landscape}
+```
+
+```{python}
+#| echo: false
+#| label: fig-qrules-problem-set
+#| fig-cap: "Example of a decay topology with quantum numbers and conservation rules filled in. Nodes and intermediate edges show conservation rules along with an assigned priority as well as domains that the CSP inference engine is to consider when solving the problem set later on."
+#| layout-valign: center
+import re
+from qrules import InteractionType, StateTransitionManager
+
+
+def clean_dot(src: str) -> str:
+    replacements = {
+        "baryon_number": "baryon number",
+        "BaryonNumberConservation": "baryon number",
+        "c_parity_conservation": "C-parity",
+        "c_parity": "C",
+        "charge": "Q",
+        "ChargeConservation": "charge",
+        "electron_lepton_number": "e number",
+        "ElectronLNConservation": "e number",
+        "g_parity_conservation": "G-parity",
+        "g_parity": "G",
+        "helicity_conservation": "helicity",
+        "isospin_conservation": "isospin",
+        "isospin_magnitude": "I",
+        "isospin_projection": "I₃",
+        "l_magnitude": "L",
+        "MassConservation": "mass",
+        "muon_lepton_number": "μ number",
+        "MuonLNConservation": "μ number",
+        "parity_conservation_helicity": "parity (helicity)",
+        "parity_conservation": "parity",
+        "parity_prefactor": "prefactor",
+        "parity": "P",
+        "s_magnitude": "S",
+        "spin_magnitude_conservation": "spin",
+        "spin_magnitude": "J",
+        "spin_projection": "J₃",
+        "StrangenessConservation": "strangeness",
+        "tau_lepton_number": "τ number",
+        "TauLNConservation": "τ number",
+        # cspell:disable
+        "DOMAINS": "𝐃𝐨𝐦𝐚𝐢𝐧𝐬",
+        "RULES": "𝐑𝐮𝐥𝐞 𝐩𝐫𝐢𝐨𝐫𝐢𝐭𝐢𝐞𝐬",
+        "BottomnessConservation": "bottomness",
+        "CharmConservation": "charmness",
+        "identical_particle_symmetrization": "symmetrization",
+        "pid = ": "PDG ID: ",
+        # cspell:enable
+    }
+    for old, new in replacements.items():
+        src = re.sub(rf"\b{old}\b", new, src)
+    return src
+
+stm = StateTransitionManager(
+    initial_state=[("J/ψ", [-1, +1])],
+    final_state=["K⁰", "Σ⁺", "p̅"],
+    particle_db=PDG,
+)
+stm.set_allowed_interaction_types([InteractionType.STRONG, InteractionType.EM])
+problem_sets = stm.create_problem_sets()
+some_problem_set = normalize_state_ids(problem_sets[3600.0][-1])
+src = asdot(some_problem_set, render_final_state_id=False, render_node=True, **dot_style)
+graphviz.Source(clean_dot(src))
+```
+
+```{=latex}
+\end{landscape}
+```
+
+The CSP solver now determines which sets of quantum numbers can be assigned to the graph edges and nodes, while satisfying the conservation rules at each two-body decay node and the fixed quantum numbers on the outer edges. @fig-qrules-solution-example shows one of the solutions for the problem defined in @fig-qrules-problem-set. Here, edges and nodes are assigned explicit quantum numbers such as spin <span class="nowrap">magnitude&nbsp;$J$</span>, spin <span class="nowrap">projection&nbsp;$J_3$</span>, <span class="nowrap">parity&nbsp;$P$</span>, strangeness, and others, along with Particle Data Group (PDG) identifiers of the matching particle definitions. Quantum numbers with <span class="nowrap">value&nbsp;$0$</span> are omitted from the listing. For example, the antiproton $\bar{p}$ (PDG&nbsp;ID&nbsp;`-2212`) carries no strangeness, while the <span class="nowrap">$K^0$&nbsp;meson</span> (PDG&nbsp;ID&nbsp;`311`) carries no baryon number.
+
+```{python}
+#| echo: false
+qn_solutions = stm.find_quantum_number_transitions(problem_sets)
+```
+
+```{python}
+#| echo: false
+#| fig-cap: "Example of a solution with the quantum number sets for the edges and nodes that the CSP has found for the problem set shown in @fig-qrules-problem-set."
+#| label: fig-qrules-solution-example
+strong_qn_solutions = qn_solutions[3600.0]
+qn_problem_set, qn_result = strong_qn_solutions[-1]
+graph = normalize_state_ids(qn_result.solutions[0])
+src = asdot(graph, render_final_state_id=False, render_node=True, **dot_style)
+graphviz.Source(clean_dot(src))
+```
+
+Finally, QRules searches through the particle database for candidates that match the quantum number sets assigned to the intermediate edges of the graph. @fig-qrules-particle-solution shows the decay topologies that QRules identified for the problem defined in @lst-qrules-problem-definition, collapsed into two graphs. The full reaction object also records the allowed combinations of spin projections. In this case, only two decay-chain topologies were found: one with a subsystem $\varSigma^* \to K^0_S \bar{p}$ and another with $N^* \to K^0_S \varSigma^+$. QRules did not find transitions for a third subsystem, since no <span class="nowrap">$K^*$&nbsp;mesons</span> were found with masses that satisfy conservation in the topology $J/\psi \to K^0_S (K^* \to \bar{p} \varSigma^+)$. This is a consequence the `mass_conservation_factor` chosen in @lst-qrules-problem-definition, together with the particle definitions available in the default database provided by the [`particle`](https://github.com/scikit-hep/particle) package.
+
+```{python}
+#| echo: false
+#| output: false
+subsystem1 = {t for t in reaction.transitions if t.topology.get_edge_ids_outgoing_from_node(1) == {1, 2}}
+subsystem2 = {t for t in reaction.transitions if t.topology.get_edge_ids_outgoing_from_node(1) == {1, 3}}
+render = lambda t, p: graphviz.Source(asdot(t, collapse_graphs=True, **dot_style)).render(p, format="svg")
+render(subsystem1, "output/subsystem1")
+render(subsystem2, "output/subsystem2")
+```
+
+:::{#fig-qrules-particle-solution layout-ncol=2 layout-valign="bottom"}
+![](output/subsystem1.svg){fig-align="center"}
+
+![](output/subsystem2.svg){fig-align="center"}
+
+Matching particle names for all the solutions that the CSP has found for the problem definition in @lst-qrules-problem-definition. To reduce the number of graphs, we collapse the graphs that have the same topology, remove the spin projections, and show all found resonance names as above each other next to the one intermediate edge in each graph.
+:::
+
+While the figures shown in this section illustrate the strategy that QRules uses to generate allowed decay topologies, the system allows for other solver strategies. For example, instead of using sequential-decay topologies, the system can also check whether a particle reaction is allowed at all by checking whether the quantum numbers of the initial and final state simply add up and comply with conservation rules (such as net charge conservation). The system is also designed to be extendible to more general reactions, for instance involving an initial state of multiple particles. For the purposes of this thesis, this functionality has not been further developed.
+
+### AmpForm {#sec-ampform}
+
+As can already be seen from @fig-qrules-solution-example, the decay graphs that QRules generates, contain much more information than just which resonances can be expected. For example, the graphs contain LS-coupling values, parities, spin projections, and masses and widths of the particles. This information can be used to formulate an amplitude model with the helicity formalism (@sec-helicity-formalism).
+
+For this purpose, we extracted a second package, AmpForm (PyPI name [`ampform`](https://pypi.org/project/ampform)), from the original [`expertsystem`](https://github.com/ComPWA/expertsystem) package&nbsp;[@ComPWA-AmpForm-v0.15.9]. The package formulates amplitude models symbolically using SymPy rather than serialising them directly to XML, as happened in the original {{< meta var.cxx >}} framework. As such, AmpForm serves both as an extension of SymPy -- a library of expression classes that are useful for amplitude analysis -- and as a tool for formulating amplitude models using different spin formalisms. In the usual workflow, particle reaction graphs generated by QRules serve as input to AmpForm's amplitude model builder, but the user can also use the expression classes directly to build up their own amplitude models or any other parametrisations that are of interest to the analysis.
+
+#### Amplitude model building
+
+@lst-ampform-intensity shows how the amplitude model is built up for the decay $J/\psi \to K^0_S \varSigma^+ \bar{p}$ that was generated with QRules in @lst-qrules-problem-definition. It first creates an amplitude model builder, which is a factory class that can be configured dynamically before formulating the model. Next, a dynamics builder class is instantiated that can formulate a relativistic Breit-Wigner functions with an energy-dependent width and two vertex form factors for a given intermediate edge. This dynamics builder is then assigned to each of the intermediate edges in the decay graph. Finally, the [`formulate()`](https://ampform.readthedocs.io/0.15.9/api/ampform.helicity.html#ampform.helicity.HelicityAmplitudeBuilder.formulate) method returns a class structure that contains all the relevant definitions for an amplitude model.
+
+```{python}
+#| echo: false
+from ampform.io import improve_latex_rendering
+improve_latex_rendering()
+```
+
+:::{#lst-ampform-intensity}
+
+```{python}
+import ampform
+from ampform.dynamics.builder import RelativisticBreitWignerBuilder
+
+model_builder = ampform.get_builder(reaction)
+dynamics_builder = RelativisticBreitWignerBuilder(
+    energy_dependent_width=True,
+    form_factor=True,
+)
+for resonance in reaction.get_intermediate_particles():
+    model_builder.dynamics.assign(resonance.name, dynamics_builder)
+model = model_builder.formulate()
+model.intensity
+```
+
+Example of building an amplitude model with the helicity formalism (no spin alignment) for the decay $J/\psi \to K^0_S \varSigma^+ \bar{p}$ (@lst-qrules-problem-definition) using AmpForm with relativistic Breit–Wigner functions.
+:::
+
+The model is formulated in terms of SymPy expressions, which can be combined into a single expression for generating numerical code of the full amplitude model. At the top level, this is represented by [`model.intensity`](https://ampform.readthedocs.io/0.15.9/api/ampform.helicity.html#ampform.helicity.HelicityModel.intensity). As its rendering in @lst-ampform-intensity shows, it is a coherent sum over amplitudes (excluding the longitudinal polarisation of the <span class="nowrap">$J/\psi$&nbsp;meson</span>). The <span class="nowrap">amplitudes&nbsp;$A^{12}_{m_0,m_1,m_2,m_3}$</span> <span class="nowrap">and&nbsp;$A^{13}_{m_0,m_1,m_2,m_3}$</span> describes the transition of <span class="nowrap">a&nbsp;$J/\psi$</span> with <span class="nowrap">spin projection&nbsp;$m_0$</span> into the final <span class="nowrap">state&nbsp;$K^0_S$,</span> $\varSigma^+$, <span class="nowrap">and&nbsp;$\bar{p}$</span> with spin projections $m_1$, $m_2$, and $m_3$, respectively. They correspond to intermediate states in <span class="nowrap">chain&nbsp;$(12)3$</span> <span class="nowrap">(subsystem&nbsp;$K^0_S\varSigma^+$)</span> and <span class="nowrap">chain&nbsp;$(13)3$</span> <span class="nowrap">(subsystem&nbsp;$K^0_S\bar{p}$),</span> respectively. Note that this amplitude model does not take spin alignment of the baryons in the final state into account and naively implements polarisation by excluding the longitudinal polarisation of the <span class="nowrap">$J/\psi$&nbsp;meson</span> <span class="nowrap">($m_0 \neq 0$).</span>
+
+```{=latex}
+\begin{landscape}
+```
+
+:::::{#lst-ampform-amplitudes}
+
+```{python}
+#| output: false
+model.amplitudes
+```
+
+```{python}
+#| echo: false
+# cspell:ignore Math rstrip textstyle textwrap
+import sympy as sp
+from textwrap import dedent
+from IPython.display import Math
+
+src = R"\begin{aligned}"
+for i, (symbol, expr) in enumerate(model.amplitudes.items(), 1):
+    if i not in {1, 2, len(model.amplitudes)}:
+        continue
+    if i == len(model.amplitudes):
+        src += R"\vdots \qquad \\"
+    term1, *_, term2 = expr.args
+    src += dedent(Rf"""
+    {sp.latex(symbol)}
+      \;&=\; \textstyle {sp.latex(term1)} \\
+      \;&+\; \textstyle \cdots \\
+      \;&+\; \textstyle {sp.latex(term2)} \\
+    """).rstrip()
+src += "\n" R"\end{aligned}"
+```
+
+<!-- prettier-ignore-start -->
+::::{.content-visible when-format="html"}
+:::{.column-page-inset-right}
+```{python}
+#| echo: false
+Math(src)
+```
+:::
+::::
+::::{.content-visible unless-format="html"}
+```{python}
+#| echo: false
+Math(src)
+```
+::::
+<!-- prettier-ignore-end -->
+
+Definition of the amplitudes in the intensity expression @lst-ampform-intensity formulated by AmpForm.
+:::::
+
+```{=latex}
+\end{landscape}
+```
+
+@lst-ampform-amplitudes shows some of amplitudes contained in the [`model.amplitudes`](https://ampform.readthedocs.io/0.15.9/api/ampform.helicity.html#ampform.helicity.HelicityModel.amplitudes) mapping, with the [$\mathrm{\LaTeX}$]{.content-visible when-format="html"}[$\text{\LaTeX}$]{.content-visible unless-format="html"} rendering generated directly by the codebase. For example, the first amplitude, $A^{12}_{-1,0,-\frac{1}{2},-\frac{1}{2}}$ is a coherent sum of all amplitudes in the subsystem, $J/\psi[-1] \to \bar{p}[-\frac{1}{2}]\,N^*$ for all resonances $N^* \to K^0_S[0] \varSigma^+[-\frac{1}{2}]$. To save space, $N^*$ and <span class="nowrap">$\varSigma^*$&nbsp;resonances</span> are marked with an index rather than their full name. The model is formulated in the canonical basis using the transformation @eq-transformation-canonical-helicity. AmpForm takes the <span class="nowrap">$LS$&nbsp;couplings</span> generated by QRules, but it can also formulate in the helicity basis. The structure of each amplitude is always the same: a complex-valued coefficient (scaling factor with phase), two form factors $\mathcal{F}_{\!L}, \mathcal{F}_{\!\ell}$ for angular <span class="nowrap">momentum&nbsp;$L$</span> in the production vertex <span class="nowrap">and&nbsp;$\ell$</span> in the decay vertex, two Clebsch–Gordan coefficients and one <span class="nowrap">Wigner&nbsp;$D$</span>-function per vertex, and a Breit–Wigner function with energy-dependent width for the intermediate edge (resonance) in each graph.
+
+The amplitudes contain symbols that can be interpreted as either a **parameter** (such as resonance <span class="nowrap">mass&nbsp;$m_{N^*_1}$</span> and <span class="nowrap">width&nbsp;$\Gamma_{N^*_1}$)</span> and **kinematic variables** (such as the invariant mass $m_{12}$ and helicity angle $\theta_1^{12}$ of <span class="nowrap">particle&nbsp;$1$</span> in the rest frame of <span class="nowrap">particle&nbsp;$1$</span> <span class="nowrap">and&nbsp;$2$).</span> AmpForm provides suggested default values for the parameters by extracting them from the particle database that the user provides in @lst-qrules-problem-definition. It also defines symbolic expressions for computing the kinematic variables from the three four-momenta of the final state. For example, $\phi_1^{12}$ is defined as the azimuthal angle of the four-momentum of <span class="nowrap">particle&nbsp;$1$</span> boosted into the rest frame of the sum of the four-momenta of <span class="nowrap">particle&nbsp;$1$</span> <span class="nowrap">and&nbsp;$2$</span> and with the <span class="nowrap">$z$&nbsp;axis</span> rotated into the direction of movement (see @eq-boost-helicity-with-parallel-momentum).
+
+```{python}
+phi = sp.Symbol("phi_1^12", real=True)
+model.kinematic_variables[phi]
+```
+
+`\vspace{0.75\baselineskip}`{=latex}
+Together, all attributes of an amplitude model object generated by AmpForm contain the information to evaluate the intensity for a random point in phase space. For this, the amplitudes of @lst-ampform-amplitudes are symbolically substituted into the main intensity definition of @lst-ampform-intensity. The resulting expression, as well as the definitions in [`model.kinematic_variables`](https://ampform.readthedocs.io/0.15.9/api/ampform.helicity.html#ampform.helicity.HelicityModel.kinematic_variables), can be used as template for generating numerical code for high-performance computations[ (see @sec-tensorwaves)]{.content-visible when-format="html"}.
+
+#### Nested expression definitions
+
+In principle, amplitude models can be fully implemented with SymPy directly. However, amplitude models contain so many mathematical operations, that it is hard to render them concisely. For this reason, AmpForm provides a few tools that help to define amplitude model expressions in a nested form that is understandable, making it more suitable for a self-documenting workflow (@sec-self-documenting). The expression $\mathcal{F}_2\left(m_{12}^2,m_1,m_2\right)$ in @lst-ampform-amplitudes is an example of this and is built up of other expression classes, like the Blatt–Weisskopf function and a squared breakup momentum function.
+
+```{python}
+from ampform.dynamics import FormFactor
+
+m_12, m_1, m_2 = sp.symbols("m_12 m_1 m_2", nonnegative=True)
+expr = FormFactor(m_12**2, m_1, m_2, angular_momentum=2)
+```
+
+```{python}
+#| echo: false
+from ampform.sympy import partial_doit
+from ampform.io import aslatex
+from ampform.dynamics.form_factor import BlattWeisskopfSquared
+from ampform.dynamics.phasespace import BreakupMomentumSquared
+
+classes = (
+    BlattWeisskopfSquared,
+    BreakupMomentumSquared,
+    FormFactor,
+)
+definitions = {}
+while expr != (doit_expr := partial_doit(expr, classes)):
+    for node in sp.preorder_traversal(expr):
+        if isinstance(node, classes):
+            definitions[node] = node.doit(deep=False)
+    expr = doit_expr
+Math(aslatex(definitions))
+```
+
+`\vspace{0.75\baselineskip}`{=latex}
+Nested expression classes like these can be easily extended using the decorator function, [`@unevaluated`](https://ampform.readthedocs.io/0.15.9/api/ampform.sympy.html#ampform.sympy.unevaluated), provided by AmpForm. This allows for extending amplitude builders with large mathematical definitions. A simplified example is shown in @lst-unevaluated-expr. The expression class is 'unfolded' to its full form using SymPy's [`doit()`](https://docs.sympy.org/latest/modules/core.html#sympy.core.basic.Basic.doit) method.
+
+:::{#lst-unevaluated-expr}
+
+```{python}
+from ampform.sympy import unevaluated
+
+@unevaluated
+class MyExpr(sp.Expr):
+    x: sp.Symbol
+    y: sp.Symbol
+    _latex_repr_ = "f({x}, {y})"
+
+    def evaluate(self) -> sp.Expr:
+        x, y = self.args
+        return x**2 + y**2
+
+a, b = sp.symbols("a b")
+expr = MyExpr(a, b**2)
+```
+
+```{python}
+from ampform.io import aslatex
+Math(aslatex({expr: expr.doit()}))
+```
+
+Example of a custom expression class that uses the [`@unevaluated`](https://ampform.readthedocs.io/0.15.9/api/ampform.sympy.html#ampform.sympy.unevaluated) decorator to postpone evaluation of the expression until it is explicitly requested. The class is used to define a custom expression for $f(x,y) = x^2 + y^2$. The second snippet uses AmpForm's [`aslatex()`](https://ampform.readthedocs.io/0.15.9/api/ampform.io.html#ampform.io.aslatex) helper function to render $f$ and its [`doit()`](https://docs.sympy.org/latest/modules/core.html#sympy.core.basic.Basic.doit) definition.</span>
+:::
+
+#### Cached expression unfolding
+
+Combining all the definitions into one large expression template can be slow when using SymPy. AmpForm therefore provides ways to automatically cache the result of this "expression unfolding" to disk. All of these functions are available through the [`ampform.sympy.cached`](https://ampform.readthedocs.io/0.15.9/api/ampform.sympy.cached.html) module, which caches expensive CAS operations to disk. @lst-ampform-cached-module shows two equivalent ways of fully unfolding the amplitude model expression that was generated with @lst-ampform-intensity.
+
+:::{#lst-ampform-cached-module}
+
+```{python}
+from ampform.sympy import cached
+
+intensity_expr = cached.doit(model.intensity)
+expr_with_amplitudes = cached.xreplace(intensity_expr, model.amplitudes)
+full_expression = cached.doit(expr_with_amplitudes)
+```
+
+```{python}
+full_expression = cached.unfold(model)
+```
+
+Examples of AmpForm's [`cached`](https://ampform.readthedocs.io/0.15.9/api/ampform.sympy.cached.html) that caches expensive CAS operations to disk. The first example shows how the full intensity expression is constructed from an amplitude model object and the second example shows how the [`cached.unfold()`](https://ampform.readthedocs.io/0.15.9/api/ampform.sympy.cached.html#ampform.sympy.cached.unfold) convenience function simplifies that procedure.
+:::
+
+These are two examples of additional functionality that AmpForm provides to facilitate working with large symbolic expressions for amplitude analysis. It contains more functionality, such as an [`UnevaluatableIntegral`](https://ampform.readthedocs.io/0.15.9/api/ampform.sympy.html#ampform.sympy.UnevaluatableIntegral) class that postpones evaluation of integrals that cannot be solved analytically, which is essential when parametrising decay dynamics with lineshapes that are analytically continuous.
+
+### AmpForm-DPD {#sec-ampform-dpd}
+
+The central physics contribution of this thesis is the implementation of spin-aligned amplitude models for three-body decays using Dalitz-plot decomposition. [AmpForm](#sec-ampform) can handle arbitrary multi-body decays, and works well as long as the decay does not involve chains with differing topologies that include final-state particles with spin. In such cases it becomes difficult to formulate spin-aligned models symbolically, since the Wigner rotation angles must be computed numerically (@eq-spin-alignment-factor). To address this, a specialised package was developed alongside AmpForm: **AmpForm-DPD** (PyPI: [`ampform‑dpd`](https://pypi.org/project/ampform-dpd)). This package builds amplitude models with SymPy using the DPD method&nbsp;[@JPAC:2019ufm], in particular the unpolarised intensity of @eq-differential-cross-section-multi-body-unpolarised with the Dalitz-plot function of @eq-dpd-aligned-amplitude-ampform. In the long term, the goal is to merge AmpForm-DPD back into AmpForm and extend spin alignment to arbitrary multi-body decays&nbsp;[@Habermann:2024sxs].
+
+@lst-ampform-dpd-intensity shows how an amplitude model is formulated with AmpForm-DPD. The procedure is similar as in @lst-ampform-intensity, but the main difference is that the amplitude model is built up from a custom class structure that represents decay chains for three-body decays. The rendered intensity expression is the implementation of the unpolarised differential cross section of @eq-differential-cross-section-multi-body-unpolarised. As opposed to @lst-ampform-intensity, AmpForm-DPD correctly sums over all <span class="nowrap">$J/\psi$&nbsp;helicities</span> to get the unpolarised intensity. The trivial <span class="nowrap">helicity&nbsp;$\lambda_1=0$</span> for $K^0_S$ has been omitted from the amplitude indices.
+
+Note that the <span class="nowrap">Wigner&nbsp;$d$</span>-functions for the Wigner rotations appearing in the Dalitz-plot function of @eq-dpd-aligned-amplitude-ampform appear in this top-level intensity expression rather than in the <span class="nowrap">amplitudes&nbsp;$A^k_{\lambda_0\lambda_2\lambda_3}$.</span> These individual amplitudes are shown in @lst-ampform-dpd-amplitudes. The amplitude rendering is clearer than that of @lst-ampform-amplitudes, because it uses AmpForm's [`@unevaluated`](https://ampform.readthedocs.io/0.15.9/api/ampform.sympy.html#ampform.sympy.unevaluated) expression classes of @lst-unevaluated-expr to denote the vertex functions <span class="nowrap">with&nbsp;$\mathcal{F}$</span> and Breit–Wigner functions <span class="nowrap">with&nbsp;$\mathcal{R}$</span>. AmpForm-DPD also formulates the model with one complex-valued _coupling_ per decay node rather than with one coefficient per _chain_. The angles are formulated using @eq-dpd-angles and are shown in @lst-ampform-dpd-angles.
+
+```{=latex}
+\begin{landscape}
+```
+
+<!-- prettier-ignore-start -->
+:::::{#lst-ampform-dpd-intensity}
+```{python}
+#| output: false
+from ampform_dpd import DalitzPlotDecompositionBuilder
+from ampform_dpd.adapter.qrules import to_three_body_decay
+from ampform_dpd.dynamics.builder import (
+    formulate_breit_wigner_with_form_factor
+)
+
+decay = to_three_body_decay(reaction.transitions)
+model_builder = DalitzPlotDecompositionBuilder(decay)
+for chain in model_builder.decay.chains:
+    model_builder.dynamics_choices.register_builder(
+        chain, formulate_breit_wigner_with_form_factor
+    )
+dpd_model = model_builder.formulate(reference_subsystem=2)
+dpd_model.intensity
+```
+
+```{python}
+#| echo: false
+dpd_model = model_builder.formulate(
+    cleanup_summations=True,
+    reference_subsystem=2,
+)
+dpd_intensity = dpd_model.intensity.cleanup()  # cspell:ignore cleanup
+src = sp.latex(dpd_intensity).replace(", 0,", ",")
+src = src.replace(R"}\left(\zeta", R"}\!\!\left(\zeta")
+src = src.replace(R", \lambda_", R" \lambda_")
+src = src.replace(R"^{\prime}", "'")
+```
+::::{.content-visible when-format="html"}
+:::{.column-page-inset-right}
+```{python}
+#| echo: false
+Math(src)
+```
+:::
+::::
+::::{.content-visible unless-format="html"}
+```{python}
+#| echo: false
+src = src.replace(R",\lambda_", R" \lambda_")
+Math(Rf"\small {src}")
+```
+::::
+
+Example of building an amplitude model for the decay $J/\psi \to K^0_S \varSigma^+ \bar{p}$ using Dalitz-plot decomposition with AmpForm-DPD. As opposed to @lst-ampform-intensity, the resulting intensity expression correctly aligns the two subsystems.
+:::::
+
+:::::{#lst-ampform-dpd-amplitudes}
+```{python}
+#| output: false
+from IPython.display import Math
+from ampform.io import aslatex
+Math(aslatex(dpd_model.amplitudes))
+```
+```{python}
+#| echo: false
+# cspell:ignore Math rstrip textstyle textwrap
+src = R"\begin{aligned}"
+for i, (symbol, expr) in enumerate(dpd_model.amplitudes.items(), 1):
+    if i not in {1, 2, len(dpd_model.amplitudes)}:
+        continue
+    if i == len(dpd_model.amplitudes):
+        src += R"\vdots \qquad \\"
+    term1, *_, term2 = expr.args
+    src += dedent(Rf"""
+    {sp.latex(symbol)}
+      \;&=\; \textstyle {sp.latex(term1)} \\
+      \;&+\; \textstyle \cdots \\
+      \;&+\; \textstyle {sp.latex(term2)} \\
+    """).rstrip()
+src += "\n" R"\end{aligned}"
+```
+::::{.content-visible when-format="html"}
+:::{.column-page-inset-right}
+```{python}
+#| echo: false
+Math(src)
+```
+:::
+::::
+::::{.content-visible unless-format="html"}
+```{python}
+#| echo: false
+Math(src)
+```
+::::
+
+Definition of the DPD amplitudes in the intensity expression of @lst-ampform-dpd-intensity. The listing also uses AmpForm's [`aslatex()`](https://ampform.readthedocs.io/0.15.9/api/ampform.io.html#ampform.io.aslatex) helper function, which renders mappings of expressions as a single <span class="nowrap">[$\mathrm{\LaTeX}$]{.content-visible when-format="html"}[$\text{\LaTeX}$]{.content-visible unless-format="html"}&nbsp;block.</span>
+:::::
+
+:::{#lst-ampform-dpd-angles}
+```{python}
+Math(aslatex(dpd_model.variables))
+```
+
+Definitions of the DPD angles (kinematic variables) appearing in @lst-ampform-dpd-intensity and @lst-ampform-dpd-amplitudes.
+:::
+<!-- prettier-ignore-end -->
+
+```{=latex}
+\end{landscape}
+```
+
+### TensorWaves {#sec-tensorwaves}
+
+The last package in the toolchain is TensorWaves (PyPI name [`tensorwaves`](https://pypi.org/project/tensorwaves))&nbsp;[@ComPWA-TensorWaves-v0.4.13]. At core, it is a wrapper around SymPy's code generation capabilities that makes it easier to work with large symbolic expressions and fit them to large data samples. As discussed[ in @sec-compwa-python]{.content-visible when-format="html"}, TensorWaves started as a reimplementation of the ComPWA framework in TensorFlow and inherits many of the interfaces from the original design. Importantly, the interfaces are kept as simple as possible, so that it is easy to insert custom implementations into the workflow (open-closed principle).
+
+The central interface of TensorWaves is the [`Function`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.Function) class. It is the most generic class for defining mathematical functions that take input and return output. More specific interfaces are derived from this generic class. Two examples relevant for amplitude analysis are a [`ParametrizedFunction`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.ParametrizedFunction) and an [`Estimator`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.Estimator). A [`ParametrizedFunction`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.ParametrizedFunction) can be used to separate the parameters from the kinematic variables in an amplitude model. It takes a [`DataSample`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.DataSample), which is a mapping of string keys to data arrays (like pre-computed helicity angles), and carries around scalar parameter values that can be tweaked separately. The [`Estimator`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.Estimator) represents a function that takes a set of scalar parameters and returns a single estimator value, such as a likelihood or a chi-square value. Both functions take mappings of kinematic variables (data columns) and parameters as input rather than a list of positional arguments. This allows for a large number of arguments to be handled without being constrained to valid Python variable names.
+
+For performing a fit, TensorWaves provides an [`Optimizer`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.Optimizer) interface. It takes an [`Estimator`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.Estimator) along with a mapping with parameter values that serve as an initial starting point in parameter space. At the time of writing, TensorWaves comes with two implementations for the [`Optimizer`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.Optimizer) interface: [`Minuit2`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.optimizer.minuit/#tensorwaves.optimizer.minuit.Minuit2)&nbsp;[@Hatlo:2005cj; @Dembinski:2025-iminuit] and [`ScipyMinimizer`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.optimizer.scipy/#tensorwaves.optimizer.scipy.ScipyMinimizer)&nbsp;[@Virtanen:2019joe]. Other optimisers such as [NLopt](https://nlopt.readthedocs.io) could easily be implemented without redesigning the interfaces. In the analyses presented in this thesis, we found that the [`Minuit2`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.optimizer.minuit/#tensorwaves.optimizer.minuit.Minuit2) implementation was the most robust and fastest and we therefore did not invest in implementing other optimisers. In addition, benchmarks using TensorWaves indicate that array-oriented libraries are much more performant when the computation is parallelised in parameter space as well. This suggests that it may be more efficient to perform fits using optimisers that are parallelisable in parameter space, rather than using optimisers that use gradient-descent methods, which is inherently sequential in parameter space. <!-- cspell:ignore Dembinski Hatlo NLopt Scipy iminuit -->
+
+Behind these main interfaces, TensorWaves uses SymPy's code generation capabilities to generate code for the mathematical functions. This makes it possible to switch between different computational backends, such as TensorFlow, JAX, and NumPy. The generated code is optionally JIT-compiled and wrapped in classes that follow interfaces such as [`ParametrizedFunction`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.ParametrizedFunction) and [`Estimator`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.Estimator). These interface classes are designed so that a large number of implementations can be used without having to rewrite the workflow. @lst-tensorwaves-example shows how the unfolded intensity expression for the DPD model in @lst-ampform-dpd-intensity is used to generate a [`ParametrizedFunction`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.ParametrizedFunction) that can be used for fitting.
+
+:::{#lst-tensorwaves-example}
+
+```python
+from tensorwaves.function.sympy import create_parametrized_function
+
+intensity_func = create_parametrized_function(
+    expression=cached.unfold(dpd_model),
+    parameters=dpd_model.parameter_defaults,
+    backend="jax",
+)
+```
+
+Example of using TensorWaves to generate a parametrised function with JAX as backend for the intensity expression of the amplitude model in @lst-ampform-dpd-intensity. Symbols in the expression that are listed under [`parameter_defaults`](https://ampform.readthedocs.io/0.15.9/api/ampform.helicity.html#ampform.helicity.HelicityModel.parameter_defaults) are marked as parameters in the generated [`ParametrizedFunction`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.ParametrizedFunction). Any remaining free symbols become arguments to the function call through an input [`DataSample`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.DataSample).
+:::
+
+Internally, the created function is a JAX function of a lambdified form that is shown in [@sec-lambdification]{.content-visible when-format="html"}[@sec-code-generation-pdf]{.content-visible unless-format="html"}, but with dozens of arguments. The [`ParametrizedFunction`](https://tensorwaves.readthedocs.io/0.4.13/api/tensorwaves.interface/#tensorwaves.interface.ParametrizedFunction) wraps this function, so that the input data columns and current parameter values are mapped to the correct argument.
+
+---
+
+`\noindent`{=latex}
+Ultimately, the goal of these packages is to translate the description of scattering problems into computational code that can efficiently evaluate amplitude models on large experimental data samples. Each package addresses a specific task within the workflow, and their combination provides a coherent toolchain for translating theoretical models into practical, high-performance analyses.
+
+## Developer Experience {#sec-compwa-dx}
+
+As discussed in @sec-compwa-python, the move to Python eliminated much of the burden of maintaining a high-performance computational backend in {{< meta var.cxx >}}. This section highlights several ways in which Python also improves the developer experience within ComPWA and how this strengthens the prospects for academic continuity[ (see also @sec-academic-continuity)]{.content-visible when-format="html"}. Beyond enabling amplitude analyses, the workflow and tools are designed to lower the entry barrier for new contributors, while ensuring that the code remains thoroughly tested and well documented. This is especially important in a small scientific community like hadron physics, where the roles of user and developer often overlap.
+
+#### Source control
+
+All projects of the ComPWA project are hosted as Git repositories on GitHub under [github.com/ComPWA](https://github.com/ComPWA). The repositories enforce a linear commit history through pull requests (PRs) that are squash-merged into single commits. This ensures that changes to the code base remain comprehensive and that code and documentation quality is guaranteed before a PR is merged. All repositories that host general-use packages are public and licensed under an [Apache-2.0 license](https://www.apache.org/licenses/LICENSE-2.0).
+
+Repositories that contain source code for Python packages deploy the package through the [Python Package Index](https://pypi.org) (PyPI), as well as [conda-forge](https://conda-forge.org), and are versioned according to [Semantic Versioning](https://semver.org). These repositories are also automatically archived on [Zenodo](https://zenodo.org) with a DOI, so that users can cite the code in their publications.
+
+#### Pinned developer environment
+
+All ComPWA repositories come with a [`pyproject.toml`](https://packaging.python.org/en/latest/guides/writing-pyproject-toml) file that specifies the dependencies of the project, organised in terms of dependency groups. In repositories where stability is preferred, lock files are provided that pin all dependencies to specific versions, ensuring that the environment is consistent both on the operating system where the developer works as well as the continuous integration (CI) environment where the code is tested. Over time, we employed different strategies for generating lock files, but recently settled for [`uv`](https://github.com/astral-sh/uv) for Python-only projects and [Pixi](https://pixi.sh) for projects that require other languages, such as Julia. Both tools are able to generate and update cross-platform lock files with high speed. Cloning the repository and activating the environment with these tools is all the user has to do to start developing.
+
+#### Code quality assurance
+
+:::{.content-hidden unless-profile="hardcover" unless-profile="paperback"}
+`\hypersetup{urlcolor=RoyalBlue}`{=latex}
+:::
+
+All packages include **unit tests** that are automatically executed whenever a pull request (PR) is submitted. Test coverage is tracked with the Codecov service to ensure the code remains well-tested. In addition, the repositories provide tutorials in the form of Jupyter notebooks. These notebooks also act as **integration tests**, since they are executed during the documentation build triggered by each PR. The GitHub repositories are configured so that code can only be merged into the production branch via a PR that has passed these checks. AmpForm and TensorWaves further include continuous benchmarks that track the runtime of selected tests and issue warnings if changes to the codebase result in performance regressions.
+
+ComPWA enforces its style guidelines automatically rather than describing them in a document, so that the style can be continuously updated and developers can stay in the workflow without having to consult a guide. This is done through autoformatters such as [[Prettier](https://prettier.io)]{.content-hidden when-profile="hardcover"}[Prettier]{.content-visible when-profile="hardcover"} and linters such as [[Ruff](https://docs.astral.sh/ruff)]{.content-hidden when-profile="hardcover"}[Ruff]{.content-visible when-profile="hardcover"}. These tools are enforced through [[Pre-commit](https://pre-commit.com)]{.content-hidden when-profile="hardcover"}[Pre-commit]{.content-visible when-profile="hardcover"}, which performs a set of checks locally on every commit as well as on PRs, applying autofixes where possible. In projects with much documentation, spelling is checked through Pre-commit as well with a [[CSpell](https://cspell.org)]{.content-hidden when-profile="hardcover"}[CSpell]{.content-visible when-profile="hardcover"} hook. Other developer tools that the ComPWA project uses, can be found under [compwa.github.io/develop](https://compwa.github.io/develop)&nbsp;[@Fritsch:2022compwa].
+
+:::{.content-hidden unless-profile="hardcover" unless-profile="paperback"}
+`\hypersetup{urlcolor=black}`{=latex}
+:::
+
+#### Consistent and interlinked documentation
+
+All ComPWA packages come with documentation of the API (function and class descriptions) as well as tutorials in the form of Jupyter notebooks. The text is kept minimal by linking to relevant resources as well as to other parts of the documentation. An example are automatic links in code examples to the function description in the API, so that the main text does not have to explain the code example in detail. The interlinking of the documentation is continuously tested as well to ensure that links are not broken. On each release of a package, a separate, versioned website is hosted through the [Read the Docs](https://about.readthedocs.com) documentation hosting service. In addition, links to the APIs of external dependencies point to the specific version of the dependency at the time the documentation was built, so that links in older versions of the documentation remain valid. All of these techniques ensure that the documentation is consistent and up-to-date, even when the code changes, and reduce the maintenance load of the documentation.
+
+#### Rapid prototyping
+
+:::{.content-hidden unless-profile="hardcover" unless-profile="paperback"}
+`\hypersetup{urlcolor=RoyalBlue}`{=latex}
+:::
+
+Python is a high-level language that allows for rapid prototyping of new features. This is especially important in a research environment, where new ideas and concepts need to be tested quickly. The ability to write code in a more human-readable way allows for faster iteration and experimentation. We test and document ideas in the form of Jupyter notebooks named "Technical Reports" hosted on [compwa.github.io/report](https://compwa.github.io/report). The notebooks are automatically run, tested, and deployed as webpages for preservation.
+
+:::{.content-hidden unless-profile="hardcover" unless-profile="paperback"}
+`\hypersetup{urlcolor=black}`{=latex}
+:::

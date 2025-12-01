@@ -1,0 +1,1724 @@
+---
+aliases:
+  - "2"
+  - 2.html
+  - ch2
+  - chapter2
+  - amplitude-analysis
+  - amplitude-analysis.html
+  - scattering-theory
+  - scattering-theory.html
+format:
+  html:
+    code-fold: true
+    toc-expand: 2
+  pdf:
+    execute:
+      echo: false
+---
+
+{{< include _macros.qmd >}}
+
+# Scattering theory {#sec-scattering-theory}
+
+`\noindent`{=latex}
+The ultimate goal in particle physics is to understand how particles interact. Generally speaking, particle properties can only be studied by measuring cross sections in particle accelerator experiments, such as colliders or fixed-target experiments. We therefore need to relate the cross sections that are measured experimentally to a theory that describes the underlying particle reactions. In this chapter, we will see how **scattering theory** is the bridge that connects theory and experiment by giving us a means to formulate observable transition amplitudes.
+
+## The scattering matrix {#sec-scattering-matrix}
+
+Any particle reaction in an experiment can be reduced to a scattering process consisting of three stages&nbsp;[@Taylor:1972pty]:
+
+1. approach of the incoming particles (**initial state**),
+2. a process of interaction, during which the incoming particles may scatter, temporarily form intermediate states, or transform into new sets of outgoing particles,
+3. and the scattered or formed particles moving away (**final state**).
+
+When the interaction stage (2.) occurs within a relatively short time, both the initial and final states can be treated as collections of free, non-interacting particles that are unaffected by the interaction potential. This is a reasonable assumption, because the interaction region is almost point-like in comparison to the detector size&nbsp;[@Taylor:1972pty]. The non-interacting incoming and outgoing states may therefore be approximated as asymptotic states. The challenge then is to relate the incoming asymptotes to the outgoing ones by describing the interaction process. Importantly, whether describing a classical or a non-relativistic interaction potential, the scattering process is fully determined once the incoming and outgoing asymptotic states are specified. This requirement is known as the **asymptotic condition**.
+
+In the classical picture, the scattering process can be visualised as in @fig-classical-scattering-process. Far from the interaction region, the trajectory of the particle approaches a well-defined asymptote, which can be characterised by its incoming or outgoing momentum. Within the interaction region, the path of the particle is fully determined by the interaction potential. However, for most practical purposes, it is unnecessary to determine the trajectory to learn about the potential. Instead, one can define a continuous mapping that relates each incoming momentum to a corresponding outgoing momentum. Importantly, this mapping is expressed in terms of measurable momenta, offering insight into the underlying potential and, by extension, the Lagrangian that governs the system.
+
+:::{#fig-classical-scattering-process}
+![](./images/chapter2/scattering-process-classical.svg)
+
+Sketch of the asymptotic condition in a classical scattering process. The connected continuum of incoming and outgoing momenta can be used to understand the interaction potential. Inspired by [@Taylor:1972pty, Figure 2.1].
+:::
+
+In the quantum-mechanical case, the incoming and outgoing states are described by wave functions. @fig-quantum-scattering-process is an artistic representation of that: an incoming plane wave travels through an interaction region where an approximately localised potential scatters it into a superposition of outgoing waves. In quantum mechanics, the interaction process is described in terms of an operator rather than a classical orbit. Wheeler first introduced the concept of a "collision matrix"&nbsp;[@Wheeler:1937zz], which Heisenberg formalised in the form of an <span class="nowrap">$\mathbf{S}$‑matrix</span> <span class="nowrap">operator&nbsp;[@Heisenberg:1943zz]</span> (not to be confused with the spin operator). By abandoning the notion that the scattering process is to be described as a positional wave function, the scattering process is translated to a model of exact momentum states that can be related through operators in the Heisenberg picture. This better matches the observables that we measure in experiment&nbsp;[@Cushing:1990dt; @Blum:2017diy], where the experimentalist essentially prepares initial state wave packets in momentum space and measures the outgoing state as a distribution of four-momenta&nbsp;[@Weinberg:1995mt].
+
+:::{#fig-quantum-scattering-process}
+![](./images/chapter2/scattering-process-quantum.svg)
+
+Scattering process of quantum mechanical wave functions. Incoming state $\psi_\text{in}$ and outgoing state $\psi_\text{out}$ are comparable to the asymptotes in @fig-classical-scattering-process, but are defined as a superposition of quantum states in a specific basis of observables.
+:::
+
+The idea of a scattering operator is quite general and can be applied to any scattering process, including particle decays, even if multiple decay channels are involved&nbsp;[@Goldberger:2004-CollisionTheory]. Consider such an arbitrary incoming state $\ket{\psi_\text{in}}$. This can be any configuration of particles, such as $e^-e^+$ about to collide. We want to find a description for the resulting outgoing state $\ket{\psi_\text{out}}$ that can be a collection of decay products. Here, we introduce an <span class="nowrap">**$\mathbf{S}$‑matrix**</span> that maps the incoming state to the outgoing state by <!-- cspell:ignore Goldberger -->
+
+$$
+\Ket{\psi_\text{out}} \;=\; \mathbf{S}\Ket{\psi_\text{in}} \,.
+$$ {#eq-s-matrix-definition}
+
+This expression encodes the entirety of the interaction. Although the microscopic details of the dynamics may be complex or even unknown, the <span class="nowrap">$\mathbf{S}$‑matrix</span> summarises their net effect on the asymptotic particle states, which are accessible by experiments.
+
+The <span class="nowrap">$\mathbf{S}$‑matrix</span> is an extremely general operator and has to be further specified depending on the particle reaction that is being studied. For instance, the dimension of the <span class="nowrap">$\mathbf{S}$‑matrix</span> represents the number of possible states of the initial and final state, which makes the <span class="nowrap">$\mathbf{S}$‑matrix</span> suitable for coupled channel studies. The <span class="nowrap">$\mathbf{S}$‑matrix</span> and the incoming and outgoing states also have to be further parametrised in terms of variables and quantum numbers that are of relevance to the experiment, such as collision energy, four-momenta, spin, parity, et cetera.
+
+In practice, we separate the *trivial* part of the scattering process, where the incoming state passes through unaffected by the interaction potential, from the *non-trivial* part that contains the effects of the interaction. This leads to the decomposition
+
+$$
+\mathbf{S} \;=\; \mathbf{1} + i \mathbf{T},
+$$ {#eq-t-matrix-definition}
+
+`\noindent`{=latex}
+where $\mathbf{1}$ is the identity operator (corresponding to no scattering) and $\mathbf{T}$ is the **transition operator**. In some literature, the <span class="nowrap">$\mathbf{T}$‑matrix</span> is multiplied by a factor two, or a minus sign is used.
+
+To relate these expressions back to experimental observables, we express the incoming and outgoing states in terms of observable basis states $\ket{p_1,\dots,p_m;\alpha}$ and $\ket{p_1',\dots,p_n';\beta}$, where $p_i^{(\prime)}$ are the observable four-momenta of the particles, and $\alpha, \beta$ label the set of discrete quantum numbers (such as spin, isospin, parity, and rest masses) that characterise the initial- and final-state channels. This leads to the **transition matrix elements** $\mathcal{M}_{\!\beta\alpha}$ describing the process <span class="nowrap">$\alpha \to \beta$,</span>
+
+$$
+\begin{aligned}
+& \Braket{p_1',\ldots,p_n';\beta|i\mathbf{T}|p_1,\ldots,p_m;\alpha} \\
+& \quad =\;
+  i (2\pi)^4 \, \delta^{(4)}\!\left(p_\beta - p_\alpha\right) \,
+  \mathcal{M}_{\!\beta\alpha}\left(p_1, \dots; p_1', \dots\right)
+\,,
+\end{aligned}
+$$ {#eq-transition-matrix-element}
+
+`\noindent`{=latex}
+where the <span class="nowrap">$\delta^{(4)}$‑function</span> ensures conservation of incoming and outgoing four-momenta, $p_\alpha=p_\beta$, with $p_\alpha=\sum_{i=1}^m p_i$ and $p_\beta=\sum_{j=1}^n p_j'$. The quantity $\mathcal{M}_{\!\beta\alpha}$ is called a "matrix element" because it represents a component of the transition <span class="nowrap">operator&nbsp;$\mathbf{T}$:</span> it is the (discrete) projection into the transition $\alpha \to \beta$ as a (continuous) function of their asymptotic incoming and outgoing <span class="nowrap">four-momenta&nbsp;$p_i^{(\prime)}$.</span>
+
+While the full <span class="nowrap">$\mathbf{S}$‑matrix</span> is a unitary operator acting on the entire Hilbert space of asymptotic momentum states&nbsp;[@Weinberg:1995mt], $\mathcal{M}_{\!\beta\alpha}$ captures the physical content of a particular transition and is the quantity that enters into the calculation of cross sections, decay rates, and other observable quantities. It is a complex-valued amplitude function that encodes the likelihood of the process, with its modulus squared appearing in measurable rates. For instance, for a scattering process with $n$ final-state particles, the **differential cross section** is given by
+
+$$
+\mathrm{d}\sigma_{\beta\alpha} \;=\; \frac{1}{F_\alpha} \left|\mathcal{M}_{\!\beta\alpha}\right|^2 \, \mathrm{d}\Phi_n \,,
+$$ {#eq-differential-cross-section}
+
+`\noindent`{=latex}
+where $F_\alpha$ is a flux factor determined by the initial state&nbsp;$\alpha$ and $\mathrm{d}\Phi_n$ is the Lorentz-invariant phase space volume <span class="nowrap">element&nbsp;[@ParticleDataGroup:2024cfk, Section 49]</span>
+
+$$
+\mathrm{d}\Phi_n \;=\;
+    (2\pi)^4 \,
+    \delta^{(4)}\!\left(p_\alpha-p_\beta\right)
+    \prod_{i=1}^n \frac{\mathrm{d}^3 p_i'}{(2\pi)^3\,2E_i'}
+$$ {#eq-phase-space-element}
+
+`\noindent`{=latex}
+for the <span class="nowrap">$n$‑body</span> final state. In decay processes, the cross section is often denoted with $\mathrm{d}\Gamma$ rather than $\mathrm{d}\sigma$ and is referred to as the partial or differential **decay rate**. The differential cross section quantifies the probability density for the transition from the initial <span class="nowrap">state&nbsp;$\alpha$</span> to the final <span class="nowrap">state&nbsp;$\beta$,</span> as a function of the kinematic degrees of freedom in the final state and of the configuration of the initial state.
+
+The matrix <span class="nowrap">elements&nbsp;$\mathcal{M}_{\!\beta\alpha}$</span> denote the momentum projection of the transition <span class="nowrap">operator&nbsp;$\mathbf{T}$</span> and are, as such, continuous functions of the incoming and outgoing momenta. In practice, we prefer to parametrise transition matrix elements as a function of other kinematic variables that are more relevant to the reaction process. The implicit convention in literature is to call such functions **transition amplitudes** and we follow the conventional notation to denote these functions with $A$ or $a$. Amplitudes are like the _response functions_ that tell how a system responds to external perturbations&nbsp;[@Martin:1970hmp, p. 274], and the fact that they are directly related to observable cross sections makes them a powerful experimental tool for extracting information about the underlying dynamics of particle interactions.
+
+## $\mathbf{S}$‑matrix constraints {#sec-s-matrix-constraints}
+
+In theory, it is impossible to derive proper parametrisations of scattering amplitudes directly from the full QCD Lagrangian. The non-perturbative nature of the strong coupling at low energies makes exact solutions intractable. We can, however, derive a few basic constraints for the <span class="nowrap">$\mathbf{S}$‑matrix</span> from fundamental principles of quantum mechanics and special relativity. These constraints are universal and model-independent: they must be satisfied by any theory of scattering, including QCD.
+
+From this perspective, the <span class="nowrap">$\mathbf{S}$‑matrix</span> provides an alternative but complementary framework to QCD -- even though it historically preceded the concept of QCD itself&nbsp;[@Cushing:1990dt, Section 7.1]. Rather than describing the microscopic dynamics of quarks and gluons, it focuses on observable relations between asymptotic states. The <span class="nowrap">$\mathbf{S}$‑matrix</span> formalism enables amplitude models that enforce general physical principles while remaining agnostic about underlying dynamics, and provides a bridge between QCD predictions and experimental observables in the hadronic regime&nbsp;[@Briceno:2017max]. The most commonly invoked constraints are Lorentz invariance, unitarity of the transition amplitudes, and crossing symmetry.
+
+### Lorentz invariance
+
+Given that we describe scattering entirely in terms of the momenta of incoming and outgoing particles, we must ensure that this description remains consistent under any change of inertial frame, so that we can relate it to the laboratory frame in which we perform our measurements. This requirement of **relativistic invariance** reflects the symmetry of spacetime as described by special relativity. Any theoretical description of scattering must respect the fact that the outcome of a physical process should not depend on the inertial frame in which it is described.
+
+In relativistic quantum mechanics, this requirement is implemented through the **Poincaré group**, which comprises both spacetime translations and Lorentz transformations (rotations and boosts). The <span class="nowrap">$\mathbf{S}$‑matrix</span> must commute with the generators of this symmetry group to ensure that they transform appropriately under changes of frame. In particular, Lorentz invariance implies that the <span class="nowrap">$\mathbf{S}$‑matrix</span> must be invariant under Lorentz transformations. If we <span class="nowrap">define&nbsp;$\mathbf{U}$</span> as the unitary transformation that maps a Lorentz transformation&nbsp;$\boldsymbol{\varLambda}$ to the corresponding operator acting on the Hilbert space of quantum states, Lorentz invariance implies that
+
+$$
+\mathbf{U}[\boldsymbol{\varLambda}] \; \mathbf{S} \; \mathbf{U}^\dagger[\boldsymbol{\varLambda}] \;=\; \mathbf{S} \,.
+$$
+
+This constraint has important practical implications. First, it means that scattering amplitudes can only be a function of Lorentz-invariant combinations of the asymptotic four-momenta. Second, Lorentz invariance constrains how spin degrees of freedom must be treated. In a non-relativistic regime, spins can be added using standard angular momentum algebra, but the transformation of spin states under boosts becomes non-trivial (@sec-helicity-formalism).
+
+### Unitarity
+
+The most natural constraint is that the transition preserves probability, that is, 'what comes in, comes out'. In the notation of @eq-s-matrix-definition, this means
+
+$$
+\begin{aligned}
+\Braket{\psi_\text{in}|\psi_\text{in}}
+\;&=\; \Braket{\psi_\text{out}|\psi_\text{out}} \\
+\;&=\; \Braket{\psi_\text{in}|\mathbf{S}^\dagger\mathbf{S}|\psi_\text{in}} \,,
+\end{aligned}
+$$
+
+`\noindent`{=latex}
+which gives us the **unitarity condition** that ensures that the total probability for any process remains normalised,
+
+$$
+\mathbf{S}^\dagger \mathbf{S} \;=\; \mathbf{S}\mathbf{S}^\dagger \;=\; \mathbf{1}
+\,,
+$$
+
+`\noindent`{=latex}
+with $\mathbf{1}$ the identity matrix. Inserting @eq-t-matrix-definition gives us the unitarity condition for the <span class="nowrap">$\mathbf{T}$‑matrix,</span>
+
+$$
+\mathbf{T} - \mathbf{T}^\dagger \;=\;  i \mathbf{T}^\dagger \mathbf{T}
+\,.
+$$ {#eq-unitarity-t-matrix}
+
+This equation shows that the imaginary part of the transition amplitude is constrained by its own modulus. Physically, it implies that the scattering process may involve not just direct deflection, but also the temporary formation of intermediate states such as resonances (**elastic scattering**), or transitions into entirely different final states (**inelastic scattering**) that are not accounted for in the model. In elastic scattering, the imaginary part of the amplitude reflects the finite lifetime of the resonant state, while in inelastic scattering, it indicates a genuine loss of flux from the initial channel into other open channels. Both effects are captured by the complex structure of the <span class="nowrap">$\mathbf{T}$‑matrix,</span> and its imaginary part plays a central role in encoding how probability is redistributed across scattering channels. In @sec-analytic-structure, we will see how this leads to observable phase shifts in the scattering amplitude.
+
+### Analyticity {#sec-analyticity}
+
+In any physical process, causes must precede their effects. In scattering theory, causality requires that the wave function of a particle cannot "respond" before the interaction has taken place. This causal requirement leads to a mathematical condition: the transition matrix elements $\mathcal{M}_{\!\beta\alpha}$ must be **analytic** in energy and momentum, meaning that the energy-momentum domain can be continued into the complex plane and that it varies in a way that is smooth, except at well-defined singularities associated with physical thresholds or states.
+
+The connection between causality and analyticity becomes more transparent when we recognise that the <span class="nowrap">$\mathbf{S}$‑matrix</span> relates asymptotic momentum states in a way that is analogous to how a Fourier transform relates position and momentum space. Just as a time-localised function has a smooth (analytic) Fourier transform in frequency space, a localised interaction in spacetime leads to an analytic amplitude function in energy space [@Mizera:2023tfe; @Martin:1970hmp, p.390]. This analyticity implies that the amplitude as a function of energy can be extended to a complex plane, where singularities such as poles appear in specific regions. These poles correspond to physical phenomena like bound states or resonances. While bound states appear as poles on the real axis, unstable states (resonances) correspond to poles with a negative imaginary part. Causality ensures this sign: it guarantees that the amplitude decays as time increases. A pole in the upper half-plane (positive imaginary part) would imply that the amplitude grows with time, violating the principle that effects cannot precede causes. <!-- cspell:ignore Mizera -->
+
+Analyticity gives the scattering amplitude an internal structure that causes it to "feed back" into itself -- its absorptive component is determined by how likely it is to scatter into other channels, which is itself encoded in the amplitude. This enables powerful tools such as **dispersion relations**, which relate the value of an amplitude at one energy to its values elsewhere&nbsp;[@Nussenzveig:1972tcd]. Once we know the amplitude in one location, we can analytically continue it through the complex plane into other regions of interest. Since the interaction potential is itself governed by the underlying fundamental forces, these relations allow us to extract information about the dynamics from measured cross sections, and compare them to those predicted by the formulated amplitude model&nbsp;[@Newton:1982qc]. <!-- cspell:ignore Nussenzveig -->
+
+### Crossing symmetry {#sec-crossing-symmetry}
+
+Scattering processes can be visualised with Feynman diagrams, which represent terms in the perturbative expansion of the <span class="nowrap">$\mathbf{S}$‑matrix.</span> A striking feature is that a single Feynman diagram can often describe multiple processes. For instance, the diagram representing a 2-to-2 scattering process $A + B \to C + D$ can, under certain momentum substitutions, also describe $A + \bar{C} \to \bar{B} + D$. This observation reflects a property of QFT known as **crossing symmetry**. Once this additional constraint is combined with the unitarity and analyticity conditions, the transition amplitudes of seemingly unrelated reactions become connected representations of a single analytic object that is a manifestation of the underlying field theory&nbsp;[@Martin:1970hmp, pp.274; @Eden:1966dnq; @Chew:1966-AnalyticSMatrix].
+
+Crossing symmetry was first described by Mandelstam [@Mandelstam:1958xc], in a paper that also introduced the **Mandelstam variables**, or **invariants**, which provide a Lorentz-invariant description of two-body scattering kinematics. For a process $A+B \to C+D$, they are defined as
+
+<!-- cspell:ignore rclcl -->
+$$
+\begin{alignedat}{3}
+s \;&=\; (p_A + p_B)^2 \;&&=\; (p_C + p_D)^2 \\
+t \;&=\; (p_A - p_C)^2 \;&&=\; (p_D - p_B)^2 \\
+u \;&=\; (p_A - p_D)^2 \;&&=\; (p_C - p_B)^2 \,,
+\end{alignedat}
+$$ {#eq-mandelstam-variables}
+
+`\noindent`{=latex}
+where $p_A,p_B$ are the four-momenta of the incoming particles and $p_C,p_D$ those of the outgoing particles. Here, $s$ combines the incoming momenta as a _sum_, giving the squared center-of-mass energy, while $t$ and $u$ involve momentum _differences_ and measure the momentum transfers between initial and final states. The difference in structure indicates two distinct reaction types: $s$ characterises a "direct" reaction, in which the two incoming momenta combine, whereas $t$ and $u$ characterise "exchange" reactions that pair an incoming with an outgoing leg and describe momentum exchange (see @fig-mandelstam-blob).
+
+:::{#fig-mandelstam-blob}
+![](./images/chapter2/mandelstam-blob.svg){fig-align="center"}
+
+The two reaction types that can be distinguished in a 2-to-2 scattering process.
+:::
+
+Each of these variables is often associated with a distinct channel topology or Feynman diagram (see @fig-mandelstam-variables), which complements their broader role as analytic variables of the full 2-to-2 amplitude. The <span class="nowrap">**$s$‑channel**</span> corresponds to the configuration in which the two incoming particles are combined, with $s$ equal to their squared invariant mass. The <span class="nowrap">**$t$‑channel**</span> corresponds to the configuration in which an incoming particle is paired with one of the outgoing particles, characterised by the squared momentum <span class="nowrap">transfer&nbsp;$t$.</span> The <span class="nowrap">**$u$‑channel**</span> corresponds to the alternative pairing, where each incoming particle is combined with the other outgoing particle, giving the squared momentum <span class="nowrap">transfer&nbsp;$u$.</span> By crossing symmetry, an incoming particle can be reinterpreted as an outgoing antiparticle, which reverses the sign of its momentum.
+
+:::{#fig-mandelstam-variables layout-ncol=3 layout-valign=top}
+![](./images/chapter2/mandelstam-variable-s.svg){fig-align="center"}
+
+![](./images/chapter2/mandelstam-variable-t.svg){fig-align="center"}
+
+![](./images/chapter2/mandelstam-variable-u.svg){fig-align="center"}
+
+Channel topologies that are often associated with the three Mandelstam variables $s$, $t$, and $u$ in a 2-to-2 scattering process in terms of the four-momenta of the incoming particles $A$ and $B$ and outgoing particles $C$ and $D$. Momenta on the same side of the diagram contribute with a <font color="#228833">plus</font> sign, while those on opposite sides contribute with a <font color="#BB5566">minus</font> sign.
+:::
+
+This perspective also clarifies how Mandelstam invariants appear in three-body decays. If a three-body final state is viewed as a sequence of two-body subprocesses, the same diagrammatic topologies reappear when deforming the scattering diagrams of @fig-mandelstam-variables into the decay diagrams of @fig-mandelstam-variables-3body. In this case, particle&nbsp;$B$ is no longer incoming but part of the final state, so its momentum enters with the opposite sign. The resulting invariants are just the squared masses of two-body subsystems, which play the same role in Dalitz-plot analyses of decays as the Mandelstam variables do in scattering.
+
+:::{#fig-mandelstam-variables-3body layout-ncol=3}
+![](./images/chapter2/mandelstam-variable-3body-s.svg){fig-align="center"}
+
+![](./images/chapter2/mandelstam-variable-3body-t.svg){fig-align="center"}
+
+![](./images/chapter2/mandelstam-variable-3body-u.svg){fig-align="center"}
+
+Mandelstam variables defined in the two-body subsystems of a three-body decay, obtained from the scattering topologies of @fig-mandelstam-variables by reinterpreting incoming particle&nbsp;$B$ as part of the final state. In this decay picture, all momenta that enter a given invariant lie causally on the same side of the process and therefore appear with a <font color="#228833">plus</font> sign.
+:::
+
+Because of four-momentum conservation, the Mandelstam variables are not independent but satisfy
+
+$$
+\begin{aligned}
+s + t + u \;&=\; p_A^2 + p_B^2 + p_C^2 + p_D^2 \\
+          \;&=\; m_A^2 + m_B^2 + m_C^2 + m_D^2 \,,
+\end{aligned}
+$$ {#eq-mandelstam-total}
+
+`\noindent`{=latex}
+A 2-to-2 scattering process can therefore be described in terms of only two independent invariants. This already hints that the processes sketched in @fig-mandelstam-variables and @fig-mandelstam-variables-3body are not isolated but intrinsically connected.
+
+These connections are visualised in @fig-mandelstam-diagram, which plots the Mandelstam variables over a real-valued, two-dimensional **Mandelstam plane**. The plot uses a barycentric coordinate system, with $x=\frac{s-t}{(s+t+u)\sqrt{2}}$ and $y=\frac{s+t-2u}{(s+t+u)\sqrt{6}}$, to emphasise that the choice of $s$, $t$, and $u$ is arbitrary and that the three variables are symmetrically related to each other through @eq-mandelstam-total. The <font color="#DDAA33">yellow</font> regions mark the values kinematically allowed for given particle masses $m_A, m_B, m_C, m_D$, that is, the regions where experimental measurements can be made. They are determined by the condition that the Kibble function&nbsp;[@Kibble:1960zz]
+
+$$
+\phi(s,t,u) \;=\; \lambda\!\left(
+\lambda(s, m_B^2, m_A^2),\,
+\lambda(t, m_C^2, m_A^2),\,
+\lambda(u, m_D^2, m_A^2)
+\right)
+$$ {#eq-kibble}
+
+`\noindent`{=latex}
+is negative&nbsp;[@Martin:1970hmp, pp.175-177]. Here, $\lambda$ denotes the Källén function&nbsp;[@Kallen:1964lxa, p.11-12], a symmetric polynomial in three variables, defined as
+
+$$
+\lambda(x,y,z) \;=\; x^2 + y^2 + z^2 - 2xy - 2yz - 2zx
+\,.
+$$ {#eq-kallen}
+
+Now, although these kinematically allowed regions are disjoint, and their Feynman diagrams correspond to distinct physical reactions, crossing symmetry tells us that they are analytically connected. Each scattering or decay channel corresponds to a different real slice of the same complex analytic function&nbsp;$A(s,t,u)$. What appear experimentally as separate processes are therefore a mere set of boundary values of one underlying analytic structure ("Mandelstam Hypothesis"&nbsp;[@Mandelstam:1958xc; @Omnes:1963-MandelstamTheoryRegge; @Chew:1960iv, Section III; @Martin:1970hmp, p.274]). <!-- cspell:ignore Omnes Regge -->
+
+:::{#fig-mandelstam-diagram}
+![](./images/chapter2/mandelstam-diagram.svg)
+
+Barycentric visualisation of the kinematically allowed regions (shaded <font color="#DDAA33">yellow</font>) in the Mandelstam plane. The arrows indicate that the transition amplitudes for each reaction are connected through analytic continuation in the complexified plane. In this example, the regions are asymmetric, because each of the rest masses are all chosen differently.
+:::
+
+@fig-mandelstam-diagram also shows that, unlike in scattering, the three topologies of a three-body decay all occupy the same physical region. As we will see later, the amplitude can be expressed in terms of leading-order two-body subsystems, which are realised simultaneously in the Dalitz plot. This decomposition simplifies the analysis, but only approximates the full crossing-symmetric amplitude, since truncating the two-body partial-wave expansion (@sec-partial-wave-expansion) inevitably violates exact crossing symmetry.
+
+By modelling three-body decays as a sequence of two-body decays (@fig-mandelstam-variables-3body), the transition amplitude can be split into separate amplitudes that are parametrised as a function of a Mandelstam variable and a corresponding scattering angle $\theta$ (@sec-helicity-formalism), giving us
+
+$$
+A_{\text{total}}(s,t,u) \;=\; A^{(s)}(s,\theta_s) + A^{(t)}(t,\theta_t) + A^{(u)}(u,\theta_u)
+\,,
+$$ {#eq-crossing-symmetric-amplitude}
+
+`\noindent`{=latex}
+with $A^{(s)}, A^{(t)}, A^{(u)}$ the amplitudes of the individual subsystems and $\theta_s, \theta_t, \theta_u$ the corresponding scattering angles. Since $\theta$ can itself be written in terms of another Mandelstam variable (@eq-cos-theta-in-terms-of-t), the angular part acquires a dynamical component that is analytically connected to the other channels.
+
+A fully crossing-symmetric amplitude $A(s,t,u)$ that is analytic in the three Mandelstam variables simultaneously is in principle the ideal objective, but constructing such an object is extremely challenging&nbsp;[@Anisovich:2013gha]. The Khuri–Treiman formalism&nbsp;[@Khuri:1960zz] starts from @eq-crossing-symmetric-amplitude and refines the partial amplitudes through dispersion-relation corrections constrained by analyticity and two-body scattering data. The method has no fundamental restriction to non-zero spin, but its extension to a spinful final state is technically demanding. Regge theory is also relevant to the broader programme of constructing crossing-symmetric amplitudes, as it analytically continues the discrete angular momenta in the partial-wave expansion to complex values&nbsp;[@Regge:1959mz]. <!-- cspell:ignore Anisovich Khuri Treiman -->
+
+## Partial-wave expansion {#sec-partial-wave-expansion}
+
+In @sec-quantum-numbers, we saw that many of the quantum numbers used to classify hadrons -- such as spin, parity, and total angular momentum -- stem from the symmetries of space and time. For example, spin and orbital angular momentum arise from rotational invariance, while parity is associated with spatial inversion symmetry. These symmetry-related quantum numbers remain relevant in scattering theory, where they constrain the allowed transitions between incoming and outgoing states.
+
+This is the key idea: if the system is rotationally invariant, then the total angular momentum must be conserved. Each amplitude component with a specific total angular momentum therefore scatters independently. The case of two-particle scattering $A+B \to C+D$ again makes this particularly clear. The sum of the momenta of the incoming particles defines a preferred direction, typically taken to be the <span class="nowrap">$z$&nbsp;axis.</span> Once we boost into the center-of-mass (CM) frame, and consider a fixed total energy&nbsp;$s$ (@eq-mandelstam-variables), the geometry of the scattering process can be captured purely in terms of two angles, the **scattering angle** $\theta$ (angle between $p'_C$ and <span class="nowrap">$z$&nbsp;axis,</span> see @fig-scattering-angles) and the **azimuthal angle** $\phi$ (angle between the $p'_A p'_B$ plane and $p'_Cp'_D$ plane). Indeed, once&nbsp;$s$ is fixed, only rotational degrees of freedom remain, so any structure in the amplitude at fixed energy must reflect how the interaction redistributes angular momentum across different scattering angles.
+
+:::{#fig-scattering-angles layout-ncol=2 layout-valign=center}
+![](./images/chapter2/scattering-process-angles-lab.svg){fig-align="center"}
+
+![](./images/chapter2/scattering-process-angles-cm.svg){fig-align="center"}
+
+The sum of the incoming four-momenta can be used to define a <span class="nowrap">$z$&nbsp;axis</span> in the laboratory frame (left) and to boost into the CM frame (right). For a given total energy&nbsp;$s$, the four-momenta in the CM frame define the scattering angle&nbsp;$\theta$ (shown in the figure) and the azimuthal angle&nbsp;$\phi$ (not shown).
+:::
+
+Similar to how a sound wave can be decomposed into pure tones of different frequencies, the amplitude $A(s, t)$ can be decomposed into independent (orthogonal) functions over the scattering angles. The result is called a **partial-wave expansion**&nbsp;[@Martin:1970hmp, Section 4.4; @Taylor:1972pty, Section 6-c]. When the scattered particles have no intrinsic spin, these functions are given by the **Legendre polynomials** $P_\ell(\cos\theta)$ that depend only on the scattering angle&nbsp;$\theta$. The amplitude at fixed total energy&nbsp;$s$ can then be written as a sum over the orbital angular momenta&nbsp;$\ell$,
+
+$$
+A(s,\theta) \;=\; \sum_{\ell=0}^{\infty} (2\ell + 1) \, P_\ell(\cos\theta) \, a^{(\ell)}(s)
+\,.
+$$ {#eq-partial-wave-expansion-no-spin}
+
+Here, $a^{(\ell)}(s)$ are the **partial-wave amplitudes** that encode the strength of the interaction in the orbital angular-momentum channel&nbsp;$\ell$ purely as a function of energy&nbsp;$s$. Overall, this is a **Fourier–Legendre expansion**, where $P_\ell$ plays the role of orthogonal basis functions.
+
+In order to generalise the partial-wave expansion to particles of arbitrary spin, we need to introduce a few additional quantum numbers. If the incoming and outgoing particles $i=\{A,B,C,D\}$ have spin state&nbsp;$\ket{J_i,\lambda_i}$, with $\lambda_i$ the spin projection of particle&nbsp;$i$ along some quantisation axis, the amplitude can be projected into independent amplitudes&nbsp;$A_{\{\lambda\}}(s,\theta,\phi)$, with $\lambda=\{\lambda_A,\lambda_B;\lambda_C,\lambda_D\}$. These amplitudes can be expressed in terms of _total_ angular momenta&nbsp;$J$ (coupled basis of total spin and orbital angular momentum), so that the expansion coefficients become a matrix of functions of both $\theta$ and <span class="nowrap">$\phi$&nbsp;[@Jacob:1959at, p.413],</span>
+
+$$
+\begin{aligned}
+A_{\{\lambda\}}(s,\theta,\phi)
+\;&=\;
+  \sum_{J} (2J + 1) \, D^{J\,*}_{\mu \mu'}(\phi, \theta, 0) \,
+  a^{(J)}_{\{\lambda\}}(s) \\
+\;&=\;
+  e^{i(\mu-\mu')\phi} \,
+  \sum_{J} (2J + 1) \, d^J_{\mu \mu'}(\theta) \,
+  a^{(J)}_{\{\lambda\}}(s) \,,
+\end{aligned}
+$$ {#eq-partial-wave-expansion}
+
+`\noindent`{=latex}
+with $\mu=\lambda_A-\lambda_B$ and $\mu'=\lambda_C-\lambda_D$. The <span class="nowrap">Wigner&nbsp;$D$‑</span> and <span class="nowrap">$d$‑functions</span> are the matrix elements of rotation operators in the <span class="nowrap">spin‑$J$</span> representation that generalise the Legendre polynomials for the spinless case. We return to the relation between the Wigner functions, the helicity basis, and the canonical spin basis in @sec-helicity-formalism. If the scattered particles have no intrinsic spin, the total angular momentum&nbsp;$J$ equals the orbital angular momentum&nbsp;$\ell$, and the familiar expansion of @eq-partial-wave-expansion-no-spin is recovered from @eq-partial-wave-expansion, because for any <span class="nowrap">angles&nbsp;$\alpha,\beta,\gamma$,</span>
+
+$$
+D^\ell_{0,0}(\alpha,\beta,\gamma) \;=\;
+d^\ell_{0,0}(\beta) \;=\;
+P_\ell(\cos\beta)
+\,.
+$$
+
+The key point is that we have factorised the transition amplitude&nbsp;$A(s,t)$ into (1) _angular_ components that we know how to parametrise as a function of angles and (2) _dynamic_ partial-wave amplitudes&nbsp;$a^{(J)}_{\left\{\lambda\right\}}(s)$ that are purely energy-dependent. By orthogonality, these dynamic partial-wave projections are given by the inverse of @eq-partial-wave-expansion-no-spin and @eq-partial-wave-expansion,
+
+$$
+\begin{aligned}
+a^{(\ell)}(s) \;&=\;
+  \frac{1}{2}
+  \int_{-1}^{1}\! \mathrm{d}(\cos\theta) \,
+  P_\ell(\cos\theta)\,A(s,\theta) \\
+a^{(J)}_{\{\lambda\}}(s) \;&=\;
+  \frac{1}{4\pi}\!
+  \int_{-1}^{1}\! \mathrm{d}(\cos\theta)
+  \int_{0}^{2\pi}\! \mathrm{d}\phi \,
+  D^J_{\mu\mu'}(\phi,\theta,0)\,
+  A_{\{\lambda\}}(s,\theta,\phi)
+\,.
+\end{aligned}
+$$ {#eq-partial-wave-projection}
+
+For convenience, we often drop the quantum numbers $\ell$, $J$, and $\{\lambda\}$, so that $a(s)$ refers to a partial-wave amplitude. In @sec-analytic-structure, we will model this dynamic function $a(s)$ in order to extract information about the interaction potential from experimental data. Right now, however, we can already further constrain this energy-dependent parametrisation purely on kinematic grounds.
+
+As a first step, the factorisation into partial waves simplifies the unitarity condition on the transition matrix. When projected onto the angular momentum eigenbasis, @eq-unitarity-t-matrix becomes an energy-dependent condition that works _separately_ for each $J$. By applying @eq-transition-matrix-element to @eq-unitarity-t-matrix, we get the unitarity condition for the matrix elements,
+
+$$
+\mathcal{M}_{\!\beta\alpha} - \mathcal{M}_{\!\alpha\beta}^*
+\;=\;
+i(2\pi)^4 \, \sum_{\gamma}\delta^{(4)}\!\left(p_\alpha - p_\beta\right) \, \mathcal{M}_{\!\gamma\beta}^* \, \mathcal{M}_{\!\gamma\alpha}
+\,,
+$$ {#eq-unitarity-coupled-transition-amplitude-delta}
+
+`\noindent`{=latex}
+where $\gamma$ runs over all considered transition channels. This is known as the **generalised optical theorem**&nbsp;[@Landau:2007-QuantumMechanics, p.512; @Weinberg:1995mt, p.147]. Reformulating @eq-unitarity-coupled-transition-amplitude-delta in terms of Lorentz-invariant variables $s,t$ and applying the partial-wave projection from @eq-partial-wave-projection, we get an energy-dependent unitarity condition for the partial-wave amplitudes,
+
+$$
+\operatorname{Im}a_{\beta\alpha}(s) \;=\;
+\sum_{\gamma} a_{\gamma\beta}^*(s) \, \rho_\gamma(s) \, a_{\gamma\alpha}(s) \,,
+$$ {#eq-unitarity-coupled-transition-amplitude}
+
+`\noindent`{=latex}
+or, in matrix form,
+
+$$
+\operatorname{Im}\mathbfit{a}(s) \;=\;
+\mathbfit{a}^\dagger(s) \, \mathbfit{\rho}(s) \, \mathbfit{a}(s) \,.
+$$ {#eq-unitarity-partial-wave-coupled}
+
+In the single-channel case, this partial-wave unitarity condition becomes a more recognisable form of the optical theorem,
+
+$$
+\operatorname{Im} a(s) \;=\; \rho(s)\,\left|a(s)\right|^2 \,,
+$$ {#eq-unitarity-partial-wave}
+
+`\noindent`{=latex}
+which relates the imaginary part of the partial-wave amplitude to its cross section. Here, we have introduced a Lorentz-invariant, normalised **phase space factor**&nbsp;$\rho(s)$. In general, this factor is defined as the integral of the phase space element of @eq-phase-space-element over the angular degrees of freedom at fixed total centre-of-mass <span class="nowrap">energy&nbsp;$s$.</span> In the special case of two-body scattering or decays, this integral has an analytic solution and can be expressed in terms of the **breakup momentum** <span class="nowrap">$q(s)$&nbsp;[@ParticleDataGroup:2024cfk, Section 50, p.8],</span>
+
+$$
+\rho(s)
+  \;=\; 4 (2\pi)^5 \int\mathrm{d}\Phi_2
+  \;=\; \frac{2q(s)}{\sqrt{s}}
+  \;=\; \frac{\sqrt{\lambda(s, m_C^2, m_D^2)}}{s}
+\,.
+$$ {#eq-phase-space-factor}
+
+`\noindent`{=latex}
+The factor $(2\pi)^4$ is often absorbed into $\Phi$, leaving a conventional <span class="nowrap">factor&nbsp;$8\pi$.</span>The precise form of @eq-unitarity-partial-wave also depends on the normalisation of the scattering amplitude: with the convention of @eq-differential-cross-section, the inverse amplitude satisfies $\operatorname{Im} a^{-1}(s) = \rho(s)$, while alternative normalisations shift factors such as $16\pi$ into the definition of $\rho(s)$.
+
+The appearance of $\lambda$ from @eq-kallen reflects the same kinematic constraint $\phi(s,t,u)<0$ of @eq-kibble that defines the boundary of the physical region in Mandelstam space (see @fig-mandelstam-diagram). The phase space <span class="nowrap">factor&nbsp;$\rho(s)$</span> thus plays the role of an _energy-dependent normalisation_, arising directly from unitarity and the kinematics of the two-body system.
+
+As a reminder, when working with multiple channels, a subscript in the phase space factor or breakup momentum indicates the channel for which it is defined. For a two-body final <span class="nowrap">state&nbsp;$\alpha$</span> with rest masses $m_{1,\alpha}, m_{2,\alpha}$, this means
+
+$$
+\begin{aligned}
+\rho_\alpha(s) \;&=\; \frac{\sqrt{s-(m_{1,\alpha}-m_{2,\alpha})^2}\sqrt{s-(m_{1,\alpha}+m_{2,\alpha})^2}}{s} \\
+q_\alpha(s) \;&=\; \frac{\sqrt{s-(m_{1,\alpha}-m_{2,\alpha})^2}\sqrt{s-(m_{1,\alpha}+m_{2,\alpha})^2}}{2\sqrt{s}} \,.
+\end{aligned}
+$$ {#eq-phase-space-factor-and-breakup-momentum}
+
+`\noindent`{=latex}
+This form with a product of square roots is often preferred over @eq-phase-space-factor, as it has a simpler analytic structure in the complex plane (one branch cut, see @sec-analytic-continuation).
+
+Unitarity also motivates a useful parametrisation of the partial-wave amplitudes in terms of a phase shift. We can rewrite @eq-unitarity-partial-wave to
+
+$$
+\left|1+i\rho(s)\,a(s)\right| \;=\; 1
+\,,
+$$
+
+`\noindent`{=latex}
+which confines $\rho(s)\,a(s)$ to a circle in the complex plane. Positions on that circle can be associated to angles, which naturally leads to parametrising the amplitude in terms of a **phase shift** $\delta(s)$ via
+
+$$
+\begin{aligned}
+&
+  a(s) \;=\; \frac{e^{2i\delta(s)} - 1}{2i \, \rho(s)} \\
+& \Rightarrow \;
+  e^{i\delta(s)} \sin\delta(s) \;=\; \rho(s) \, a(s) \,.
+\end{aligned}
+$$ {#eq-phase-shift}
+
+Physically, $\delta(s)$ represents the delay of the outgoing wave relative to free propagation. Its behaviour as a function of energy reveals features such as resonances and bound states -- a rapid increase in $\delta(s)$ indicates elastic effects during the scattering process.
+
+As a first step in a **partial-wave analysis** (PWA), one often applies the partial-wave expansion without committing to any detailed dynamical model <span class="nowrap">of&nbsp;$a(s)$.</span> In practice, the experimental data is divided into bins of the energy <span class="nowrap">variable&nbsp;$s$.</span> Within each bin, one assumes that $s$ is effectively constant and that the corresponding partial-wave amplitude $a^{(\ell)}(s)$ can be approximated by a single complex parameter. The angular distribution observed in that bin is then fitted by adjusting these complex coefficients, one for each included partial wave. Each coefficient is thus treated as a free parameter of the fit, with no energy dependence imposed across bins.
+
+The result is a collection of complex values $\{a^{(\ell)}(s_i)\}$ at the bin <span class="nowrap">centers&nbsp;$\{s_i\}$.</span> If these values vary smoothly from bin to bin, they can be interpolated to define a continuous amplitude function, from which phase shifts can be extracted. Such **model-independent** or energy-independent PWAs&nbsp;[@Cutkosky:1979zv] already provide valuable insight into resonant behaviour, since characteristic phase motions across the energy range can already reveal the presence of resonant structures without assuming any specific parametrisation.
+
+## Resonance identification {#sec-analytic-structure}
+
+When we visualise measured cross sections as a function of energy, we often observe sharp peaks or dips at specific energies. An example is shown in @fig-pion-nucleon-cross-section, which displays the differential cross section for three backward-angle pion–nucleon scattering processes <span class="nowrap">($\pi^+p \to \pi^+p$,</span> and $\pi^-p \to \pi^-p$, and <span class="nowrap">$\pi^-p \to \pi^0n$).</span> The curves represent fitted amplitude analyses that combine data from several pion–proton scattering experiments&nbsp;[@Cutkosky:1979zv]. The observed structures reflect the underlying dynamics of the strong interaction. Scattering experiments are therefore like probing a bell, where the peaks correspond to the characteristic frequencies at which the bell resonates. The width of these peaks indicates how long the bell rings before returning to equilibrium, which in the scattering case is related to the lifetime of the excited state. In hadron physics, such structures are interpreted as **resonances** -- unstable states that exist for a finite time before decaying into other particles.
+
+:::::{.content-visible when-format="html"}
+::::{.column-page-inset-right}
+:::{#fig-pion-nucleon-cross-section layout-ncol=2 layout-valign=bottom}
+![](./images/chapter2/cutkosky-cross-section-light-left.svg){.light-content}
+![](./images/chapter2/cutkosky-cross-section-dark-left.svg){.dark-content .content-visible when-format="html"}
+
+![](./images/chapter2/cutkosky-cross-section-light-right.svg){.light-content}
+![](./images/chapter2/cutkosky-cross-section-dark-right.svg){.dark-content .content-visible when-format="html"}
+
+{{< include images/chapter2/cutkosky-cross-section-caption.qmd >}}
+:::
+::::
+:::::
+
+::::{.content-visible unless-format="html"}
+:::{#fig-pion-nucleon-cross-section layout-ncol=2 layout-valign=bottom}
+![](./images/chapter2/cutkosky-cross-section-light-left.svg)
+
+![](./images/chapter2/cutkosky-cross-section-light-right.svg)
+
+{{< include images/chapter2/cutkosky-cross-section-caption.qmd >}}
+:::
+::::
+
+@eq-differential-cross-section allows us to relate the observable cross section distribution to the matrix elements $\mathcal{M}_{\!\beta\alpha}$ and @eq-partial-wave-expansion helps us to further split up the cross section into partial-wave <span class="nowrap">amplitudes&nbsp;$a^{(J)}(s)$</span> for each total angular <span class="nowrap">momentum&nbsp;$J$.</span> The bumps will now only appear in certain total angular momentum channels, which we can identify by looking at the phase shifts $\delta(s)$ of the partial-wave amplitudes. This suggests that the resonances are actual particles with an intrinsic spin that couples to that total angular momentum.
+
+In certain processes, such as pion–nucleon scattering, one can go beyond spin and angular momentum and also extract the isospin of the resonances. The individual charge channels shown in @fig-pion-nucleon-cross-section are not themselves states of definite isospin, but fixed linear combinations of the $I=\tfrac{1}{2}$ and $I=\tfrac{3}{2}$ amplitudes. A partial-wave analysis of a single channel therefore cannot separate the isospin components. Only by fitting the elastic reactions $\pi^+p$ and $\pi^-p$ together with the charge-exchange channel $\pi^-p\to\pi^0n$ can one extract information about the isospin amplitudes. This coupled-channel treatment makes it possible to disentangle the isospin structure of the partial waves and to assign resonances their total isospin.
+
+For $\pi N$ scattering the situation is relatively simple, since the initial state can only be in an $I=\tfrac{1}{2}$ or $I=\tfrac{3}{2}$ configuration. The relation between the observable charge channels and the isospin amplitudes is
+$$
+\begin{aligned}
+\pi^+ p \to \pi^+ p \; &: \; A_{3/2} \\
+\pi^- p \to \pi^- p \; &: \; \tfrac{1}{3} A_{3/2} + \tfrac{2}{3} A_{1/2} \\
+\pi^- p \to \pi^0 n \; &: \; \tfrac{\sqrt{2}}{3}\left(A_{3/2} - A_{1/2}\right) \;,
+\end{aligned}
+$$
+
+`\noindent`{=latex}
+where $A_{1/2}$ and $A_{3/2}$ denote the partial-wave amplitudes with definite isospin. While the details of this isospin decomposition are beyond the scope of this work, it helps to understand what certain partial-wave labels mean and how these waves are extracted. For example, the <span class="nowrap">$P_{33}$‑wave</span> (@fig-pion-nucleon-p33) denotes for a partial wave with orbital angular momentum&nbsp;$\ell=1$, isospin&nbsp;$I=\tfrac{3}{2}$, and total angular momentum&nbsp;$J=\tfrac{3}{2}$, and how they are extracted from total differential cross sections. Similarly, the <span class="nowrap">$D_{15}$‑wave</span> corresponds to $\ell=2$, $I=\tfrac{1}{2}$, and $J=\tfrac{5}{2}$. The scheme follows spectroscopic letter notation $S,P,D,F,\dots$ for orbital angular momentum&nbsp;$\ell=0,1,2,3,\dots$.
+
+@fig-pion-nucleon-p33 shows the imaginary and real parts of the <span class="nowrap">$P_{33}$‑wave</span> obtained from the pion–nucleon cross sections of [@fig-pion-nucleon-cross-section]&nbsp;[@Cutkosky:1980rh]. The prominent peak <span class="nowrap">around&nbsp;$1.23\ \text{GeV}$</span> and the zero-crossing of the imaginary part reveals the <span class="nowrap">[$\varDelta(1232)$](https://pdglive.lbl.gov/Particle.action?init=0&node=B033&home=BXXX010)&nbsp;resonance</span> with quantum numbers $I\left(J^P\right)=\tfrac{3}{2}\left(\tfrac{3}{2}^+\right)$. This is a striking example of how resonances emerge from the partial-wave amplitudes: once hidden in the energy spectrum, they stand out clearly in the complex amplitude. The remainder of this section introduces the techniques that make such extractions possible. <!-- cspell:ignore Cutkosky -->
+
+::::{.content-visible when-format="html"}
+:::{#fig-pion-nucleon-p33}
+[![](./images/chapter2/cutkosky-p33-light.svg){width="90%"}]{.light-content}
+[![](./images/chapter2/cutkosky-p33-dark.svg){width="90%"}]{.dark-content .content-visible when-format="html"}
+
+{{< include images/chapter2/cutkosky-p33-caption.qmd >}}
+:::
+::::
+::::{.content-visible unless-format="html"}
+:::{#fig-pion-nucleon-p33}
+![](./images/chapter2/cutkosky-p33-light.svg){width="90%"}
+
+{{< include images/chapter2/cutkosky-p33-caption.qmd >}}
+:::
+::::
+
+### Breit–Wigner parametrisation {#sec-breit-wigner}
+
+To model the shape of a resonance, we need a function that captures both the peak structure and a width that is associated with the lifetime of the resonance. A simple but remarkably effective parametrisation is the **Breit–Wigner function**&nbsp;[@Breit:1936zzb], which describes the relativistic scattering amplitude near a resonance as a function of <span class="nowrap">energy&nbsp;$s$,</span>
+
+$$
+a(s) \; \cong \; \frac{1}{M_R^2 - i M_R \Gamma_R - s} \,,
+$$ {#eq-breit-wigner}
+
+`\noindent`{=latex}
+where $M_R$ is the mass of the resonance and $\Gamma_R$ its total decay width. The numerator often includes a scaling factor or is normalised to the peak by setting it equal to $M_R\Gamma_R$, but these factors are left out here (indicated <span class="nowrap">by&nbsp;$\cong$).</span> This functional form mirrors the response of a driven, damped harmonic oscillator -- a system that resonates when driven near its natural frequency but loses energy due to damping. Similarly, the Breit–Wigner function reflects how the system "rings" in response to a scattering event and then decays.
+
+@fig-breit-wigner visualises the Breit–Wigner function through its modulus squared, real and imaginary parts, and the associated phase. The resonance appears most clearly in the left panel, where the modulus $|a_J|^2$ forms its characteristic peak at $s = M_R^2$ with a finite width controlled by the imaginary term $iM_R\Gamma_R$ in the denominator. The **Argand diagram** in the middle plots $\operatorname{Im}a_J$ against $\operatorname{Re}a_J$ to show how an isolated Breit–Wigner traces out a circle, thereby preserving unitarity with <span class="nowrap">inelasticity&nbsp;$\eta=1$.</span>  The same diagram also highlights the connection between the phase <span class="nowrap">shift&nbsp;$\delta(s)$</span> of @eq-phase-shift and the modulus of the amplitude. The right panel shows that the corresponding phase <span class="nowrap">shift&nbsp;$\delta(s)$</span> undergoes a rapid increase by approximately $\pi$ across the resonance region, which indicates a relative time delay of the outgoing wave.
+
+```{python}
+#| fig-cap: Visualisation of the real and imaginary parts, the modulus, and the phase of the relativistic Breit–Wigner function of @eq-breit-wigner, with the <span class="nowrap">position&nbsp;$M_R$</span> of the resonance indicated in <font color="#e6332a">red</font>.
+#| label: fig-breit-wigner
+import os
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import patches
+
+plt.ioff()
+plt.rc("font", family="serif", serif="Helvetica", size=13)
+plt.rc("mathtext", fontset="dejavusans")
+plt.rc("text", usetex=True)
+
+def breit_wigner(s, m0, w0):
+    return 1 / (m0**2 - 1j * m0 * w0 - s)
+
+
+def bw_delta(s, m0, w0):
+    bw = breit_wigner(s, m0, w0)
+    norm = np.abs(breit_wigner(m0**2, m0, w0))
+    return np.angle(1 + 2j * bw / norm) / 2
+
+
+m0 = 1.0
+Γ0 = 0.25
+R = 0.55
+s = np.linspace(0, 2, num=1000)
+bw = breit_wigner(s, m0, Γ0)
+
+fig, axes = plt.subplots(figsize=(7, 2.1), ncols=3)
+fig.subplots_adjust(bottom=0, left=0, right=1, top=1, wspace=0.12)
+ax1, ax2, ax3 = axes
+fig.patch.set_facecolor("none")
+for ax in axes:
+    ax.patch.set_facecolor("none")
+    ax.spines["left"].set_position("zero")
+    ax.spines["bottom"].set_position("zero")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+ax1.axvline(m0**2, color="#e6332a", ls="dashed", lw=1.5, zorder=-10)
+ax1.text(
+    x=m0**2 - 0.05,
+    y=-0.5,
+    s=R"$M_R^2$",
+    color="#e6332a",
+    ha="right",
+    va="top"
+)
+ax1.plot(s, np.abs(R * bw)**2, c="#757575", label="$|a_{_J}|^2$", lw=1.5)
+ax1.plot(s, R * bw.real, c="#17365c", label=R"$\mathrm{Re}\,a_{_J}$", lw=2)
+ax1.plot(s, R * bw.imag, c="#8dae10", label=R"$\mathrm{Im}\,a_{_J}$", lw=2)
+ax1.legend(
+    bbox_to_anchor=(0.65, 1.0),
+    handlelength=1,
+    loc="upper left",
+)
+ax1.set_xlabel("$s$")
+ax1.xaxis.set_label_coords(0.99, 0.21)
+ax1.set_xticks([])
+ax1.set_yticks([])
+
+sc = ax2.scatter(bw.real, bw.imag, c=s, cmap="cividis", s=8, edgecolors="none")
+bw_R = breit_wigner(m0**2, m0, Γ0)
+ax2.scatter([bw_R.real], [bw_R.imag], c="#e6332a", s=30)
+ax2.text(
+    x=bw_R.real + 0.12,
+    y=bw_R.imag + 0.05,
+    s=R"$s=M_R^2$",
+    color="#e6332a",
+    ha="left",
+    va="bottom"
+)
+s_a = 0.85
+bw_a = breit_wigner(s_a, m0, Γ0)
+delta_a = bw_delta(s_a, m0, Γ0)
+ax2.plot(
+    [0, bw_a.real],
+    [bw_R.imag / 2, bw_a.imag],
+    color="#BB5566",
+)
+arc = patches.Arc(
+    xy=(0, bw_R.imag / 2),
+    angle=-90,
+    height=0.4 * bw_R.imag,
+    width=0.4 * bw_R.imag,
+    theta2=2 * np.rad2deg(delta_a),
+    color="#BB5566",
+    linewidth=2,
+)
+ax2.add_patch(arc)
+ax2.text(
+    x=0.12 * bw_a.imag,
+    y=0.58 * bw_a.imag,
+    s=R"$2\delta$",
+    color="#BB5566",
+    ha="center",
+    va="center",
+)
+ax2.text(
+    x=0.92 * (bw_a.real / 2),
+    y=1.14 * (bw_a.imag / 2 + bw_R.imag / 4),
+    s=R"$\eta\!=\!1$",
+    color="#BB5566",
+    ha="center",
+    va="center",
+    rotation=26,
+)
+ax2.arrow(
+    x=0,
+    y=0,
+    dx=bw_a.real,
+    dy=bw_a.imag,
+    color="#757575",
+    head_length=0.15,
+    head_width=0.08,
+    length_includes_head=True,
+    linewidth=2,
+)
+ax2.set_aspect("equal")
+ax2.set_xlabel(R"$\mathrm{Re}\,a_{_J}$", color="#17365c")
+ax2.set_ylabel(R"$\mathrm{Im}\,a_{_J}$", color="#8dae10")
+ax2.set_xticks([])
+ax2.set_yticks([])
+cbar = fig.colorbar(sc, ax=ax2, pad=0, shrink=0.6)
+cbar.ax.set_title("$s$")
+cbar.ax.set_yticks([])
+
+ax3.scatter(s, bw_delta(s, m0, Γ0), c=s, cmap="cividis", s=8, edgecolors="none")
+ax3.axhline(-np.pi / 2, c="#757575", lw=0.3)
+ax3.axhline(+np.pi / 2, c="#757575", lw=0.3)
+ax3.axvline(m0**2, c="#e6332a", ls="dashed", lw=1.5, zorder=-10)
+ax3.text(
+    x=m0**2 - 0.05,
+    y=-0.02 * np.pi,
+    s=R"$M_R^2$",
+    color="#e6332a",
+    ha="right",
+    va="top"
+)
+ax3.set_xlabel("$s$")
+ax3.xaxis.set_label_coords(0.99, 0.5)
+ax3.set_ylabel(R"$\delta(s)$", color="#BB5566", labelpad=-8)  # cspell:ignore labelpad
+ax3.set_xticks([])
+ax3.set_yticks([-np.pi / 2, 0, +np.pi / 2])
+ax3.set_yticklabels([R"$-\frac{\pi}{2}$", "$0$", R"$+\frac{\pi}{2}$"])
+
+plt.show(fig)
+```
+
+The width $\Gamma_R$ in @eq-breit-wigner is currently treated as a constant. However, since the width is related to decay probability per unit time, it should depend on the available phase space for the decay products. As the total <span class="nowrap">energy&nbsp;$s$</span> increases, the decay products carry more momentum and the phase space volume grows. This implies that the width should not be treated as a constant, but should instead vary with $s$. For a resonance decaying to two particles $C$ and $D$, this energy dependence is therefore often encoded with an **energy-dependent width** by replacing $\Gamma_R$ in @eq-breit-wigner with
+
+$$
+\Gamma_\ell(s) \;=  \;\Gamma_R
+\frac{\rho(s)}{\rho(M_R^2)}
+\frac{n_\ell^2\left(q^2(s)/q_0^2\right)}{n_\ell^2\left(q^2(M_R^2)/q_0^2\right)}
+\,,
+$$ {#eq-energy-dependent-width}
+
+`\noindent`{=latex}
+with phase space <span class="nowrap">factor&nbsp;$\rho$</span> and breakup <span class="nowrap">momentum&nbsp;$q$</span> as defined in @eq-phase-space-factor-and-breakup-momentum at total <span class="nowrap">energy&nbsp;$s$</span> or squared <span class="nowrap">mass&nbsp;$M_R^2$,</span> $\ell$ the orbital angular momentum between $C$ and $D$, $n_\ell$ a factor that encodes angular-momentum suppression near threshold, and $1/q_0$ a scaling parameter that typically lies in the range <span class="nowrap">$1 \sim 5\text{ GeV}^{-1}$&nbsp;[@ParticleDataGroup:2024cfk, Section 50].</span> For brevity, we often shorten notation with $n_\ell(s) \equiv n_\ell(q^2(s)/q_0^2)$.
+
+The factors $n_\ell$ are often called **centrifugal barrier factor** and they arise because partial waves with higher angular momentum are suppressed&nbsp;[@Perl:1974-HadronPhysics, Section 5-10] when the decay products have low relative momentum (more on that in @sec-vertex-parametrisation). The barrier factor is usually parametrised with a (unitless, normalised) Blatt–Weisskopf formula via
+
+$$
+\begin{aligned}
+n_\ell^2(x^2) \;&=\;
+  \frac{\left|h^{(1)}_\ell(1)\right|^2}{x^2\left|h^{(1)}_\ell(x)\right|^2} \\
+h_\ell^{(1)}(x) \;&=\;
+  \left(- i\right)^{\ell+1}
+  \frac{e^{ix}}{x}
+  \sum_{k=0}^\ell
+    \frac{(\ell+k)!}{(\ell-k)! \, k!}
+    \left(\frac{i}{2x}\right)^k \,,
+\end{aligned}
+$$ {#eq-barrier-factor}
+
+`\noindent`{=latex}
+where $h_\ell^{(1)}$ are the Hankel functions of the first kind, which can be written in this polynomial form if its <span class="nowrap">argument&nbsp;$x$</span> is real&nbsp;[@VonHippel:1972fg, pp. 626,637]. This is the general form of the **Blatt–Weisskopf factors** that [leads to](https://compwa.github.io/report/029) the specific cases that are listed in most literature,
+
+$$
+n_\ell^2(x^2) \;=\;
+\begin{cases}
+    1 & \text{for } \ell = 0 \\
+    \frac{2x^2}{x^2+1} & \text{for } \ell = 1 \\
+    \frac{13x^4}{x^4+3x^2+9} & \text{for } \ell = 2 \\
+    \cdots \; .
+\end{cases}
+$$
+
+@fig-breit-wigner-energy-dependent-width shows that a Breit–Wigner [(@eq-breit-wigner)]{.content-visible when-format="html"} with energy-dependent width [(@eq-energy-dependent-width)]{.content-visible when-format="html"} already captures several important decay-specific features. Near threshold, where $q(s) \to 0$, the width vanishes as the phase space closes, which introduces an asymmetry in the lineshape. The parametrisation is now also sensitive to the orbital momentum, which offers a handle to select the dominant partial wave through the damping factor. To examine whether this parametrisation respects @eq-unitarity-partial-wave, the Argand diagram in @fig-breit-wigner-energy-dependent-width plots the product $\rho_\ell(s)\,a_\ell(s)$, with $\rho_\ell(s) \equiv \rho(s)\,n_\ell^2(s)$, rather than the amplitude $a_\ell(s)$ itself&nbsp;[@Briceno:2017qmb]. This shows that the parametrisation with energy-dependent width still preserves unitarity for each angular <span class="nowrap">momentum&nbsp;$\ell$.</span> <!-- cspell:ignore Briceno -->
+
+```{python}
+#| fig-cap: 'Breit–Wigner parametrisation with energy-dependent <span class="nowrap">width&nbsp;$\Gamma_\ell(s)$</span> for a <span class="nowrap">resonance&nbsp;$R\to CD$</span> in different orbital angular <span class="nowrap">momenta&nbsp;$\ell$.</span> Left: squared amplitudes $|a_\ell|^2$ as a function of <span class="nowrap">energy&nbsp;$s$.</span> Right: Argand representation <span class="nowrap">of&nbsp;$\rho_\ell(s)\,a_\ell(s)$.</span>'
+#| label: fig-breit-wigner-energy-dependent-width
+from typing import Any
+
+import sympy as sp
+from ampform.dynamics import EnergyDependentWidth
+from ampform.dynamics.form_factor import FormFactor
+from ampform.sympy import unevaluated
+
+
+@unevaluated(real=False)
+class PhaseSpaceFactor(sp.Expr):
+    s: Any
+    m1: Any
+    m2: Any
+    _latex_repr_ = R"\rho_{{{m1},{m2}}}\left({s}\right)"
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        return sp.sqrt(s - (m1 - m2)**2) * sp.sqrt(s - (m1 + m2)**2) / s
+
+
+np.seterr(all="ignore")
+
+m1 = 0.3
+m2 = 0.4
+s_symbol = sp.Symbol("s", nonnegative=True, real=True)
+L = sp.Symbol("L", integer=True, positive=True)
+width = EnergyDependentWidth(
+    s=s_symbol,
+    mass0=m0,
+    gamma0=Γ0,
+    m_a=m1,
+    m_b=m2,
+    angular_momentum=L,
+    meson_radius=1,
+)
+bw_expr = 1 / (m0**2 - sp.I * m0 * width - s_symbol)
+rho_l = (
+    PhaseSpaceFactor(s_symbol, m1, m2)
+    * FormFactor(s_symbol, m1, m2, L, meson_radius=1)**2
+)
+bw_func = sp.lambdify((s_symbol, L), bw_expr.doit())
+rho_func = sp.lambdify((s_symbol, L), rho_l.doit())
+s_thr = (m1 + m2)**2
+x = np.linspace(s_thr, 2.0, num=1000)
+
+fig, axes = plt.subplots(figsize=(6, 2.25), gridspec_kw=dict(width_ratios=[2, 1]), ncols=2)
+ax1, ax2 = axes
+fig.patch.set_facecolor("none")
+for ax in axes:
+    ax.patch.set_facecolor("none")
+    ax.spines["left"].set_position("zero")
+    ax.spines["bottom"].set_position("zero")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+ax1.axvline(s_thr, color="#004488", linestyle="dotted")
+ax1.axvline(m0**2, color="#e6332a", linestyle="dashed")
+ax1.plot(s, np.abs(bw)**2, c="#757575", label="BW", lw=1.5)
+for ell in range(3):
+    z = bw_func(x, ell)
+    ax1.plot(x, np.abs(z)**2, label=Rf"$\ell={ell}$", lw=1.5)
+ax1.legend(
+    bbox_to_anchor=(0.68, 0.65),
+    handlelength=1,
+    loc="center left",
+)
+ax1.text(
+    x=s_thr,
+    y=-0.15,
+    s=R"$(m_C+m_D)^2$",
+    color="#004488",
+    ha="center",
+    va="top",
+)
+ax1.text(
+    x=m0**2,
+    y=-0.15,
+    s=R"$M_R^2$",
+    color="#e6332a",
+    ha="center",
+    va="top",
+)
+ax1.set_xlabel("$s$")
+ax1.xaxis.set_label_coords(0.97, -0.01)
+ax1.set_ylabel("$|a_{_J}|^2$")
+ax1.set_xticks([0])
+ax1.set_yticks([])
+ax1.set_xlim(0, x.max())
+ax1.set_ylim(0, None)
+
+l_max = 3
+for ell in range(l_max):
+    z = rho_func(x, ell) * bw_func(x, ell)
+    z /= np.nanmax(z.imag)  # cspell:ignore nanmax
+    ax2.plot(z.real, z.imag, label=Rf"$\ell={ell}$", ls="dotted", lw=2)
+ax2.set_aspect("equal")
+ax2.set_xlabel(R"$\rho_\ell\,\mathrm{Re}\,a_{_J}$")
+ax2.set_ylabel(R"$\rho_\ell\,\mathrm{Im}\,a_{_J}$")
+ax2.set_xticks([])
+ax2.set_yticks([])
+
+fig.tight_layout()
+plt.show(fig)
+```
+
+### Vertex parametrisation {#sec-vertex-parametrisation}
+
+The appearance of decay-specific parameters in the resonance parametrisation suggests a broader physical interpretation: the resonant amplitude can be viewed as the product of two interaction vertices and an intermediate propagator. This picture is already implicit in the Feynman diagram for the <span class="nowrap">$s$‑channel</span> of a 2-to-2 scattering process shown in @fig-mandelstam-variables: the intermediate <span class="nowrap">particle&nbsp;$R$</span> is first produced in the $AB \to R$ subprocess, and then decays via $R \to CD$. The Breit–Wigner function introduced in @eq-breit-wigner represents the **resonance propagator** (the denominator of the amplitude), but the **interaction vertices** remain to be modelled explicitly. This leads to a more general form of the amplitude,
+
+$$
+a^{(J)}_{\beta\alpha}(s) \cong \frac{n_\beta(s)\,n_\alpha(s)}{M_R^2 - i M_R \Gamma_{\ell_\beta}(s) - s} \,.
+$$ {#eq-breit-wigner-vertex}
+
+The vertex functions $n_\alpha$ and $n_\beta$ describe how the resonance couples to the initial and final state as a function of $s$. In analogy to the energy-dependent width, they are often modelled with barrier or damping factors like the Blatt–Weisskopf factor of @eq-barrier-factor, with orbital angular momentum $\ell_\alpha$ for $AB$ and $\ell_\beta$ for $CD$ (see left panel in @fig-barrier-factor-effect). Note that $\ell_\alpha$ and $\ell_\beta$ can be different if the initial or final state contains particles with spin, because they couple differently to the total orbital momentum&nbsp;$J$ of the partial-wave expansion. The right panel in @fig-barrier-factor-effect shows the suppressive effect by barrier factors with $\ell_\alpha=0,\ell_\beta=1$ on a Breit–Wigner with energy-dependent width. We will see later why the barrier factor that appears in the energy-dependent width of @eq-energy-dependent-width comes from the outgoing vertex.
+
+```{python}
+#| output: false
+ff_out = FormFactor(s_symbol, m1, m2, L)
+ff_bw_expr = ff_out * bw_expr
+ff_bw_func = sp.lambdify((s_symbol, L), ff_bw_expr.doit())
+x = np.linspace(s_thr, 2.1, num=1000)
+
+fig, ax = plt.subplots(figsize=(5, 3))
+fig.patch.set_facecolor("none")
+ax.patch.set_facecolor("none")
+ax.spines["left"].set_position("zero")
+ax.spines["bottom"].set_position("zero")
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+
+ax.axvline(s_thr, color="#004488", linestyle="dotted")
+ax.axvline(m0**2, color="#e6332a", linestyle="dashed")
+ax.text(
+    x=s_thr,
+    y=-0.15,
+    s=R"$(m_C+m_D)^2$",
+    color="#004488",
+    ha="center",
+    va="top",
+)
+ax.text(
+    x=m0**2,
+    y=-0.15,
+    s=R"$M_R^2$",
+    color="#e6332a",
+    ha="center",
+    va="top",
+)
+
+ell = 1
+y = np.abs(bw_func(x, ell))**2
+y /= np.nanmean(y)
+ax.plot(x, y, c=f"C{ell}", label=Rf"$\mathrm{{BW}}_{ell}$", lw=2)
+y = np.abs(ff_bw_func(x, ell))**2
+y /= np.nanmean(y)
+ax.plot(x, y, c=f"C{ell}", label=Rf"$\mathrm{{BW}}_{ell} \cdot n_{ell}$", ls="--", lw=2)
+
+ax.legend(
+    bbox_to_anchor=(0.55, 0.65),
+    handlelength=1,
+    loc="center left",
+)
+ax.set_xlabel("$s$")
+ax.xaxis.set_label_coords(0.97, -0.01)
+ax.set_ylabel("$|a_{_J}|^2$ (normalised)")
+ax.set_xticks([0])
+ax.set_yticks([])
+ax.set_xlim(0, x.max())
+ax.set_ylim(0, None)
+fig.tight_layout()
+fig.savefig("output/vertex-factor-plot.svg", bbox_inches="tight")
+plt.close(fig)
+```
+
+:::{#fig-barrier-factor-effect layout-ncol=2 layout-valign="center"}
+![](images/chapter2/dynamics-propagator-vertices.svg){fig-align="center"}
+
+![](images/chapter2/vertex-factor-plot.svg){fig-align="center"}
+
+Effect of vertex barrier factors on a Breit–Wigner amplitude. Left: Resonant 2-to-2 scattering with orbital angular momenta $\ell_\alpha$ and $\ell_\beta$. Right: Normalised squared amplitude for $\ell_\alpha=0$, $\ell_\beta=1$, shown without (solid) and with (dashed) the production barrier factor. Vertical lines mark the <span class="nowrap">$CD$&nbsp;threshold</span> (<font color="#004488">blue</font>) and the resonance <span class="nowrap">mass&nbsp;$M_R$</span> (<font color="#e6332a">red</font>).
+:::
+
+Confusingly, there are different conventions in literature for barrier factors. The reason is that these factors are related to angular functions like $P_\ell(\cos\theta)$ that appear in the partial-wave expansion @eq-partial-wave-expansion-no-spin and @eq-partial-wave-expansion. These factors depend on the scattering angle, which can be computed from $t$ and $s$. Note that
+
+$$
+\begin{aligned}
+t \;&=\; (p_A - p_C)^2 \\
+  \;&=\; m_A^2 + m_C^2 - 2 E_A E_C + 2 |\vec{p}_A| |\vec{p}_C| \cos\theta
+\end{aligned}
+$$
+
+`\noindent`{=latex}
+with
+
+$$
+\begin{alignedat}{4}
+|\vec{p}_A| \;&=\; \frac{\lambda^{1/2}(s, m_A^2, m_B^2)}{2\sqrt{s}} & \qquad &
+|\vec{p}_C| \;&=\; \frac{\lambda^{1/2}(s, m_C^2, m_D^2)}{2\sqrt{s}} \\
+E_A \;&=\; \frac{s + m_A^2 - m_B^2}{2\sqrt{s}} & \qquad &
+E_C \;&=\; \frac{s + m_C^2 - m_D^2}{2\sqrt{s}} \,. \\
+\end{alignedat}
+$$
+
+Solving for $\cos\theta$, we get
+
+$$
+\begin{aligned}
+\cos\theta \;&=\; \frac{t - m_A^2 - m_C^2 + 2 E_A E_C}{2 |\vec{p}_A||\vec{p}_C|} \\
+  &\cong \; \frac{\operatorname{Pol}_1(s,t)}{\lambda^{1/2}(s,m_A^2,m_B^2)\,\lambda^{1/2}(s,m_C^2,m_D^2)}
+  \,,
+\end{aligned}
+$$ {#eq-cos-theta-in-terms-of-t}
+
+`\noindent`{=latex}
+where the second line highlights that the numerator scales as a first-order polynomial of $s, t$ and that the denominator depends on two Källén functions $\lambda^{1/2}(s,\dots)$. This form shows that $\cos\theta$ develops divergent behaviour as $s$ approaches the threshold, because that causes $\lambda^{1/2}(s,\dots)$ to go to zero. This would lead to an unphysical divergence in each term $a_\ell(s)\,P_\ell(\cos\theta)$ in @eq-partial-wave-expansion-no-spin, unless $a_\ell(s)$ compensates it. Rescaling $a_\ell(s)$ with the breakup momenta $q_\alpha^{\ell_\alpha}(s)$ and $q_\beta^{\ell_\beta}(s)$ of the initial and final state (@eq-phase-space-factor-and-breakup-momentum) exponentiated with their associated orbital angular momenta does the trick.
+
+To model higher energies correctly, an additional centrifugal factor has to be included as well, but this is a phenomenological choice that is not directly related to the corrective factor described before. The usual choice is the Blatt–Weisskopf barrier factor in _non-normalised_ form, often written as $\mathcal{F}_{\!\ell}$. It is [related](https://compwa.github.io/report/029/) to the normalised form of @eq-barrier-factor by&nbsp;[@ParticleDataGroup:2024cfk, p.12]
+
+$$
+\mathcal{F}_{\!\ell}^2(x^2)
+\;=\; \frac{1}{x^{2(\ell+1)}\,\left|h_\ell^{(1)}(x)\right|^2}
+\;=\; \frac{n^2_\ell(x^2)}{x^{2\ell}\,\left|h_\ell^{(1)}(1)\right|^2}
+\,.
+$$
+
+All in all, this separates the vertex factors into a _corrective_ and a _phenomenological_ component, which can be written as
+
+$$
+n_\ell\left(q^2(s)\right) \;=\; q^\ell(s) \; \mathcal{F}_{\!\ell}\left(q^2(s)\right) \, .
+$$
+
+### The reactance matrix {#sec-reactance-matrix}
+
+Despite these improvements, the Breit–Wigner parametrisation remains limited in scope. In practice, resonances in the same partial wave rarely appear in isolation across the energy spectrum (@fig-pion-nucleon-p33). Instead, they often overlap and interfere, especially when multiple resonant structures or open decay channels are present. Such interference effects cannot be accurately described by a simple sum of Breit–Wigner terms. This breakdown reflects the fact that the amplitude is no longer confined to a single channel: part of the flux is dissipated into other channels that are not accounted for.
+
+As noted in @sec-scattering-matrix, Heisenberg framed scattering as a kind of response problem: a system is probed by asymptotic incoming waves, and its internal structure governs the outgoing response. This perspective inspired many physicists in the 1940s and 50s to draw analogies between scattering amplitudes and the response of an electrical circuit, where the impedance characterises how the system reacts to an external driving force. Notably, Blatt and Weisskopf explicitly borrowed the concept of **reactance** from electrical engineering to formulate a more general description of scattering amplitudes&nbsp;[@Blatt:1952ije, p.530] -- a framework now known as the <span class="nowrap">**$\mathbfit{K}$‑matrix formalism**.</span>
+
+The **reactance matrix** $\mathbfit{K}$, or reaction matrix&nbsp;[@Dalitz:1961dx], emerges naturally when considering the unitarity condition @eq-unitarity-partial-wave for partial-wave amplitudes. This condition imposes a non-linear constraint on the amplitude, which is generally difficult to solve directly. However, if the amplitude is parametrised as
+
+$$
+a(s) \;=\; \frac{K(s)}{1 - i\,\rho(s)\,K(s)} \,,
+$$ {#eq-k-matrix-single-channel}
+
+`\noindent`{=latex}
+then @eq-unitarity-partial-wave is automatically satisfied above threshold (where $\rho(s)$ is real and positive), provided that $K(s)$ is itself a real-valued function. More generally, the <span class="nowrap">$\mathbfit{K}$‑matrix</span> arises from a **Cayley transform** of the <span class="nowrap">$\mathbf{S}$‑matrix.</span> This mathematical transformation maps a unitary matrix (here $\mathbf{S}$) to a Hermitian <span class="nowrap">operator&nbsp;$\mathbf{X}$</span> via
+
+$$
+\mathbf{X} \;=\;
+\left(\mathbf{S}-\mathbf{1}\right)\left(\mathbf{S}+\mathbf{1}\right)^{-1} \,.
+$$ {#eq-cayley-transform}
+
+Similarly as in @eq-unitarity-partial-wave, we introduce an energy-dependent normalisation with the parametrisation
+
+$$
+\mathbfit{X}(s) = i\mathbfit{\rho}(s) \, \mathbfit{K}(s)
+\,,
+$$
+
+`\noindent`{=latex}
+where $\mathbfit{\rho}(s)$ is a diagonal matrix of phase space factors&nbsp;$\rho_\alpha(s)$ for each channel&nbsp;$\alpha$. Given that the elements in $\mathbfit{\rho}(s)$ are real and positive for $s$ above all thresholds, the <span class="nowrap">$\mathbfit{K}$‑matrix</span> has to be real-valued to make $\mathbf{X}$ Hermitian, and $\mathbf{S}$ unitary. This argument does not hold between or below thresholds (there is a **left-hand cut**), but this will be solved through analytic continuation later on. Using @eq-t-matrix-definition, transition <span class="nowrap">operator&nbsp;$\mathbf{T}$</span> and its corresponding partial-wave <span class="nowrap">projection&nbsp;$\mathbfit{a}(s)$</span> gets the same form as @eq-k-matrix-single-channel, but in matrix form
+
+$$
+\mathbfit{a}(s) \;=\; \mathbfit{K}(s) \, \left(\mathbfit{I} - i\,\mathbfit{\rho}(s)\,\mathbfit{K}(s) \right)^{-1} \,.
+$$ {#eq-t-matrix-from-k}
+
+Just as reactance (the imaginary part of impedance) describes how a circuit temporarily stores and returns energy without dissipation, the <span class="nowrap">$\mathbfit{K}$‑matrix</span> captures the elastic component of scattering: energy may be temporarily trapped, for instance in a resonant state, but is not lost. Dissipative effects, such as the loss of flux into other channels, are reintroduced in a controlled way through the phase space factor, which supplies the imaginary part of the full amplitude.
+
+@fig-k-matrix-channels shows the elements of the $\mathbfit{K}$ matrix for two-channel nucleon scattering, $\pi N$ <span class="nowrap">and&nbsp;$\eta N$.</span> The <span class="nowrap">$\mathbfit{K}$‑matrix</span> describes the two-channel system as a whole by accounting for the flow between the two channels through it's off-diagonal elements.
+
+:::{#fig-k-matrix-channels layout-ncol=4}
+![](images/chapter2/k-matrix-nucleon-scattering-11.svg){fig-align="center"}
+
+![](images/chapter2/k-matrix-nucleon-scattering-12.svg){fig-align="center"}
+
+![](images/chapter2/k-matrix-nucleon-scattering-21.svg){fig-align="center"}
+
+![](images/chapter2/k-matrix-nucleon-scattering-22.svg){fig-align="center"}
+
+The four elements of the <span class="nowrap">$\mathbfit{K}$‑matrix</span> for two-channel nucleon scattering, with final state <span class="nowrap">$\pi N$&nbsp;(1)</span> and <span class="nowrap">$\eta N$&nbsp;(2).</span>
+:::
+
+Since the <span class="nowrap">$\mathbfit{K}$‑matrix</span> plays the role of an energy-dependent kernel that captures the reactive core of the scattering process, any resonant peak structures in the amplitude must modelled through the (real-valued) elements of the <span class="nowrap">$\mathbfit{K}$‑matrix.</span> The <span class="nowrap">$\mathbfit{K}$‑matrix</span> is therefore usually parametrised as a spectral decomposition of **poles** via
+
+$$
+K_{\!\beta\alpha}(s) \;=\; \sum_r \frac{g^r_\beta\,g^r_\alpha}{m_r^2 - s}
+\,,
+$$ {#eq-k-matrix-parametrisation}
+
+`\noindent`{=latex}
+where $r$ is an index for each pole, $m_r$ is **bare mass** of pole&nbsp;$r$, and $g^r_\alpha,g^r_\beta$ are **coupling constants** that describe how strongly pole&nbsp;$r$ couples to initial state&nbsp;$\alpha$ and final <span class="nowrap">state&nbsp;$\beta$</span> [@ParticleDataGroup:2024cfk, Section 50; @Chung:1995dx; @Aitchison:1972ay]. These poles do not correspond directly to physical particles, but represent internal excitation modes (bare states) of the multichannel system before unitarity and channel-specific thresholds dress them into observable amplitudes&nbsp;[@JPAC:2021rxu; @Mai:2022eur]. In this sense, they play a role akin to the normal modes of an oscillator or the eigenfrequencies of a cavity: points at which the internal structure of the interaction resonates most strongly.
+
+The partial-wave decomposition from @eq-partial-wave-expansion still applies, because it is a decomposition of total angular <span class="nowrap">momentum&nbsp;$J$,</span> not of internal dynamics. However, similar to @fig-barrier-factor-effect, the partial-wave amplitude becomes suppressed by the centrifugal barrier <span class="nowrap">factors&nbsp;$n_{\ell_\alpha},n_{\ell_\beta}$</span> from @eq-barrier-factor due to the orbital angular momenta&nbsp;$\ell_\alpha,\ell_\beta$ of the incoming and outgoing vertex, respectively. Infusing @eq-t-matrix-from-k and @eq-transition-matrix-element with these factors, we get a partial-wave amplitude that is "dressed" with a diagonal <span class="nowrap">matrix&nbsp;$\mathbfit{n}$</span> of vertex <span class="nowrap">functions&nbsp;[@ParticleDataGroup:2024cfk, Section 50, p.13],</span>
+
+$$
+\mathbfit{a} \;=\;
+\mathbfit{n}\, \mathbfit{K}\, \left( \mathbfit{I} - i\,\mathbfit{\rho}\,\mathbfit{n}^2\,\mathbfit{K} \right)^{-1} \mathbfit{n}
+$$ {#eq-t-matrix-dressed}
+
+`\noindent`{=latex}
+or explicitly, in terms of the matrix element functions,
+
+$$
+a_{\beta\alpha}(s) \;=\;
+  n_{\ell_\beta}(s)
+  \sum_\gamma K_{\!\beta\gamma}(s) \left[
+      \left(
+        \mathbfit{I} -
+        i\,\mathbfit{\rho}(s)\,\mathbfit{n}(s)^2\,\mathbfit{K}(s)
+      \right)^{-1}
+    \right]_{\!\gamma\alpha}
+    n_{\ell_\alpha}(s)
+\,.
+$$ {#eq-t-matrix-dressed-sum}
+
+`\noindent`{=latex}
+One can derive that the single-channel version of @eq-t-matrix-dressed reduces to @eq-breit-wigner-vertex if there is only one pole with bare mass $M_R$ and coupling $g_1^2=M_R\Gamma$.
+
+@fig-coupled-nucleon-scattering-amplitudes shows the resulting partial-wave amplitudes for the P‑wave ($\ell_1=\ell_2=1$) in $\pi N$ and $\eta N$ nucleon scattering. In this example, the <span class="nowrap">$\mathbfit{K}$‑matrix</span> is modelled with one pole with a bare mass set to that of the [Roper resonance $N(1440)$](https://pdglive.lbl.gov/Particle.action?init=0&node=B061&home=BXXX005)&nbsp;[@Roper:1964zza]. There are four transition matrix elements, with the off-diagonal elements describing the flow of flux between the two channels (inelastic scattering). The amplitude $a_{11}$ for elastic $\pi N$ scattering exhibits a "cusp effect" at the threshold where the $\eta N$ channel opens up. All other elements lie above the <span class="nowrap">$\pi N$&nbsp;threshold.</span>
+
+The figure shows the modulus squared, real part, and imaginary part of each amplitude. Counter to expectations, the real part does not show the characteristic shift around the bare mass position, like in @fig-breit-wigner. This is because the couplings have been set to a high value, moving the pole position further away from the real axis.
+
+```{python}
+#| fig-cap: Partial-wave amplitudes (<font color="#757575">modulus squared</font>, <font color="#17365c">real part</font>, and <font color="#8dae10">imaginary part</font>) for <span class="nowrap">$\pi N$&nbsp;(1)</span> and <span class="nowrap">$\eta N$&nbsp;(2)</span> nucleon scattering modelled with the <span class="nowrap">$\mathbfit{K}$‑matrix,</span> with one pole at the bare mass&nbsp;$m_p$ set to that of the Roper resonance $N(1440)$ (P‑wave with $\ell_1=\ell_2=1$). The coupling constant $g_{\eta N}$ has been set to a much higher value than in reality to enhance the cusp effect at the $\pi N$ threshold <span class="nowrap">in&nbsp;$a_{11}$.</span>
+#| fig-pos: b!
+#| label: fig-coupled-nucleon-scattering-amplitudes
+@unevaluated(real=False)
+class ChewMandelstamSWave(sp.Expr):
+    s: Any
+    m1: Any
+    m2: Any
+    _latex_repr_ = R"\varSigma_0\left({s}\right)"
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        q = BreakupMomentum(s, m1, m2)
+        return (
+            (2 * q / sp.sqrt(s))
+            * sp.log((m1**2 + m2**2 - s + 2 * sp.sqrt(s) * q) / (2 * m1 * m2))
+            - (m1**2 - m2**2) * (1 / s - 1 / (m1 + m2) ** 2) * sp.log(m1 / m2)
+        ) / sp.pi
+
+
+@unevaluated(real=False)
+class BreakupMomentum(sp.Expr):
+    s: Any
+    m1: Any
+    m2: Any
+    _latex_repr_ = R"q\left({s}\right)"
+
+    def evaluate(self) -> sp.Expr:
+        s, m1, m2 = self.args
+        return sp.sqrt(s - (m1 - m2)**2) * sp.sqrt(s - (m1 + m2)**2) / (2 * sp.sqrt(s))
+
+
+class DiagonalMatrix(sp.DiagonalMatrix):
+    def _latex(self, printer, *args):
+        return printer._print(self.args[0])
+
+
+def lambdify_matrix_expression(matrix_expr):
+    return np.array([
+        [sp.lambdify(s, matrix_expr[i, j].doit().subs(parameters)) for i in range(n_ch)]
+        for j in range(n_ch)
+    ])
+
+
+n_ch = 2
+K = sp.MatrixSymbol("K", n_ch, n_ch)
+Σ = DiagonalMatrix(sp.MatrixSymbol("Sigma", n_ch, n_ch))
+n = DiagonalMatrix(sp.MatrixSymbol("n", n_ch, n_ch))
+I = sp.Identity(n_ch)
+T = n * K * (I - Σ * n**2 * K).inv() * n
+
+s, g1, g2, mp1 = sp.symbols("s g1 g2 m_{p_1}")
+ma, mb, mc, md = sp.symbols("m_A m_B m_C m_D")
+definitions = {
+    K[0, 0]: g1**2 / (mp1**2 - s),
+    K[1, 1]: g2**2 / (mp1**2 - s),
+    K[0, 1]: g1 * g2 / (mp1**2 - s),
+    K[1, 0]: g2 * g1 / (mp1**2 - s),
+    n[0, 0]: FormFactor(s, ma, mb, angular_momentum=1),
+    n[1, 1]: FormFactor(s, mc, md, angular_momentum=1),
+    Σ[0, 0]: ChewMandelstamSWave(s, ma, mb),
+    Σ[1, 1]: ChewMandelstamSWave(s, mc, md),
+}
+T_expr = T.as_explicit().subs(definitions)
+
+parameters = {
+    mp1: 1.38,  # https://pdglive.lbl.gov/Particle.action?init=0&node=B061&home=BXXX005
+    g1: 1.2,
+    g2: 3.2,  # large to increase cusp effect
+    ma: 0.139,  # pi
+    mb: 0.939,  # nucleon
+    mc: 0.548,  # eta
+    md: 0.939,  # nucleon
+}
+T_func = lambdify_matrix_expression(T_expr)
+
+ϵi = 1e-7j
+ϵ = ϵi.imag
+thr1 = parameters[ma] + parameters[mb]
+thr2 = parameters[mc] + parameters[md]
+s1 = np.linspace(thr1**2, 1.95**2, num=1000) + ϵi
+s2 = np.linspace(thr2**2, 1.95**2, num=1000) + ϵi
+sqrt_s1 = np.sqrt(s1.real)
+sqrt_s2 = np.sqrt(s2.real)
+
+fig, axes = plt.subplots(figsize=(6.5, 3.7), ncols=n_ch, nrows=n_ch, sharex=True, sharey=True)
+fig.patch.set_facecolor("none")
+ax11, ax12, ax21, ax22 = axes.flatten()
+for ax in axes.flatten():
+    ax.spines["bottom"].set_position("zero")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.patch.set_facecolor("none")
+    ax.axvline(parameters[mp1], color="#e6332a", ls="dashed", lw=1.5)
+    ax.axvline(thr1, color="C0", ls="dotted", lw=1.5)
+    ax.axvline(thr2, color="C1", ls="dotted", lw=1.5)
+    ax.set_yticks([])
+ax12.text(2, -0.09, R"$\sqrt{s}$ [GeV]", ha="right", va="top")
+ax22.text(2, +0.09, R"$\sqrt{s}$ [GeV]", ha="right", va="bottom")
+
+text_kwargs = dict(transform=ax11.transAxes, ha="center", va="center")
+ax11.text(0.88, 0.18, R"$\mathrm{Re}\,a(s)$", c="#17365c", **text_kwargs)
+ax11.text(0.88, 0.45, R"$\mathrm{Im}\,a(s)$", c="#8dae10", **text_kwargs)
+ax11.text(0.59, 0.71, R"$|a(s)|^2$", c="#757575", **text_kwargs)
+ax11.text(0.30, 0.93, R"$m_p$", c="#e6332a", **text_kwargs)
+ax11.text(0.11, 0.93, R"$\pi N$", c="C0", **text_kwargs)
+ax11.text(0.53, 0.93, R"$\eta N$", c="C1", **text_kwargs)
+
+ax11.plot(sqrt_s1, T_func[0, 0](s1).real, c="#17365c", lw=1.5)
+ax11.plot(sqrt_s1, T_func[0, 0](s1).imag, c="#8dae10", lw=1.5)
+ax11.plot(sqrt_s1, np.abs(T_func[0, 0](s1))**2, c="#757575", lw=1.5)
+ax12.plot(sqrt_s2, T_func[1, 0](s2).real, c="#17365c", lw=1.5)
+ax12.plot(sqrt_s2, T_func[1, 0](s2).imag, c="#8dae10", lw=1.5)
+ax12.plot(sqrt_s2, np.abs(T_func[1, 0](s2))**2, c="#757575", lw=1.5)
+ax21.plot(sqrt_s2, T_func[0, 1](s2).real, c="#17365c", lw=1.5)
+ax21.plot(sqrt_s2, T_func[0, 1](s2).imag, c="#8dae10", lw=1.5)
+ax21.plot(sqrt_s2, np.abs(T_func[0, 1](s2))**2, c="#757575", lw=1.5)
+ax22.plot(sqrt_s2, T_func[1, 1](s2).real, c="#17365c", lw=1.5)
+ax22.plot(sqrt_s2, T_func[1, 1](s2).imag, c="#8dae10", lw=1.5)
+ax22.plot(sqrt_s2, np.abs(T_func[1, 1](s2))**2, c="#757575", lw=1.5)
+ax11.set_title(R"$a_{11}$ : $\pi N \to \pi N$")
+ax12.set_title(R"$a_{12}$ : $\pi N \to \eta N$")
+ax21.set_title(R"$a_{21}$ : $\eta N \to \pi N$")
+ax22.set_title(R"$a_{22}$ : $\eta N \to \eta N$")
+fig.tight_layout()
+plt.show(fig)
+```
+
+The <span class="nowrap">$\mathbfit{K}$‑matrix</span> formalism is primarily formulated for scattering processes. In the case of a decay, however, the underlying production mechanism is not constrained in the same way and must be parametrised independently. A common approach is the **<span class="nowrap">$\mathcal{P}$‑vector</span> parametrisation**, in which the amplitude is written in terms of _vector_ <span class="nowrap">elements&nbsp;$a_\beta(s)$</span> for each final <span class="nowrap">state&nbsp;$\beta$,</span> rather than _matrix_ elements,
+
+$$
+a_\beta(s) \;=\;
+  n_{\ell_\beta}(s) \,
+  \sum_\gamma \mathcal{P}_{\!\gamma}(s) \left[
+      \left(
+        \mathbfit{I} -
+        i\,\mathbfit{\rho}(s) \, \mathbfit{n}(s)^2 \, \mathbfit{K}(s)
+      \right)^{-1}
+    \right]_{\gamma\beta}(s)
+\,,
+$$
+
+`\noindent`{=latex}
+or, in compact matrix notation like @eq-t-matrix-dressed,
+
+$$
+\mathbfit{a} \;=\;
+\mathbfit{n} \, \mathcal{P} \, \left(\mathbfit{I} - i\,\mathbfit{\rho}\,\mathbfit{n}^2\mathbfit{K}\right)^{-1}
+\,.
+$$
+
+`\noindent`{=latex}
+The $\mathcal{P}$-vector plays a role analogous to the incoming vertex factor in @eq-t-matrix-dressed-sum, but is replaced here by a **production <span class="nowrap">vector&nbsp;$\mathcal{P}$</span>**. Much like the <span class="nowrap">$\mathbfit{K}$‑matrix,</span> it is usually parametrised as a sum over poles&nbsp;[@ParticleDataGroup:2024cfk, Section 50, p.14; @Chung:1995dx, p.425],
+
+$$
+\mathcal{P}_{\!\gamma}(s) \;=\; \sum_r \frac{\alpha_r g^r_\gamma}{m_r^2 - s}
+\,,
+$$ {#eq-p-vector-parametrisation}
+
+`\noindent`{=latex}
+where $\alpha_r$ denotes the production coupling for each <span class="nowrap">pole&nbsp;$r$.</span> While the <span class="nowrap">$\mathbfit{K}$‑matrix</span> must be real to preserve unitarity, the production <span class="nowrap">coupling&nbsp;$\alpha_r$</span> can be complex, since it serves to absorb undetermined relative phases of the unknown production mechanism.
+
+In practice, both the $\mathcal{P}$-vector parametrisation of @eq-p-vector-parametrisation and the <span class="nowrap">$\mathbfit{K}$‑matrix</span> parametrisation of @eq-k-matrix-parametrisation are often supplemented by additional non-pole terms. These background contributions are omitted from the present discussion.
+
+### Analytic continuation {#sec-analytic-continuation}
+
+While the <span class="nowrap">$\mathbfit{K}$‑matrix</span> is real-valued and primarily constructed to preserve unitarity across overlapping resonances and thresholds, it also offers a transparent way of disentangling the underlying resonance structure. Whereas a traditional Breit–Wigner parametrisation produces a peak in the cross section characterised by a mass and a width, the <span class="nowrap">$\mathbfit{K}$‑matrix</span> leads to a pole in the complex plane that serves as a channel-independent fingerprint of an underlying physical state&nbsp;[@Gribov:2009cfk, Chapter 3]. These poles are more fundamental than the apparent mass and width of a peak, because their positions are insensitive to channel-dependent distortions and provide a process-independent definition of the underlying hadronic state. This brings us back to the analyticity of the scattering amplitude discussed in @sec-analyticity: the challenge now is to extract information about these poles by **analytically continuing** the physical amplitude into the complex domain where they reside. <!-- cspell:ignore Gribov -->
+
+#### Leaving the real axis
+
+So far, the amplitudes in @eq-t-matrix-dressed-sum are specifically constructed over the real <span class="nowrap">$s$&nbsp;axis</span> above each minimal threshold (see @fig-coupled-nucleon-scattering-amplitudes). This is the physical, observable domain, so we call these constructions _physical amplitudes_. As noted in @sec-analyticity, we know that amplitudes have to be analytic over the full complex domain <span class="nowrap">of&nbsp;$s$,</span> but we need a recipe to continue the physical amplitude over the complex plane. Complex analysis gives us the tools to do this if we know what analytic structure the amplitude has. Once we know the location of branch cuts and poles, we can compute the amplitude at any point in the complex plane, including the domain where the poles are located. The recipe that follow applies generally to any physical partial-wave <span class="nowrap">amplitude&nbsp;$a(s)$.</span>
+
+As a first step, causality in perturbation theory dictates "retarded propagation", which tells us that the physical amplitude is equal to the limit from the upper half of the complex plane <span class="nowrap">of $s$&nbsp;[@Eden:1966dnq, p.16,90-99],</span> that is
+
+$$
+a(s) \;=\; \lim_{\epsilon \to 0^+}a(s+i\epsilon) \,.
+$$ {#eq-analyticity-limit-uhp}
+
+This gives us a stepping stone into the upper half of the complex plane (UHP). The **Schwarz reflection principle** allows us to extend the amplitude into the lower half of the complex plane. It tells that any function&nbsp;$f$ can be extended to the lower half-plane by $f(z^*) = f^*(z)$ if it and only if it&nbsp;[@Ahlfors:1966-ComplexAnalysis] <!-- cspell:ignore Ahlfors -->
+
+1. is _continuous_ on $\left\{z\in\mathbb{C}|\operatorname{Im} z \geq 0\right\}$ (closed UHP, including the real axis),
+2. is _analytic_ on $\left\{z\in\mathbb{C}|\operatorname{Im} z > 0\right\}$ (open UHP, excluding the real axis), and
+3. returns real values on a segment of the real axis.
+
+We already know that amplitudes are analytic in the UHP and @eq-analyticity-limit-uhp tells us that it is continuous on the closed UHP. The third condition is satisfied through unitarity. @eq-unitarity-partial-wave shows that the amplitude has no imaginary part on the real axis below the smallest threshold: below the smallest threshold, there is no cross section and $|a(s)|^2$ goes to zero. This means $a(s)$ satisfies all three conditions, so that we can write $a(s^*)=a^*(s)$. The amplitude therefore has a **right-hand branch cut** that runs along the real <span class="nowrap">$s$&nbsp;axis</span> (it's imaginary part 'flips' sign when crossing the axis), starting at the first threshold opening.
+
+The reasoning so far only reveals the analytic structure of the amplitude, but does not give a recipe to _compute_ $a(s)$ for any point $s$ in the complex plane. **Cauchy's integral formula** provides such a recipe. It tells that for any analytic function $f$ that is analytic on or inside a closed contour $C$ on complex plane, we can compute $f(z)$ for any point $z$ inside $C$ as
+
+$$
+f(z) \;=\; \frac{1}{2\pi i} \oint_C \frac{f(z')}{z'-z} \, \mathrm{d}z' \,.
+$$ {#eq-cauchy-integral-formula}
+
+The previous argumentation already indicates that there has to be one and only one branch cut over the real axis above the threshold with a **branch point** at $s_\text{thr}=(m_C+m_D)^2$. These branch points arise from threshold openings where a new channel becomes accessible and correspond to the boundary of the physical regions in @fig-mandelstam-diagram. In addition, causality tells us that the physical amplitude contains no poles. We can therefore deform any contour $C$ that encloses a point $s$ (see @fig-branch-cut-integral) that is not on the branch cut in such a way that it only encloses the right-hand cut. Elsewhere, the contour can be deformed to infinity. If we assume that $a(s) \to 0$ as $|s|\to\infty$, @eq-cauchy-integral-formula over this deformed contour $C$ becomes
+
+$$
+\begin{aligned}
+a(s)
+\;&=\; \frac{1}{2\pi i} \left(
+  \int_{s_\text{thr}}^\infty \frac{a(s'+i\epsilon)}{s'-s} \, \mathrm{d}s' +
+  \int_\infty^{s_\text{thr}} \frac{a(s'-i\epsilon)}{s'-s} \, \mathrm{d}s'
+\right) \\
+\;&=\; \frac{1}{2\pi i} \int_{s_\text{thr}}^\infty \frac{a(s'+i\epsilon) - a(s'-i\epsilon)}{s'-s} \, \mathrm{d}s' \\
+\;&=\; \frac{1}{2\pi i} \int_{s_\text{thr}}^\infty \frac{\operatorname{Disc}a(s')}{s'-s} \, \mathrm{d}s'
+\;  =\; \frac{1}{\pi} \int_{s_\text{thr}}^\infty \frac{\operatorname{Im}a(s')}{s'-s} \, \mathrm{d}s'
+\,,
+\end{aligned}
+$$ {#eq-amplitude-dispersion-integral}
+
+`\noindent`{=latex}
+where in the final step, we have used Schwarz reflection to rewrite the discontinuity as $\operatorname{Disc}a(s') = 2i\,\operatorname{Im}a(s')$. This is the **dispersion integral** for partial-wave amplitudes, which allows us to compute the amplitude at any point in the complex plane, provided that we know its imaginary part on the right-hand cut. An overview of more sophisticated treatments that describes subtractions in case $a(s)$ does _not_ vanish as $|s|\to\infty$, see @Deineka:2023dcu. It also discusses the left-hand cut for negative&nbsp;$s$, such as the $N/D$ approach&nbsp;[@Chew:1960iv]. <!-- cspell:ignore Deineka -->
+
+:::{#fig-branch-cut-integral}
+![](images/chapter2/branch-cut-integral.svg)
+
+The contour $C$ encloses the right-hand branch cut above the threshold $s_\text{thr}=(m_C+m_D)^2$ and is deformed to $|s|\to\infty$ elsewhere, so that closed integral @eq-cauchy-integral-formula can be used to compute the amplitude $a(s)$ for any point $s$ in the complex plane with @eq-amplitude-dispersion-integral.
+:::
+
+#### Continuing with the $\mathbfit{K}$‑matrix {#sec-k-matrix}
+
+Computing the dispersion integral for arbitrary amplitude functions is difficult and computationally intensive. This is another point where the <span class="nowrap">$\mathbfit{K}$‑matrix</span> formalism shines: amplitudes constructed via @eq-t-matrix-dressed isolate the dispersive cut structure (branch cuts) from their reactive core that contains the poles. As a heuristic argument (ignoring that $\mathbfit{K}$ is not necessarily invertible), we write @eq-t-matrix-from-k as
+
+$$
+\mathbfit{a}(s) \;=\; \left(\mathbfit{K}^{-1}(s) - \boldsymbol{\varSigma}(s)\right)^{-1} \,,
+$$ {#eq-t-matrix-from-chew-mandelstam-and-k-matrix}
+
+`\noindent`{=latex}
+where $\boldsymbol{\varSigma}(s) = i\mathbfit{\rho}(s)$. Since the <span class="nowrap">$\mathbfit{K}$‑matrix</span> parametrisation of @eq-k-matrix-parametrisation is analytic (apart from poles) and does not contain cuts, the right-hand cut in the amplitude has to come <span class="nowrap">from&nbsp;$\boldsymbol{\varSigma}$.</span>
+
+Notice, however, that the standard phase space factor from @eq-phase-space-factor-and-breakup-momentum does not have the correct cut structure. As can be seen in @fig-phase-space-factor-complex-plane, it has a branch cut in its real part across the real <span class="nowrap">$s$&nbsp;axis</span> between $(m_C-m_D)^2$ and $(m_C+m_D)^2$. We therefore need to construct a function $\boldsymbol{\varSigma}(s)$ that does have the expected right-hand branch cut in the imaginary part, starting at branch point $(m_C+m_D)^2$, but that does have the same imaginary part when approaching the cut from the UHP. A similar argument holds for the more general product $i\rho(s)n_\ell^2(s)$ in @eq-t-matrix-dressed, which needs to be replace by an analytic **Chew–Mandelstam function** $\boldsymbol{\varSigma_\ell}(s)$ with the expected right-hand cut&nbsp;[@Chew:1960iv]. The barrier factors on the sides do not affect the positions of the poles and are therefore ignored in the analytic continuation of the overall partial-wave amplitude.
+
+```{python}
+#| fig-cap: Analytic continuation of the (rotated) phase space factor $i\rho(s)$ to a Chew–Mandelstam function $\varSigma_0(s)$ that produces the expected right-hand cut (<font color="black">black</font>). The <font color="#17365c">real</font>`~(\textcolor{RUBblue}{blue})`{=latex} and <font color="#8dae10">imaginary</font>`~(\textcolor{RUBgreen}{green})`{=latex} part of the respective functions evaluated just above the real <span class="nowrap">$s$&nbsp;axis</span> are also plotted.
+#| label: fig-phase-space-factor-complex-plane
+x_min, x_max = 0, +3
+y_max = 0.9
+z_max = 1
+X, Y = np.meshgrid(
+    np.linspace(x_min, x_max, num=500),
+    np.linspace(-y_max, +y_max, num=300),
+)
+S = X + 1j * Y
+
+thr_neg = (parameters[ma] - parameters[mb]) ** 2
+thr_pos = (parameters[ma] + parameters[mb]) ** 2
+
+rho_func = sp.lambdify(s_symbol, sp.I * PhaseSpaceFactor(s_symbol, ma, mb).doit().subs(parameters))
+cm_func = sp.lambdify(s_symbol, ChewMandelstamSWave(s_symbol, ma, mb).doit().subs(parameters))
+
+fig, axes = plt.subplots(dpi=300, figsize=(5.2, 1.3), ncols=2, sharey=True)
+fig.subplots_adjust(bottom=0, left=0, right=1, top=1, wspace=0.12)
+ax1, ax2 = axes
+fig.patch.set_facecolor("none")
+for ax in axes:
+    ax.patch.set_facecolor("none")
+    ax.spines["bottom"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    ax.set_xlabel(R"$\mathrm{Re}\,s$", labelpad=-12)
+    ax.set_xticks([0])
+ax1.set_ylabel(R"$\mathrm{Im}\,s$")
+ax1.set_ylim(-y_max, +y_max)
+ax1.set_yticks([0])
+style = dict(
+    cmap="coolwarm",
+    rasterized=True,
+    vmin=-z_max,
+    vmax=+z_max,
+    zorder=-10,
+)
+mesh = ax1.pcolormesh(X, Y, rho_func(S).real, **style)
+cbar = fig.colorbar(mesh, ax=ax1, pad=0.01)
+cbar.ax.set_ylabel(R"$\mathrm{Re}\,i\rho$", labelpad=0, rotation=270)
+cbar.ax.set_yticks([-z_max, +z_max])
+cbar.ax.set_yticklabels(["$-$", "$+$"])
+mesh = ax2.pcolormesh(X, Y, cm_func(S).imag, **style)
+cbar = fig.colorbar(mesh, ax=ax2, pad=0.01)
+cbar.ax.set_ylabel(R"$\mathrm{Im}\,\mathit{\Sigma}_0$", labelpad=0, rotation=270)
+cbar.ax.set_yticks([-z_max, +z_max])
+cbar.ax.set_yticklabels(["$-$", "$+$"])
+
+ax1.plot(X[0], rho_func(X[0] + ϵi).real, c="#17365c", lw=0.5, zorder=-5)
+ax1.plot(X[0], rho_func(X[0] + ϵi).imag, c="#8dae10", lw=0.5, zorder=-5)
+ax2.plot(X[0], cm_func(X[0] + ϵi).real, c="#17365c", lw=0.5, zorder=-5)
+ax2.plot(X[0], cm_func(X[0] + ϵi).imag, c="#8dae10", lw=0.5, zorder=-5)
+
+ax1.text(0.99, 0.47, R"$\mathrm{Re}\,i\rho$", c="#17365c", transform=ax1.transAxes, ha="right", va="top")
+ax1.text(0.99, 0.82, R"$\mathrm{Im}\,i\rho$", c="#8dae10", transform=ax1.transAxes, ha="right", va="top")
+ax2.text(0.99, 0.30, R"$\mathrm{Re}\,\mathit{\Sigma}_0$", c="#17365c", transform=ax2.transAxes, ha="right", va="top")
+ax2.text(0.99, 0.82, R"$\mathrm{Im}\,\mathit{\Sigma}_0$", c="#8dae10", transform=ax2.transAxes, ha="right", va="top")
+
+ax1.hlines(0, thr_neg, thr_pos, color="black", lw=1.5)
+ax1.scatter([thr_neg, thr_pos], [0, 0], color="black", s=25)
+ax2.hlines(0, thr_pos, x_max, color="black", lw=1.5)
+ax2.scatter([thr_pos], [0], color="black", s=25)
+
+plt.show(fig)
+```
+
+To construct $\varSigma_\ell(s)$ for <span class="nowrap">higher&nbsp;$\ell$,</span> we can again apply the Cauchy integral formula. This time the logic that led to @eq-amplitude-dispersion-integral reverses: we start with the assumption that we need a function $\varSigma_\ell(s)$ that has the  desired right-hand cut with a discontinuity of
+
+$$
+\operatorname{Disc} \varSigma_\ell(s) \;=\; 2i\,\rho(s)\,n_\ell^2(s) \,.
+$$
+
+`\noindent`{=latex}
+rather than its imaginary part. Since $\rho(s)\,n_\ell^2(s) \to s$ rather than $0$ as $|s|\to\infty$, the dispersion integral needs to be once-subtracted&nbsp;[@Sugawara:1961zz], giving us&nbsp;[@Edwards:1980sa; @ParticleDataGroup:2024cfk, p.15] <!-- cspell:ignore Sugawara -->
+$$
+\varSigma_\ell(s) \;=\;
+\frac{s-s_\text{thr}}{\pi} \int_{s_\text{thr}}^\infty
+\frac{\rho(s') \, n_{\ell}^2(s') \, \mathrm{d}s'}{(s'-s_\text{thr})(s'-s-i\epsilon)} \,.
+$$ {#eq-dispersion-integral-sigma}
+
+`\noindent`{=latex}
+An analytic solution to this integral exists if $\ell=0$ and is given by&nbsp;[@Reid:1982wt]
+
+$$
+\begin{aligned}
+\varSigma_0(s) \;&=\; \frac{1}{\pi} \left[
+    \frac{2\,q(s)}{\sqrt{s}} \log \frac{m_C^2 + m_D^2 - s + 2\,q(s)\sqrt{s}}{2\,m_C\,m_D}
+\right. \\ & \qquad\quad \left.
+    - \, (m_C^2 - m_D^2) \left( \frac{1}{s} - \frac{1}{(m_C + m_D)^2} \right) \log \frac{m_C}{m_D}
+\right] \,.
+\end{aligned}
+$$ {#eq-chew-mandelstam-function}
+
+Simply by replacing $i\rho(s)n_\ell^2(s)$ with its analytic version $\varSigma_\ell(s)$, the physical amplitude $a_{11}(s)$ for elastic $\pi N$ scattering shown in @fig-coupled-nucleon-scattering-amplitudes can be computed anywhere in the complex plane. @fig-physical-amplitude-complex-plane shows how the <span class="nowrap">amplitude&nbsp;$a_{11}(s)$</span> for $\pi N \to \pi N$ scattering has been analytically continued from the real axis into one smooth function over the complex plane, with the expected right-hand branch cut along the real <span class="nowrap">$s$&nbsp;axis</span> starting at the <span class="nowrap">$\pi N$&nbsp;threshold.</span> The second branch point at the <span class="nowrap">$\eta N$&nbsp;threshold</span> lies at the same position as the cusp effect seen in the lineshapes.
+
+```{python}
+#| fig-cap: Analytic continuation into the complex plane of the physical amplitude $a_{11}(s)$ for elastic $\pi N$ scattering shown in @fig-coupled-nucleon-scattering-amplitudes. The modulus squared (<font color="#757575">dashed gray</font>), real part (<font color="#17365c">dashed blue</font>), and imaginary part (<font color="#8dae10">solid green</font>) of $a_{11}(s)$ evaluated just above the real <span class="nowrap">$s$&nbsp;axis</span> are also shown, as well as the two overlapping branch cuts for the ${\color{C0}\pi N}$ and ${\color{C1}\eta N}$ thresholds.
+#| label: fig-physical-amplitude-complex-plane
+def draw_text(ax, x, y, text, **kwargs):
+    ax.text(x, y, text, transform=ax.transAxes, **kwargs)
+
+
+T1 = (K.inv() - Σ).inv()
+T1_expr = T1.as_explicit().subs(definitions)
+parameters.update({
+    g1: 1.2,
+    g2: 0.8,
+})
+T1_func = lambdify_matrix_expression(T1_expr)
+
+x_min, x_max = 0.9**2, 1.9**2
+y_max = 1.0
+z_max = 2
+X, Y = np.meshgrid(
+    np.linspace(x_min, x_max, num=500),
+    np.linspace(-y_max, +y_max, num=300),
+)
+S = X + 1j * Y
+
+fig = plt.figure(dpi=300, figsize=(3.5, 1.8))
+ax = fig.add_axes([0, 0, 1, 1])
+fig.patch.set_facecolor("none")
+ax.patch.set_facecolor("none")
+ax.spines["bottom"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.spines["top"].set_visible(False)
+ax.set_yticks([])
+ax.set_ylabel(R"$\mathrm{Im}\,s$")
+ax.set_ylim(-y_max, +y_max)
+draw_text(ax, 0.99, -0.1, R"$\mathrm{Re}\,s$", ha="right", va="top")
+
+kwargs = dict(
+    cmap="coolwarm",
+    rasterized=True,
+    vmin=-z_max,
+    vmax=+z_max,
+)
+mesh = ax.pcolormesh(X, Y, T1_func[0, 0](S).imag, **kwargs)
+cbar = fig.colorbar(mesh, ax=ax, pad=0.01)
+cbar.ax.set_ylabel(R"$\mathrm{Im}\,a$", labelpad=12, rotation=-90)
+cbar.ax.set_yticks([-z_max, 0, +z_max])
+cbar.ax.set_yticklabels(["$-$", "$0$", "$+$"])
+
+scale = 0.5
+s1 = np.linspace(thr1**2, x_max, num=500) + ϵi
+s2 = np.linspace(thr2**2, x_max, num=500) + ϵi
+ax.plot(s1.real, scale * T_func[0, 0](s1).imag, c="#8dae10", lw=2)
+ax.plot(s1.real, scale * T_func[0, 0](s1).real, c="#17365c", ls="dotted", lw=1.5)
+ax.plot(s1.real, scale * np.abs(T_func[0, 0](s1))**2, c="#757575", ls="dotted", lw=1.5)
+ax.hlines(0, thr1**2, thr2**2, color="C0", lw=2)
+ax.hlines(0, thr2**2, x_max, color="C1", lw=2)
+ax.scatter([thr1**2], [0], color="C0", s=30, zorder=10)
+ax.scatter([thr2**2], [0], color="C1", s=30, zorder=10)
+ax.text(thr1**2, +0.05 * y_max, R"$\pi N$", c="C0", ha="center", va="bottom")
+ax.text(thr2**2, -0.07 * y_max, R"$\eta N$", c="C1", ha="center", va="top")
+
+draw_text(ax, 0.44, 0.26, R"$\mathrm{Re}\,a$", c="#17365c", ha="center", va="top")
+draw_text(ax, 0.99, 0.58, R"$\mathrm{Im}\,a$", c="#8dae10", ha="right", va="bottom")
+draw_text(ax, 0.45, 0.87, R"$|a|^2$", c="#757575", ha="right", va="bottom")
+plt.show(fig)
+```
+
+#### Crossing the branch cut
+
+The analytic continuation of the amplitude has not yet revealed any poles. This is because the amplitude function $a(s)$, while analytic and single-valued within its complex domain, becomes part of a multivalued structure when continued across its branch cuts. These continuations together form a smooth, connected complex manifold known as a **Riemann surface**. [@fig-riemann-surface]{.content-visible when-format="html"}[@fig-riemann-surface-png]{.content-visible unless-format="html"} shows a three-dimensional rendering of @fig-physical-amplitude-complex-plane that continues the amplitude across its branch cuts. Each continuation defines a new **Riemann sheet**, and the poles associated with resonances reside on a sheet that is not directly accessible from the initial (physical) one&nbsp;[@Ketzer:2019wmd, Section 3.1.5]. What we typically call "the amplitude" is therefore only one branch -- a single-valued function -- on a particular sheet of a Riemann surface that encodes the global analytic structure of the scattering process.
+
+The amplitude function that we have constructed is called the **physical sheet** as it is constructed from observable data on the real axis&nbsp;[@Perl:1974-HadronPhysics, pp.344-345]. Continuing across the cut leads us to an **unphysical sheet** that contains the poles that we are interested in. When considering multiple channels, each threshold defines a new branch point with two associated sheets, leading to multiple overlapping cuts along the real axis. The Riemann surface for $n$ channels therefore consists of $2^n$ sheets, each corresponding to a different combination of continuations across the cuts. The sheets are commonly denoted with Roman numerals, like $\mathbfit{a}^\mathrm{I}$, $\mathbfit{a}^\mathrm{II}$, et cetera, starting at physical <span class="nowrap">sheet&nbsp;$\mathbfit{a}^\mathrm{I}$.</span>
+
+```{python}
+#| output: false
+# cspell:ignore aspectratio colorscale showlegend showscale showticklabels surfacecolor xaxis yaxis zaxis
+import plotly.graph_objects as go
+
+x_min, x_max = 0.6**2, 1.9**2
+y_max = 1.6
+x = np.linspace(x_min, x_max, num=200)
+y = np.linspace(ϵ, y_max, num=50)
+X, Y = np.meshgrid(x, y)
+S = X + 1j * Y
+Z1 = T1_func[0, 0](S)
+Z2 = T1_func[0, 0](S.conj())
+z_max = max(np.abs(Z1.imag).max(), np.abs(Z2.imag).max())
+line_style = dict(
+    line=dict(color="#8dae10", width=7),
+    mode="lines",
+    showlegend=False,
+)
+marker_style = dict(
+    marker_size=6,
+    mode="markers",
+    showlegend=False,
+)
+surface_style = lambda z: dict(
+    cmin=-0.8 * z_max,
+    cmax=+0.8 * z_max,
+    colorscale="RdBu_r",
+    lighting=dict(diffuse=0.9),  # https://plotly.com/python/v3/3d-surface-lighting
+    opacity=0.6,
+    surfacecolor=z.real,
+    z=z.imag,
+)
+s1 = np.linspace(thr1**2, x_max, num=200) + ϵi
+fig = go.Figure(data=[
+    go.Surface(x=X, y=+Y, **surface_style(Z1), name="Physical sheet", showscale=True),
+    go.Surface(x=X, y=-Y, **surface_style(Z2), name="Physical sheet", showscale=False),
+    go.Scatter3d(
+        x=s1.real,
+        y=np.zeros_like(s1.real),
+        z=T1_func[0, 0](s1).imag,
+        name="𝑎 on Re <i>s</i>",
+        **line_style,
+    ),
+    go.Scatter3d(
+        x=[thr1**2],
+        y=[0],
+        z=[0],
+        marker_color="#1f77b4",
+        name="𝜋𝑁 threshold",
+        **marker_style,
+    ),
+    go.Scatter3d(
+        x=[thr2**2],
+        y=[0],
+        z=[T1_func[0, 0](thr2**2 + ϵi).imag],
+        marker_color="#ff7f0e",
+        name="𝜂𝑁 threshold",
+        **marker_style,
+    ),
+])
+fig.update_layout(
+    font=dict(color="black", family="Computer Modern", size=18),
+    height=400,
+    margin=dict(l=0, r=0, t=0, b=0),
+    paper_bgcolor="rgba(0, 0, 0, 0)",  # cspell:ignore bgcolor rgba
+    plot_bgcolor="rgba(0, 0, 0, 0)",
+    scene=dict(
+        aspectratio=dict(x=1.8, y=1, z=0.9),
+        camera=dict(
+            # https://plotly.com/python/3d-camera-controls
+            center=dict(x=-0.12, y=0, z=-0.2),
+            eye=dict(x=0.8, y=-1.5, z=1.1),
+        ),
+        xaxis=dict(showticklabels=False, title_text="Re <i>s</i>"),
+        yaxis=dict(showticklabels=False, title_text="Im <i>s</i>"),
+        zaxis=dict(range=[-1.1 * z_max, +1.1 * z_max], showticklabels=False, title_text="Im 𝑎"),
+    ),
+)
+fig.update_traces(
+    colorbar=dict(
+        ticktext=["–", "0", "+"],  # cspell:ignore ticktext
+        tickvals=[-0.75 * z_max, 0, +0.75 * z_max],  # cspell:ignore tickvals
+        title="Re 𝑎",
+    ),
+    selector=0,
+)
+
+rho = DiagonalMatrix(sp.MatrixSymbol("rho", n_ch, n_ch))
+Ti = (T1.inv() - 2 * sp.I * rho).inv()
+T2_expr = Ti.as_explicit().subs({
+    **definitions,
+    rho[0, 0]: PhaseSpaceFactor(s, ma, mb),
+    rho[1, 1]: 0,
+})
+T2_func = lambdify_matrix_expression(T2_expr)
+X, Y = np.meshgrid(
+    np.linspace(thr1**2, thr2**2, num=50),
+    np.linspace(ϵ, 0.4 * y_max, num=20),
+)
+S = X + 1j * Y
+Z = T2_func[0, 0](S.conj())
+fig.add_trace(go.Surface(x=X, y=-Y, **surface_style(Z), name="Unphysical sheet", showscale=False))
+
+T4_expr = Ti.as_explicit().subs({
+    **definitions,
+    rho[0, 0]: -PhaseSpaceFactor(s, ma, mb),
+    rho[1, 1]: -PhaseSpaceFactor(s, mc, md),
+})
+T4_func = lambdify_matrix_expression(T4_expr)
+X, Y = np.meshgrid(
+    np.linspace(0.95 * thr2**2, x_max, num=50),
+    np.linspace(ϵ, 0.6 * y_max, num=20),
+)
+S = X + 1j * Y
+Z = T4_func[0, 0](S)
+fig.add_trace(go.Surface(x=X, y=+Y, **surface_style(Z), name="Unphysical sheet", showscale=False))
+```
+
+:::{.content-visible when-format="html"}
+```{python}
+#| echo: false
+#| fig-cap: 'Three-dimensional rendering of the transition amplitude in @fig-physical-amplitude-complex-plane with the amplitude continued further across its branch cuts to form one Riemann surface. The imaginary part of the amplitude along the real <span class="nowrap">$s$&nbsp;axis</span> is indicated in <font color="#8dae10">green</font> and the $\pi N$ and $\eta N$ thresholds are indicated by a <font color="#1f77b3">blue</font> and an <font color="#ff7e0e">orange</font> dot, respectively. Static image [here](images/chapter2/riemann-surface.png).'
+#| label: fig-riemann-surface
+fig.show()
+```
+:::
+::::{.content-visible unless-format="html"}
+```{python}
+#| echo: false
+#| output: false
+fig.update_traces(line_width=20, selector=2)
+fig.update_traces(marker_size=17, selector=3)
+fig.update_traces(marker_size=17, selector=4)
+fig.update_layout(font_size=40, scene_camera_center_x=-0.03)
+fig.write_image("images/chapter2/riemann-surface.png", height=900, width=1500)
+```
+
+:::{#fig-riemann-surface-png}
+![](images/chapter2/riemann-surface.png){width="80%"}
+
+Three-dimensional rendering of the transition amplitude in @fig-physical-amplitude-complex-plane with the amplitude continued further across its branch cuts to form one Riemann surface. The imaginary part of the amplitude along the real <span class="nowrap">$s$&nbsp;axis</span> is indicated in <font color="#8dae10">green</font> and the $\pi N$ and $\eta N$ thresholds are indicated by a <font color="#1f77b3">blue</font> and an <font color="#ff7e0e">orange</font> dot, respectively.
+:::
+::::
+
+There is no generic recipe to compute an unphysical sheet from the physical amplitude. However, we can analytically continue the physical sheet just around threshold, because the transition between the sheets has to be continuous. The unitarity relation for partial waves @eq-unitarity-partial-wave can be rewritten as
+
+$$
+a(s) \;=\; \frac{a(s^*)}{1-2i\rho(s)\,a(s^*)}\,,
+$$
+
+`\noindent`{=latex}
+using the fact that $2i\operatorname{Im}a=a-a^*$, $|a|^2=a^*a$, and $a^*(s)=a(s^*)$ (Schwarz reflection). Continuity between the sheets tells that $a^\mathrm{I}(s+i\epsilon) = a^\mathrm{II}(s-i\epsilon)$ around the branch cut, which gives us
+
+$$
+a^\mathrm{II}(s-i\epsilon) \;=\; \frac{a^\mathrm{I}(s-i\epsilon)}{1-2i\rho(s)\,a^\mathrm{I}(s-i\epsilon)} \,.
+$$ {#eq-analyticity-transition-between-sheets}
+
+In many studies, this is taken as a general transformation rule on the whole complex plane for transitioning to the next sheet between each branch cut. In matrix notation, this would be
+
+$$
+\mathbfit{a}_\mathrm{j} \;=\; \left(\mathbfit{a}_\mathrm{i}^{-1}-2i\mathbfit{\rho}_\mathrm{j \to i}\right)^{-1}
+$$ {#eq-transition-rule-between-sheets}
+
+`\noindent`{=latex}
+with $\mathbfit{\rho}_\mathrm{j \to i}$ the diagonal matrix of standard phase space factors if which some elements have been set to zero for the transition from sheet $i$ to <span class="nowrap">sheet&nbsp;$j$&nbsp;[@Asokan:2022usm].</span>  Other sources define sheets through sign flips of the diagonal matrix of phase space elements&nbsp;[@Basdevant:1977ya, p.666; @Mai:2022eur, p.6].
+
+As an illustration of @eq-transition-rule-between-sheets, we consider the two-channel case in @fig-physical-amplitude-complex-plane. Applying the matrix $\mathbfit{\rho}_\mathrm{j \to i}=\operatorname{diag}\!\left(\rho_1,0\right)$ continues $\mathbfit{a}^\mathrm{I}$ into $\mathbfit{a}^\mathrm{II}$ across the branch cut between the $\pi N$ and <span class="nowrap">$\eta N$&nbsp;thresholds.</span> The outcome is displayed in @fig-coupled-nucleon-amplitude-unphysical-sheet: the upper half-plane and lower left of the plot show the original physical sheet, while the lower right reveals the continuation onto the adjacent sheet, where a pole emerges in the lower half-plane. This hidden pole is precisely what generates the resonant peak we previously observed in the physical <span class="nowrap">amplitude $a_{11}$</span> of @fig-coupled-nucleon-scattering-amplitudes. The figure also illustrates that branch cuts are not intrinsic features of the function, but arise only when a multi-valued Riemann surface is represented as a single-valued function on the complex plane. Through analytic continuation -- effectively "rotating" the cut -- one exposes additional sheets where the underlying pole structure manifests itself. <!-- cspell:ignore Asokan Basdevant diag -->
+
+```{python}
+#| fig-cap: Analytic continuation of the physical amplitudes of $\pi$/$\eta$–nucleon scattering into the unphysical sheet between the two thresholds. The $\pi N$ cut between sheet I and II is rotated downwards rather than to the left in order to avoid the wrong cut structure of the standard phase space factor $\rho_1(s)$ appearing in transformation @eq-transition-rule-between-sheets.
+#| fig-pos: t!
+#| fig-subcap:
+#|   - '$\pi N \to \pi N$ (elastic)'
+#|   - '$\pi N \to \eta N$ (inelastic)'
+#|   - '$\eta N \to \pi N$ (inelastic)'
+#|   - '$\eta N \to \eta N$ (elastic)'
+#| label: fig-coupled-nucleon-amplitude-unphysical-sheet
+#| layout: [[1, 1], [1, 1]]
+import itertools
+
+
+x_min, x_max = 0.8**2, 1.9**2
+y_max = 1.3
+z_max = 3
+x = np.linspace(x_min, x_max, num=500)
+y = np.linspace(ϵ, y_max, num=150)
+X, Y = np.meshgrid(x, y)
+S = X + 1j * Y
+
+figs = np.array([
+    [plt.figure(dpi=300, figsize=(2.5, 1.4)) for _ in range(2)]
+    for _ in range(2)
+])
+axes = np.array([
+    [figs[i, j].add_axes([0, 0, 1, 1]) for j in range(2)]
+    for i in range(2)
+])
+for fig, ax in zip(figs.flatten(), axes.flatten()):
+    fig.patch.set_facecolor("none")
+for ax in axes.flatten():
+    ax.spines["bottom"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    ax.patch.set_facecolor("none")
+    ax.axvline(parameters[mp1]**2, color="#e6332a", ls="dashed", lw=2)
+    ax.set_xticks([])
+    ax.set_yticks([])
+for ax in axes[:, 0]:
+    ax.set_ylabel(R"$\mathrm{Im}\,s$")
+for ax in axes[:, -1]:
+    draw_text(ax, 1.01, 0.5, R"$\mathrm{Re}\,s$", ha="left", va="center")
+
+kwargs = dict(
+    cmap="coolwarm",
+    rasterized=True,
+    vmin=-z_max,
+    vmax=+z_max,
+)
+channel_names = [R"\pi N", R"\eta N"]
+x_diff = x_max - x_min
+for i, j in itertools.product(range(n_ch), repeat=2):
+    ax = axes[i, j]
+    ch1 = channel_names[i]
+    ch2 = channel_names[j]
+    ax.text(x_min + 0.02 * x_diff, +0.92 * y_max, Rf"$a_{{{i+1}{j+1}}}^\mathrm{{I}}$", ha="left", va="top")
+    ax.text(x_max - 0.02 * x_diff, -0.92 * y_max, Rf"$a_{{{i+1}{j+1}}}^\mathrm{{II}}$", ha="right", va="bottom")
+    ax.text(parameters[mp1]**2 - 0.03 * x_diff, +0.92 * y_max, R"$m_p^2$", c="#e6332a", ha="right", va="top")
+    ax.text(thr1**2, 0.05 * y_max, R"$\pi N$", c="C0", ha="center", va="bottom")
+    ax.text(thr2**2 + 0.03 * x_diff, 0.05 * y_max, R"$\eta N$", c="C1", ha="left", va="bottom")
+    ax.pcolormesh(X, +Y, T1_func[i, j](S).imag, **kwargs)
+    ax.pcolormesh(X, -Y, np.select([X < thr1**2], [T1_func[i, j](S.conj()).imag], default=np.nan), **kwargs)
+    ax.pcolormesh(X, -Y, np.select([X > thr1**2], [T2_func[i, j](S.conj()).imag], default=np.nan), **kwargs)
+
+scale = 0.8
+s1 = np.linspace(thr1**2, x_max, num=500) + ϵi
+s2 = np.linspace(thr2**2, x_max, num=500) + ϵi
+ax11, ax12, ax21, ax22 = axes.flatten()
+ax11.plot(s1.real, scale * T_func[0, 0](s1).imag, c="#8dae10", lw=1)
+ax12.plot(s2.real, scale * T_func[1, 0](s2).imag, c="#8dae10", lw=1)
+ax21.plot(s2.real, scale * T_func[0, 1](s2).imag, c="#8dae10", lw=1)
+ax22.plot(s2.real, scale * T_func[1, 1](s2).imag, c="#8dae10", lw=1)
+ax11.plot(s1.real, scale * T_func[0, 0](s1).real, c="#17365c", lw=1)
+ax12.plot(s2.real, scale * T_func[1, 0](s2).real, c="#17365c", lw=1)
+ax21.plot(s2.real, scale * T_func[0, 1](s2).real, c="#17365c", lw=1)
+ax22.plot(s2.real, scale * T_func[1, 1](s2).real, c="#17365c", lw=1)
+for ax in axes.flatten():
+    ax.vlines(thr1**2, -y_max, 0, color="C0", lw=2)
+    ax.hlines(0, thr2**2, x_max, color="C1", lw=2)
+    ax.scatter([thr1**2], [0], color="C0", s=35, zorder=10)
+    ax.scatter([thr2**2], [0], color="C1", s=35, zorder=10)
+    ax.set_ylim(-y_max, +y_max)
+
+draw_text(ax22, 0.99, 0.45, R"$\mathrm{Re}\,a$", c="#17365c", ha="right", va="top")
+draw_text(ax22, 0.99, 0.91, R"$\mathrm{Im}\,a$", c="#8dae10", ha="right", va="top")
+
+for fig in figs.flatten():
+    plt.show(fig)
+```
+
+#### Extracting poles and residues {#sec-pole-residue-extraction}
+
+Finally, we are in a position to locate pole positions. These can be found by determining where the denominator of an unphysical sheet goes to zero. Using @eq-transition-rule-between-sheets, we can translate this to the condition
+
+$$
+\operatorname{det}\left(\mathbfit{a}_\mathrm{I}(s)^{-1} - 2i\mathbfit{\rho}_\mathrm{j \to i}(s)\right) = 0\,.
+$$
+
+This equation cannot be solved analytically, even given the simple pole parametrisation of @eq-k-matrix-parametrisation. A common trick is to numerically minimise the modulus $\left|\mathbfit{a}_\mathrm{I}(s)^{-1} - 2i\mathbfit{\rho}_\mathrm{j \to i}(s)\right|$ with regard to $s$, for instance with a gradient-descent algorithm. This gives us a number of **pole positions** $s_r$ that are potentially located in different sheets. With the <span class="nowrap">$\mathbfit{K}$‑matrix</span> parametrisation described so far, these positions are affected by threshold parameters, coupling constants, and bare masses.
+
+Poles have a **residue** associated with each channel transition. It reveals how strongly the state couples to specific decay or production channels. The coupling constants $g^r_\alpha$ in @eq-k-matrix-single-channel encode this interaction strength and determine where and how the resonance becomes visible in the cross section of each channel. The residue can be computed numerically with the Cauchy integral formula over a small closed contour&nbsp;$C$ around the pole position $s_r$, giving us
+
+$$
+\mathrm{Res}(a, s_r) \;=\; \frac{1}{2\pi i} \oint_\gamma a(s') \, ds' \,.
+$$
+
+Pole positions characterise the analytic structure of the entire system and define hadronic states independently of the specific process or channel in which they appear. Unlike peaks in measured cross section, which may vary with kinematic effects and interference between channels, a pole's location in the complex energy plane is a property of the underlying dynamics. It provides a channel-independent reference point that can be compared directly with non-perturbative consequences of QCD, such as those obtained from lattice calculations, dispersive analyses, or effective field theories. In this way, pole positions offer a direct connection between experimental observations and the fundamental structure of the strong interaction.
+
+## Connecting to experiment {#sec-connecting-to-experiment}
+
+The theory developed in this chapter provides the foundation for constructing amplitude models that respect fundamental physical principles of @sec-s-matrix-constraints. These models encode dynamical information in terms of physically meaningful parameters, such as coupling constants and bare pole positions, and can be directly linked to observable quantities. Specifically, amplitude models give us an **intensity function**, a real-valued function of measurable kinematic variables, via the expression for the differential cross section (see @eq-differential-cross-section). This intensity function serves as the interface between theory and the event distributions measured by experiment, enabling the extraction of model parameters from experimental data&nbsp;[@Omnes:1963-MandelstamTheoryRegge].
+
+In practice, the input to an amplitude analysis consists of reconstructed four-momenta of the final-state particles for each event. These four-momenta are the raw, Lorentz-covariant observables measured in the detector. From them, one computes the relevant **kinematic variables** -- such as helicity angles and Mandelstam invariants -- which serve as arguments to the intensity function. Denoting the set of kinematic variables as $x$, the intensity function gets the form $I(x; \mathbfit{\theta})$, with $\mathbfit{\theta}$ the set of model parameters.
+
+The function $I(x; \mathbfit{\theta})$ determines the expected density of events in phase space and can be interpreted as a **probability-density function** after normalisation
+
+$$
+P(x; \mathbfit{\theta}) \;=\; \frac{I(x; \mathbfit{\theta})}{\int_{\Phi} I(x'; \mathbfit{\theta}) \, \mathrm{d}x'}
+$$
+
+`\noindent`{=latex}
+over the physically allowed region of phase space $\Phi$ (often implicitly weighted by detector acceptance). Given a sample of $N$ observed events $\{x_i\}$, the **likelihood function** is defined as the joint probability of the data for a given set of model parameters $\mathbfit{\theta}$ as&nbsp;[@Fisher:1922saa]
+
+$$
+\mathcal{L}(\mathbfit{\theta})
+\;=\; \prod_{i=1}^N P(x_i; \mathbfit{\theta})
+\;=\; \prod_{i=1}^N \frac{I(x_i; \mathbfit{\theta})}{\int_{\Phi} I(x; \mathbfit{\theta}) \, \mathrm{d}x} \,.
+$$
+
+In experimental data, $N$ is so large that it makes the product computationally infeasible. We therefore instead take the logarithm, which turns the likelihood into a sum: the **log-likelihood** function
+
+$$
+\log \mathcal{L}(\mathbfit{\theta}) \;=\; \sum_{i=1}^N \log I(x_i; \mathbfit{\theta}) - N \log \left[ \int_{\Phi} I(x; \mathbfit{\theta}) \, \mathrm{d}x \right] \,.
+$$
+
+This has the additional benefit that the log-likelihood is additive over independent datasets, which is useful for combining results from different analyses or experiments (coupled analysis).
+
+The integral over phase space generally has no analytical solution, particularly in multi-body decays or when accounting for detector effects. Instead, it is estimated using Monte Carlo (MC) integration, typically by generating a simulated sample uniformly distributed in phase space and summing over weights&nbsp;[@Lyons:1986em], giving us
+
+$$
+\int_{\Phi} I(x; \mathbfit{\theta}) \, \mathrm{d}x \approx \frac{1}{M} \sum_{j=1}^M I(x_j^{\mathrm{MC}}; \mathbfit{\theta}) \,.
+$$
+
+The (log-)likelihood function provides a measure (**estimator**) for how well an amplitude model with parameters $\mathbfit{\theta}$ describes _all_ observed events, even across different channels. The goal of an amplitude analysis is to find the parameter values that maximise this likelihood, which corresponds to minimising the **negative log-likelihood** (NLL) function. Finding the global minimum in the parameter space of the NLL for a specific model and dataset is often referred to as "fitting" the model to the experimental data sets.
+
+Model fitting is a high-dimensional, non-linear optimisation problem, often complicated by strong correlations between parameters and the presence of local minima in parameter space. Standard optimisation tools such as **Minuit** are widely used due to their robustness and built-in handling of parameter boundaries and uncertainties&nbsp;[@James:1975dr]. These algorithms typically rely on gradient-based minimisation (e.g. MIGRAD), combined with error estimation techniques such as MINOS or Hessian-based covariance extraction. The computational cost of these fits is dominated by the repeated evaluation of the intensity function over all measured data events and MC-generated integration points. The efficient, vectorised, and parallelisable evaluation of arbitrary amplitude models will be the focus of @sec-computational-techniques. <!-- cspell:ignore MIGRAD -->

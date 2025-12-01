@@ -1,0 +1,7 @@
+*.code-snippets
+LICENSE
+docs/chapter2.qmd
+docs/chapter3.qmd
+docs/chapter6.qmd
+docs/chapter7.qmd
+docs/includes/*.qmd

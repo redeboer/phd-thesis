@@ -1,0 +1,164 @@
+bibliography: references.bib
+book:
+  author:
+    - name:
+        given: Remco
+        family: de Boer
+      affiliations:
+        - name: Ruhr University Bochum
+          department: Institute for Experimental Physics
+          group: Physics of Hadrons and Nuclei
+          city: Bochum
+          postal-code: 44801
+          country: Germany
+          url: https://ruhr-uni-bochum.de
+      orcid: 0000-0001-5846-2206 # cspell:ignore orcid
+      url: https://github.com/redeboer
+  chapters:
+    - index.qmd
+    - chapter1.qmd
+    - chapter2.qmd
+    - chapter3.qmd
+    - chapter4.qmd
+    - chapter5.qmd
+    - chapter6.qmd
+    - chapter7.qmd
+    - chapter8.qmd
+    - references.qmd
+  date: 2025-09-24
+  date-format: MMMM YYYY
+  description: PhD thesis, Faculty of Physics, Ruhr University Bochum
+  favicon: favicon.ico
+  navbar:
+    background: "#17365c"
+    collapse: false
+    foreground: "#e7e7e7"
+    logo: images/rub-white.svg
+    title: PhD Thesis <wbr>by <wbr>Remco de&nbsp;Boer
+    right:
+      - icon: download
+        menu:
+          - href: phd-thesis.pdf
+            text: PDF
+            icon: file-pdf
+          - href: phd-thesis.epub
+            text: ePub
+            icon: tablet
+          - href: phd-thesis.zip
+            text: LaTeX
+            icon: file-zip
+          - href: phd-thesis-paperback.pdf
+            text: PDF (paperback)
+            icon: file-pdf-fill
+          - href: phd-thesis-hardcover.pdf
+            text: PDF (hardcover)
+            icon: file-pdf-fill
+  output-file: phd-thesis
+  page-navigation: true
+  reader-mode: true
+  repo-actions: [source]
+  repo-subdir: docs
+  repo-url: https://github.com/redeboer/phd-thesis
+  sidebar:
+    logo: images/aligning-baryons-logo.svg
+  site-url: https://redeboer.github.io/phd-thesis
+  subtitle: High-performance computations with symbolic, spin-aligned amplitude models for hadron spectroscopy
+  title: Aligning Baryons
+citation:
+  author:
+    - name:
+        given: Remco E.
+        family: de Boer
+  doi: 10.13154/294-13854
+  genre: Doctoral dissertation
+  license: Creative Commons Attribution 4.0 International (CC-BY-4.0)
+  title: >
+    Aligning Baryons: High-performance computations with symbolic, spin-aligned amplitude models for hadron spectroscopy
+  type: thesis
+  url: https://redeboer.github.io/phd-thesis
+csl: ieee.csl
+css: styles.css
+execute:
+  cache: true
+  enabled: true
+fig-format: svg
+filters:
+  - quarto # https://stackoverflow.com/a/74415358
+  - filters/eqref.lua # https://github.com/quarto-dev/quarto-cli/issues/2439
+  - filters/texorpdfstring.lua
+format:
+  epub:
+    html-math-method: mathjax # cspell:ignore math
+    include-in-header:
+      - preamble/epub-mathjax.html
+  html:
+    linkcolor: "#6699CC" # cspell:ignore linkcolor
+    resources:
+      - references.bib
+    respect-user-color-scheme: true
+    tbl-cap-location: bottom
+    theme:
+      light: flatly
+      dark: darkly
+    toc: true
+  pdf:
+    # cspell:disable
+    citecolor: RoyalBlue
+    classoption:
+      - numbers=endperiod
+      - open=any
+      - twoside=semi
+    fontsize: 11pt
+    urlcolor: RoyalBlue
+    linkcolor: RoyalBlue # cspell:ignore linkcolor
+    geometry:
+      - inner=2.5cm
+      - outer=2.5cm
+      - top=2.5cm
+      - bottom=2.5cm
+      - headsep=20pt
+      - headheight=14pt
+      - footskip=30pt
+      - includeheadfoot
+      - heightrounded
+    hyperrefoptions:
+      - bookmarksnumbered
+      - bookmarksopenlevel=1
+    include-in-header:
+      - preamble/configuration.tex
+      - text: \newcommand{\custompagebreak}{\clearpage}
+      - text: \newcommand{\mediumtype}{Online}
+    # cspell:enable
+    include-before-body:
+      - copyright.tex
+      - abstract.tex
+      - acknowledgements.tex
+      - preamble/toc.tex
+    indent: true
+    keep-tex: true
+    mathspec: true # cspell:ignore mathspec
+    number-depth: 1
+    papersize: a4
+    tbl-cap-location: bottom
+    template-partials:
+      - before-body.tex
+    toc: false # https://github.com/quarto-dev/quarto-cli/discussions/9839#discussioncomment-9629083
+    var:
+      cxx: "\\cxx"
+      lauraplusplus: "\\plusplus{Laura}"
+google-scholar: true
+link-citations: true
+number-depth: 2
+project:
+  output-dir: _build/html
+  render:
+    - "*.qmd"
+    - "!*/*"
+  type: book
+supervisors: |
+  Prof. Dr. Miriam Fritsch
+var:
+  cxx: C++
+  lauraplusplus: Laura++ # cspell:ignore lauraplusplus
+website:
+  title: PhD Thesis

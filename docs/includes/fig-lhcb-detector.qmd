@@ -1,0 +1,5 @@
+:::{#fig-lhcb-detector}
+[![](images/chapter6/lhcb-detector.svg)]{.light-content}[![](images/chapter6/lhcb-detector-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Side view of the LHCb detector. Adapted <span class="nowrap">from&nbsp;[@LHCb:2008vvz; @LHCb:2014set].</span>
+:::

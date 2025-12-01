@@ -1,0 +1,78 @@
+{
+  "allowCompoundWords": false,
+  "dictionaries": [
+    "forbid-us-english",
+    "latex",
+    "names",
+    "physics",
+    "this-project"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "addWords": true,
+      "name": "forbid-us-english",
+      "path": "./.cspell/forbid-us-english.txt"
+    },
+    {
+      "addWords": true,
+      "name": "names",
+      "path": "./.cspell/names.txt"
+    },
+    {
+      "addWords": true,
+      "name": "physics",
+      "path": "./.cspell/physics.txt"
+    },
+    {
+      "addWords": true,
+      "name": "this-project",
+      "path": "./.cspell/this-project.txt"
+    }
+  ],
+  "enableFiletypes": ["latex", "quarto", "text"],
+  "ignorePaths": [
+    "*.bib",
+    "*.csl",
+    "*.svg",
+    ".cspell.json",
+    ".cspell/*.txt",
+    ".editorconfig",
+    ".envrc",
+    ".github/",
+    ".gitignore",
+    ".pre-commit-config.yaml",
+    ".taplo.toml",
+    ".vscode/",
+    "CITATION.cff",
+    "pyproject.toml"
+  ],
+  "ignoreWords": [
+    "color",
+    "colwidths",
+    "doclive",
+    "eqnarray",
+    "hyperrefoptions",
+    "iframe",
+    "jpsi",
+    "marginparsep",
+    "marginparwidth",
+    "mathbb",
+    "mathbf",
+    "mathcal",
+    "mathfrak",
+    "mathring",
+    "mathrm",
+    "ncol",
+    "nocite",
+    "papersize",
+    "pbar",
+    "refs",
+    "stackrel",
+    "substack",
+    "timelike",
+    "underbrace"
+  ],
+  "language": "en-GB",
+  "useGitignore": true,
+  "version": "0.2"
+}

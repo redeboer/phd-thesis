@@ -1,0 +1,882 @@
+---
+aliases:
+  - "7"
+  - 7.html
+  - ch7
+  - chapter7
+  - analysis
+  - analysis.html
+---
+
+{{< include _macros.qmd >}}
+
+# Application to data {#sec-application-to-data}
+
+`\noindent`{=latex}
+This chapter demonstrates the application of the formalisms and computational techniques developed in the preceding chapters. The aim is to show that the tools and workflows can be applied in different contexts and are accurate and performant. First, by comparing against an existing amplitude analysis by LHCb, we validated the implementation of the Dalitz-plot decomposition (DPD) method of @sec-dpd. The new symbolic implementation enabled the computation of a polarimeter vector field for the decay $\varLambda_c^+ \to p K^- \pi^+$, the results of which were published in&nbsp;[@LHCb:2023crj]. We then illustrate how CAS-assisted model building the DPD method is employed to fit an amplitude model to $J/\psi \to \bar{p} K^0_S \varSigma^+$ data from the BESIII experiment. Finally, we assess the performance of symbolic amplitude models on different hardware configurations when using Minuit2 for fitting.
+
+## Polarimeter vector field <span class="nowrap">of&nbsp;$\varLambda_c$</span> {#sec-polarimeter-vector-field}
+
+So far, we have considered spin projections to be a kinematic degree of freedom that we factor out in amplitude models through the helicity formalism, because it is not relativistically invariant. However, particles can exhibit a preferred spin orientation that is _characteristic_ for how it is produced. This phenomenon is known as **polarisation**.
+
+Particle polarisation can appear as a forward–backward asymmetry in the angular distributions of decay products. As such, it is an observable that is widely used in hadron spectroscopy studies. For hadrons, polarisation provides insights into the hadronisation process by which quarks and gluons combine to form the hadron. Although hadronisation is a non-perturbative phenomenon, the polarisation of the produced hadron preserves information about the quarks' spin orientation during this process. This retention of spin information therefore offers a window into how spin is transferred or altered during hadron formation&nbsp;[@Brambilla:2010cs; @Faccioli:2010kd; @Butenschoen:2012px]. <!-- cspell:ignore Brambilla Butenschoen Faccioli -->
+
+In semileptonic decays, the polarisation of the produced hadrons can be used to study the handedness of weak interactions. Since the weak force couples only to left-handed particles (and right-handed antiparticles), the angular asymmetry of the produced hadrons can reveal details about the chiral structure of the interaction. This sensitivity makes hadron polarisation a probe for testing the Standard Model and searching for possible signs of new physics. For example, deviations from the expected polarisation patterns could indicate contributions from right-handed currents or non-standard couplings, which are predicted in various beyond-the-Standard Model scenarios&nbsp;[@Konig:1993wz; @Dutta:2015ueb; @Shivashankara:2015cta; @Li:2016pdv; @Datta:2017aue; @Ray:2018hrx; @DiSalvo:2018ngq; @Penalva:2019rgt; @Ferrillo:2019owd]. <!-- cspell:ignore Datta Ferrillo Konig Penalva Shivashankara -->
+
+### Asymmetry parameter
+
+:::{#fig-asymmetry layout-ncol=2 layout-valign="center"}
+![](./images/chapter7/asymmetry-lab-frame.svg){fig-align="center"}
+
+![](./images/chapter7/asymmetry-cm.svg){fig-align="center"}
+
+Definition of the forward–backward asymmetry for a <span class="nowrap">$\varLambda \to p\pi$&nbsp;decay</span>, starting from the lab frame (left) and boosting into the center-of-mass frame (right) to get the <span class="nowrap">angle&nbsp;$\theta$</span> between the decay product and the parent particle.
+:::
+
+In two-body decays, the forward–backward asymmetry appears in the (normalised) differential decay <span class="nowrap">rate&nbsp;$\mathrm{d}\Gamma$</span>[ (discussed in @eq-differential-cross-section)]{.content-visible unless-format="pdf"} when expressed as a function of the scattering <span class="nowrap">angle&nbsp;$\theta$</span>,
+
+$$
+\frac{2}{\Gamma}\,\frac{\mathrm{d}\Gamma}{\mathrm{d}\cos\theta} \;=\; 1 + P\,\alpha\,\cos\theta
+\,,
+$$ {#eq-two-body-asymmetry}
+
+`\noindent`{=latex}
+where $P$ denotes the polarisation of the decaying particle and $\alpha$ is an **asymmetry parameter** characteristic of the decay. The definition of the scattering <span class="nowrap">angle&nbsp;$\theta$</span> is shown in @fig-asymmetry, for the decay $\varLambda \to p\pi$ as an example.
+
+For a spin-half or spin-1 parent decaying into a spin-half baryon and a pseudoscalar meson, the decay amplitude contains only two independent partial waves: an S‑wave <span class="nowrap">($L=0$)</span> and a P‑wave <span class="nowrap">($L=1$).</span> These correspond to the parity-violating and parity-conserving contributions, usually denoted $H_S$ and $H_P$. The asymmetry parameter is determined by their interference:
+
+$$
+\alpha
+\;=\; \frac{2\,\mathrm{Re}(H_S^* H_P)}{|H_S|^2+|H_P|^2}
+\,.
+$$ {#eq-asymmetry-parameter-from-couplings}
+
+`\noindent`{=latex}
+The decay therefore only has an angular asymmetry if both parity-conserving and parity-violating amplitudes are present.
+
+### Polarimetry
+
+Since the asymmetry <span class="nowrap">parameter&nbsp;$\alpha$</span> is an intrinsic decay property that does not depend on the production mechanism, it can be used to combine polarisation information between different analyses. Once an asymmetry parameter is determined, it can be used to determine the polarisation of the decaying particle in other analyses. For example, in $\varXi_b^0 \to J/\psi p \varLambda$, the asymmetry parameter of $\varLambda \to p\pi^-$ provides sensitivity to the spin of the pentaquark candidate <span class="nowrap">$P_{cs}\to J/\psi\,\varLambda$&nbsp;[@LHCb:2019aci].</span>
+
+However, heavy baryons often do not predominantly decay to two-body final states, which makes it difficult to measure the asymmetry parameter with high precision. For example, in $\varLambda^0_b \to \varLambda_c^+ \bar{D}^0 K^-$ decays, pentaquarks are expected in the $\varLambda_c^+ \bar{D}^0$ final state, but the $\varLambda_c^+$ is reconstructed through the [predominant](https://pdglive.lbl.gov/Particle.action?init=0&node=S033&home=BXXX040) three-body decay $\varLambda_c^+ \to p K^- \pi^+$. The lack of polarisation information makes it harder to identify pentaquarks in the angular distributions.
+
+Lepton studies in the 1990s introduced the concept of a **polarimeter vector** $\vec{h}$ in order to characterise the asymmetry in <span class="nowrap">$\tau$&nbsp;lepton</span> decays&nbsp;[@Davier:1992nw]. Just like the asymmetry parameter in @eq-two-body-asymmetry, the polarimeter vector allows formulating the angular asymmetry as a function of the **polarisation <span class="nowrap">vector&nbsp;$\vec{P}$</span>** of the decaying <span class="nowrap">$\tau$&nbsp;lepton</span> as <!-- cspell:ignore Davier -->
+
+$$
+\frac{1}{\Gamma}\,\frac{\mathrm{d}\Gamma}{\mathrm{d}\Phi}
+\;\propto\;
+1 + \vec{P} \cdot \vec{h}
+\,,
+$$ {#eq-polarimeter-vector}
+
+`\noindent`{=latex}
+with $\mathrm{d}\Phi$ describing all remaining kinematic degrees of freedom and $\Gamma$ the total decay width of the <span class="nowrap">$\tau$&nbsp;lepton.</span> This simple relation only works in the case of a decaying <span class="nowrap">$\tau$&nbsp;lepton,</span> because its spin is transferred to the neutrino in the final state, leaving the other decay products unpolarised. In the case of decaying hadrons, the decay products are polarised, which complicates the interpretation of the angular asymmetry. The polarimeter vector is then not a constant, but a function of the kinematic variables of the decay.
+
+It turns out that the concept of the polarimeter vector can be extended to three-body decays of spin-half hadrons by introducing an **aligned polarimeter vector** <span class="nowrap">$\vec{\alpha}$&nbsp;[@LHCb:2023crj].</span> By aligning the polarimeter to the decay plane by a rotation $\mathbfit{R}(\phi,\theta,\chi)$ (see @fig-rotation-angles), we get a vector that, like the asymmetry parameter, is intrinsic to the decay. The polarimeter vector of equation @eq-polarimeter-vector is then given by
+
+$$
+\vec{h} \;=\; \mathbfit{R}(\phi,\theta,\chi) \, \vec{\alpha}
+\,,
+$$ {#eq-polarimeter-vector-aligned}
+
+`\noindent`{=latex}
+which results in a more general expression for @eq-two-body-asymmetry,
+
+$$
+\frac{1}{\Gamma}\,\frac{\mathrm{d}\Gamma}{\mathrm{d}\Phi}
+\; \propto \;
+1+\vec{P} \, \mathbfit{R}(\phi,\theta,\chi) \, \vec{\alpha}(\tau)
+\,.
+$$ {#eq-decay-rate-from-polarimeter-vector}
+
+:::{#fig-rotation-angles}
+![](images/chapter7/polarimetry-decay-plane.svg)
+
+Definition of the Euler angles ${\color{red}\phi}, {\color{red}\theta}, {\color{red}\chi}$ that align the polarimeter vector $\vec{\alpha}$ to the decay plane. Adapted from [@LHCb:2023crj].
+:::
+
+Just like in @eq-asymmetry-parameter-from-couplings, the aligned polarimeter vector can be determined from the helicity amplitudes, but these amplitudes need to be aligned consistently with regard to the final state. For this, we employ the methods described in @sec-spin-alignment, which enable us to relate the rotation of the aligned polarimeter vector in @eq-polarimeter-vector-aligned to that of the rotation of the aligned transition amplitudes.
+
+As discussed in @sec-differential-decay-rate, the polarised intensity function for any <span class="nowrap">$n$‑body</span> decay can be expressed in terms of amplitudes $\widetilde{A}_{m_0,\{\lambda\}}$ (@eq-production-aligned-amplitude) that are aligned with regard to the production quantisation axis over Euler angles $\Omega=(\phi,\theta,\chi)$, giving
+
+$$
+I(\Omega,\tau) \;=\;
+  \sum_{\{\lambda\}}
+  \sum_{m_0,m_0'}
+  \widetilde{A}^*_{m_0',\{\lambda\}}(\Omega,\tau) \,
+  \rho_{m_0' m_0} \,
+  \widetilde{A}_{m_0,\{\lambda\}}(\Omega,\tau) \,,
+$$ {#eq-unpolarised-in-terms-of-amplitudes}
+
+`\noindent`{=latex}
+with $m_0^{(\prime)}$ the allowed spin projections of the decaying hadron along that quantisation axis determined by the production process and $\{\lambda\}$ the set of allowed helicities&nbsp;$\lambda_1,\lambda_2,\dots,\lambda_n$ of the decay products. If decaying particle&nbsp;$0$ is a spin-half fermion, the spin-density matrix&nbsp;$\mathbfit{\rho}$ depends on its polarisation vector&nbsp;$\vec{P}$ via
+
+
+$$\rho_{m_0' m_0} \;=\; 1+\vec P \cdot \vec{\sigma}_{m_0' m_0}
+\,,
+$$ {#eq-spin-density-in-terms-of-pauli}
+
+`\noindent`{=latex}
+where $\vec{\mathbfit{\sigma}}$ denotes the three Pauli matrices&nbsp;$\mathbfit{\sigma_x}, \mathbfit{\sigma_y}, \mathbfit{\sigma_z}$. By inserting @eq-production-aligned-amplitude into @eq-unpolarised-in-terms-of-amplitudes, we get
+
+$$
+\begin{aligned}
+I(\Omega,\tau) \;&=\;
+  \sum_{m_0,m_0'}
+  \sum_{\lambda_0,\lambda_0'}
+  \rho_{m_0' m_0} \;
+  D^{1/2}_{m_0' \lambda_0'}(\phi,\theta,\chi) \;
+  D^{1/2\,*}_{m_0 \lambda_0}(\phi,\theta,\chi) \;
+  \mathfrak{X}_{\lambda_0' \lambda_0}(\tau) \,, \\
+&
+  \mathfrak{X}_{\lambda_0' \lambda_0}(\tau)
+    \; \equiv \; \sum_{\{\lambda\}}
+    A_{\lambda_0',\{\lambda\}}^*(\tau) \,
+    A_{\lambda_0,\{\lambda\}}(\tau)
+\,.
+\end{aligned}
+$$ {#eq-polarised-intensity-unfolded}
+
+By defining the vector field
+
+$$
+\begin{aligned}
+\vec\alpha(\tau) \;&=\;
+  \left.
+    \sum_{\lambda_0',\lambda_0,\{\lambda\}}
+      A^*_{\lambda_0',\{\lambda\}}(\tau) \,
+      \vec{\sigma}_{\lambda_0',\lambda_0} \,
+      A_{\lambda_0,\{\lambda\}}(\tau)
+  \middle/
+    I_0(\tau)
+  \right. \,, \\
+&
+  I_0(\tau) \; \equiv \; \sum_{\lambda_0,\{\lambda\}} \left|A_{\lambda_0,\{\lambda\}}(\tau)\right|^2
+\,,
+\end{aligned}
+$$ {#eq-aligned-polarimeter-vector}
+
+`\noindent`{=latex}
+we can rewrite @eq-polarised-intensity-unfolded as
+
+$$
+I(\Omega,\tau) \;=\;
+  I_0(\tau)\, \left(1 + \sum_{i,j} P_i \, R_{ij}(\phi, \theta, \chi) \, \alpha_j(\tau)\right)
+\,.
+$$ {#eq-polarised-intensity-from-aligned-polarimeter-vector}
+
+`\noindent`{=latex}
+This transformation is enabled by a homomorphism&nbsp;[@Cornwell:1997ke],
+
+$$
+\frac{1}{2} \mathrm{Tr}\left[
+  \mathbfit{D^{1/2\,*}}(\phi, \theta, \chi) \,
+  \vec{\mathbfit{\sigma}_i} \,
+  \mathbfit{D^{1/2}}(\phi, \theta, \chi)
+\right]
+\;=\; R_{ij}(\phi,\theta,\chi)
+\,,
+$$
+
+`\noindent`{=latex}
+which can be used to relate the $\mathrm{SU}(2)$ spin rotation matrices in @eq-polarised-intensity-unfolded to the $\mathrm{SO}(3)$ rotation matrix in @eq-polarimeter-vector-aligned using the Pauli matrices that come from @eq-spin-density-in-terms-of-pauli. We have [verified this relation algebraically](https://lc2pkpi-polarimetry.docs.cern.ch/appendix/homomorphism.html) with a CAS&nbsp;[@LHCb:2023crj-Zotero].
+
+We can derive a similar relation as found in @eq-decay-rate-from-polarimeter-vector by integrating @eq-polarised-intensity-from-aligned-polarimeter-vector over the remaining kinematic <span class="nowrap">variables&nbsp;$\tau$.</span> This gives us
+
+$$
+\frac{8\pi^2}{\Gamma}\frac{\mathrm{d}^3 \Gamma}{\mathrm{d}\phi\,\mathrm{d}\!\cos\theta\,\mathrm{d}\chi}
+\;=\; 1+\sum_{i,j}P_i \, R_{ij}(\phi, \theta, \chi) \, \overline{\alpha}_j
+\,,
+$$ {#eq-polarised-intensity-from-averaged-polarimeter-vector}
+
+`\noindent`{=latex}
+where we have defined an **averaged polarimeter vector** $\overline{\alpha}$ as
+
+$$
+\overline{\alpha}_j \;=\;
+  \left.
+    \int I_0(\tau) \, \alpha_j(\tau) \,\mathrm{d}^n \tau \,
+  \middle/
+    \int I_0(\tau) \,\mathrm{d}^n \tau
+  \right.
+\,.
+$$ {#eq-averaged-polarimeter-vector}
+
+Naturally, the use of the averaged polarimeter vector rather than a field simplifies reuse in other analyses. However, using this averaged polarimeter vector results in an increase of statistical uncertainty.
+
+Both the polarimeter vector field&nbsp;$\vec{\alpha}(\tau)$ of decaying fermion&nbsp;$0$, as well as its averaged polarimeter vector&nbsp;$\overline{\alpha}$, can be used to extend amplitude models that involve this fermion in their decay chains. Rewriting $\mathfrak{X}_{\lambda_0' \lambda_0}(\tau)$ from @eq-polarised-intensity-unfolded in terms of $\vec{\alpha}$ and the unpolarised intensity $I_0$ as
+
+$$
+\begin{aligned}
+\mathfrak{X}_{\lambda_0' \lambda_0}(\tau)
+\;&=\;
+  \frac{I_0(\tau)}{2} \left(1+\vec{\alpha}(\tau) \cdot \vec{\mathbfit{\sigma}}\right)_{\lambda_0' \lambda_0}
+\,,
+\end{aligned}
+$$ {#eq-mathfrak-x-from-polarimeter-field}
+
+`\noindent`{=latex}
+it can be directly inserted into another amplitude model. In our case, with $\vec{\alpha}$ computed for $\varLambda_c^+$, the field can for instance be used to construct an amplitude for the decay $B^+ \to \varLambda_c^+ \bar{\varLambda}_c^- K^+$. This gives
+
+$$
+\begin{aligned} &
+I(\sigma_{\varLambda_c K^+}, \sigma_{\bar{\varLambda}_c K^+};
+  {\color{RoyalBlue}\phi,\theta,\chi,\sigma_{pK^-},\sigma_{K^-\pi^+}};
+  {\color{RoyalBlue}\bar{\phi},\bar{\theta},\bar{\chi},\sigma_{\bar{p}K^+},\sigma_{K^+\pi^-}}
+) \;= \\ &
+  \qquad
+  \sum_{m_0,\bar{m}_0}
+  \sum_{m_0',\bar{m}_0'}
+    A_{m_0',\bar{m}_0'}^{B^+*}(\sigma_{\varLambda_c K^+}, \sigma_{\bar{\varLambda}_c K^+}) \,
+    A_{m_0,\bar{m}_0}^{B^+}(\sigma_{\varLambda_c K^+}, \sigma_{\bar{\varLambda}_c K^+}) \\ &
+  \qquad\qquad \times \;
+    \sum_{\lambda_0,\lambda_0'}
+    D^{1/2\,*}_{m_0 \lambda_0}(\phi, \theta, \chi) \,
+    D^{1/2}_{m_0' \lambda_0'}(\phi, \theta, \chi) \,
+    {\color{RoyalBlue}\mathfrak{X}_{\lambda_0' \lambda_0}^{\varLambda_c} (\sigma_{pK^-},\sigma_{K^-\pi^+})} \\ &
+  \qquad\qquad \times \;
+    \sum_{\bar{\lambda}_0,\bar{\lambda}_0'}
+    D^{1/2\,*}_{\bar{m}_0 \bar{\lambda}_0}(\bar{\phi},\bar{\theta},\bar{\chi}) \,
+    D^{1/2}_{\bar{m}_0' \bar{\lambda}_0'}(\bar{\phi},\bar{\theta},\bar{\chi}) \,
+    {\color{RoyalBlue}\mathfrak{X}_{\bar{\lambda}_0' \bar{\lambda}_0}^{\bar{\varLambda}_c}(\sigma_{\bar{p}K^+},\sigma_{K^+\pi^-})}
+\,.
+\end{aligned}
+$$ {#eq-b-to-lambda-c-lambda-c-k}
+
+The insertion of the <span class="nowrap">$\mathfrak{X}$&nbsp;matrices</span> adds 10 more degrees of freedom to the $B^+ \to \varLambda_c^+ \bar{\varLambda}_c^- K^+$ amplitude model, indicated in <font color="#0071bc">blue</font>. However, by evaluating $\mathfrak{X}$ using @eq-mathfrak-x-from-polarimeter-field with the <span class="nowrap">$\vec{\alpha}$&nbsp;field</span> that we provide in this study (with interpolation from a sampled grid), the degrees of freedom are fixed, which removes a large number of fit parameters, but does propagate spin information from the $\varLambda_c^+$ decay to the $B^+$ decay and increases the sensitivity of the model to the polarisation of the $\varLambda_c^+$.
+
+### Application to $\varLambda_c^+ \to p K^- \pi^+$ {#sec-computed-polarimeter}
+
+The key point is that we now have an way to compute the polarimeter vector field $\vec{\alpha}$ from transition amplitudes $A_{\lambda^0,\{\lambda\}}$ that we can determine in a partial-wave analysis. We applied this technique to compute the aligned polarimeter vector field for the decay $\varLambda_c^+ \to p K^- \pi^+$. Using the fit parameters of 18&nbsp;amplitude models&nbsp;[@LHCb:2022sck], we computed the polarimeter vector <span class="nowrap">field&nbsp;$\alpha$</span> by reformulating those amplitude models with the DPD method. The amplitude model with the best fit to the data is named the "default" model and was used to compute the reported mean values. Systematic and statistical uncertainties were propagated to the polarimeter vector field by evaluating the polarimeter vector field over the different models and over the uncertainties of the fit parameters of the nominal model, respectively.
+
+The amplitude analysis from which the fit parameters were extracted, was performed using data from Run&nbsp;2 of the Large Hadron Collider (LHC). The sample consists of proton–proton collisions at a center-of-mass energy <span class="nowrap">of&nbsp;$13\text{ TeV}$,</span> recorded in 2016 with an integrated luminosity <span class="nowrap">of&nbsp;$1.7\text{ fb}^{-1}$.</span>
+
+#### Intensity distributions and decay-rate matrices
+
+@fig-lambda-c-intensity-comparison shows a comparison between the data distribution over the Dalitz plane and our reimplementation of the original default amplitude model in terms of DPD. [We verified](https://lc2pkpi-polarimetry.docs.cern.ch/cross-check.html) that the intensity distribution of all 18&nbsp;amplitude models formulated symbolically with the DPD method is the same, up to floating-point precision&nbsp;[@LHCb:2023crj-Zotero]. A second cross-check was performed with a DPD implementation in Julia for the default model&nbsp;[@Mikhasenko:2022xyz].
+
+:::{#fig-lambda-c-intensity-comparison layout-ncol=2 layout-valign="center"}
+
+[![](images/chapter7/polarimetry-original-intensity.svg)]{.light-content}[![](images/chapter7/polarimetry-original-intensity-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+[![](images/chapter7/polarimetry-model-intensity.svg)]{.light-content}[![](images/chapter7/polarimetry-model-intensity-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Comparison between a rendering of the data distribution of $\varLambda_c \to p K^- \pi^+$ in the Dalitz plane measured by LHCb (left) and the intensity distribution of the "default" DPD amplitude model, evaluated over a <span class="nowrap">$1000\!\times\!1000$&nbsp;grid</span> (right). Adapted from [@LHCb:2022sck; @LHCb:2023crj].
+:::
+
+The $\varLambda_c^+ \to p K^- \pi^+$ decay has three subsystems. We indicate the set of resonances in each subsystem with ${}^{**}$, giving us the subsystems $K^{**} \to K^-\pi^+$, $\varLambda^{**} \to p K^-$, and $\varDelta^{**} \to p\pi^-$. The resonance contributions of each of these subsystems are clearly visible (see @fig-lambda-c-intensity-projections).
+
+:::::{.content-visible when-format="html"}
+::::{.column-page-inset-right}
+{{< include includes/fig-lambda-c-intensity-projections.qmd >}}
+::::
+:::::
+
+::::{.content-visible unless-format="html"}
+{{< include includes/fig-lambda-c-intensity-projections.qmd >}}
+::::
+
+As a validation step, we computed the fit fractions of the default model with full uncertainty propagation and compared them with the results reported in&nbsp;[@LHCb:2022sck, Table X]. The values in @tbl-fit-fraction-uncertainties show that the fit fractions obtained in this polarimetry study are consistent within uncertainties with those from the original LHCb amplitude analysis. Further details of the uncertainty propagation are discussed later[&nbsp;in @sec-uncertainty-propagation]{.content-visible unless-format="pdf"}.
+
+| Resonance | Polarimetry study         | Original analysis         |
+|:----------|--------------------------:|:-------------------------:|
+| $\varLambda(1405)$     | $7.78 \pm 0.43_{-2.53}^{+3.01}$  | $7.7 \pm 0.2 \pm 3.0$     |
+| $\varLambda(1520)$     | $1.91 \pm 0.10_{-0.24}^{+0.04}$  | $1.86 \pm 0.09 \pm 0.23$  |
+| $\varLambda(1600)$     | $5.16 \pm 0.28_{-1.93}^{+0.50}$  | $5.2 \pm 0.2 \pm 1.9$     |
+| $\varLambda(1670)$     | $1.15 \pm 0.04_{-0.29}^{+0.06}$  | $1.18 \pm 0.06 \pm 0.32$  |
+| $\varLambda(1690)$     | $1.16 \pm 0.01_{-0.33}^{+0.06}$  | $1.19 \pm 0.09 \pm 0.34$  |
+| $\varLambda(2000)$     | $9.55 \pm 0.67_{-2.26}^{+0.83}$  | $9.58 \pm 0.27 \pm 0.93$  |
+| $\varDelta(1232)^{++}$ | $28.73 \pm 1.34_{-0.79}^{+1.76}$ | $28.6 \pm 0.29 \pm 0.76$  |
+| $\varDelta(1600)^{++}$ | $4.50 \pm 0.51_{-1.40}^{+0.93}$  | $4.5 \pm 0.3 \pm 1.5$     |
+| $\varDelta(1700)^{++}$ | $3.89 \pm 0.07_{-0.48}^{+0.94}$  | $3.9 \pm 0.2 \pm 0.94$    |
+| $K_0^*(700)$           | $2.99 \pm 0.20_{-0.59}^{+0.91}$  | $3.02 \pm 0.16 \pm 0.92$  |
+| $K^*(892)$             | $21.95 \pm 1.24_{-0.70}^{+0.59}$ | $22.14 \pm 0.23 \pm 0.64$ |
+| $K_0^*(1430)$          | $14.70 \pm 0.80_{-2.67}^{+2.78}$ | $14.7 \pm 0.6 \pm 2.7$    |
+
+: Comparison of the fit fractions of the resonances in the decay $\varLambda_c^+ \to p K^- \pi^+$ between this polarimetry study and the original LHCb amplitude analysis [@LHCb:2022sck]. The first quoted uncertainty combines the statistical and systematic components in quadrature, the second reflects the model dependence. In this work, the model uncertainty is defined by the extrema of the deviations, rather than by their standard deviation. {#tbl-fit-fraction-uncertainties}
+
+The decay rates of the amplitude models were also investigated. In particular, the model using that uses LS couplings (canonical basis) rather than helicity couplings allows one to distinguish partial waves as either parity-violating or parity-conserving, which can be related to @eq-asymmetry-parameter-from-couplings. [@fig-pc-pv-currents-html]{.content-visible when-format="html"}[@fig-pc-pv-currents]{.content-visible unless-format="html"} shows the decay rates of all partial waves in the canonical basis. Each matrix <span class="nowrap">element&nbsp;$i,j$</span> is obtained by setting all couplings to zero except those of the <span class="nowrap">$i$<sup>th</sup></span> and <span class="nowrap">$j$<sup>th</sup></span> partial waves, and then normalising to the total <span class="nowrap">intensity&nbsp;$I_\mathrm{tot}$</span> of the full model. Diagonal elements represent the decay <span class="nowrap">rate&nbsp;$I_i/I_\mathrm{tot}$</span> (the "fit fraction") of the <span class="nowrap">$i$<sup>th</sup></span> partial wave, rather than the resonance fit fractions listed in @tbl-fit-fraction-uncertainties. Off-diagonal elements quantify interference between the <span class="nowrap">$i$<sup>th</sup></span> and <span class="nowrap">$j$<sup>th</sup></span> partial waves, given by $(I_{ij}-I_i-I_j)/I_\mathrm{tot}$. Interference should vanish between different partial waves (different <span class="nowrap">$LS$</span> combinations) and where it does not, this indicates correlations between amplitudes induced by the production mechanism. By construction, the sum of all elements in the lower triangle of the matrix including the diagonal equals&nbsp;100%.
+
+:::::{.content-visible when-format="html"}
+::::{.column-page-inset-right}
+:::{#fig-pc-pv-currents-html layout="[[1, 1.201]]" layout-valign="bottom"}
+{{< include includes/fig-pc-pv-currents.qmd >}}
+:::
+::::
+:::::
+::::{.content-visible unless-format="html"}
+:::{#fig-pc-pv-currents layout="[[1, 1.201]]" layout-valign="bottom"}
+{{< include includes/fig-pc-pv-currents.qmd >}}
+:::
+::::
+
+#### Field visualisations
+
+Having reformulated and validated the amplitude models with DPD, we can compute the polarimeter vector field from the aligned transition amplitudes using @eq-aligned-polarimeter-vector. The alignment can be performed with respect to any of the three subsystems. In @fig-rotation-angles, this corresponds to choosing a different pair of decay products to define the <font color="#BB5566">red</font> plane. As a result, one obtains three distinct polarimeter vector <span class="nowrap">fields&nbsp;$\vec\alpha$,</span> associated with the <span class="nowrap">$K^{**}$,</span> <span class="nowrap">$\varLambda^{**}$,</span> and <span class="nowrap">$\varDelta^{**}$&nbsp;subsystems.</span> However, the polarised intensity as given in @eq-polarised-intensity-from-aligned-polarimeter-vector, remains invariant under this choice, owing to the <span class="nowrap">rotation&nbsp;$\mathbfit{R}$</span> into the decay plane.
+
+@fig-polarimeter-vector-fields shows these three aligned polarimeter vector fields over the Dalitz plane as computed from the default amplitude model. The diagram in the upper right shows the decay plane in the center-of-mass frame <span class="nowrap">of&nbsp;$\varLambda_c$</span> and the red arrow highlights subsystem to which the vector field has been aligned. The <span class="nowrap">$\alpha_x$&nbsp;component</span> of the field is projected onto the vertical axis of the plot and the <span class="nowrap">$\alpha_z$&nbsp;component</span> is projected onto the horizontal axis. The <span class="nowrap">$y$&nbsp;component</span> of the vector field is of less interest, as the <span class="nowrap">$y$&nbsp;axis</span> points out of the decay plane (see @fig-rotation-angles). The colours of the vectors indicate their length.
+
+The shaded areas indicate where each of the subsystems contribute for more than 70% to the intensity (some regions overlap due to interference). One would expect that the vector field points in the <span class="nowrap">$z$&nbsp;direction</span> in regions where the subsystem to which the vector field has been aligned, dominates. However, it is difficult to determine whether the vector field consistently points in a single direction, even in those regions.
+
+:::{#fig-polarimeter-vector-fields layout="[[1], [1,1]]"}
+[![](images/chapter7/polarimeter-vector-field-K.svg){width=85%}]{.light-content}[![](images/chapter7/polarimeter-vector-field-K-dark.svg){width=85%}]{.dark-content .content-visible when-format="html"}
+
+[![](images/chapter7/polarimeter-vector-field-L.svg)]{.light-content}[![](images/chapter7/polarimeter-vector-field-L-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+[![](images/chapter7/polarimeter-vector-field-D.svg)]{.light-content}[![](images/chapter7/polarimeter-vector-field-D-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Visualisation of the aligned polarimeter vector <span class="nowrap">field&nbsp;$\vec{\alpha}$</span> over the Dalitz plane for three reference subsystems. The upper right corner of each plot indicates the subsystem to which $\vec{\alpha}$ has been aligned, with $\vec{\alpha}$ aligned to the <span class="nowrap">$K^{**}$&nbsp;subsystem</span> (top), to the <span class="nowrap">$\varLambda^{**}$&nbsp;subsystem</span> (lower left), and to the <span class="nowrap">$\varDelta^{**}$&nbsp;subsystem</span> (lower right). The direction of the field vectors indicates the projection of the $\alpha_x$ and <span class="nowrap">$\alpha_z$&nbsp;component</span> <span class="nowrap">of&nbsp;$\vec{\alpha}$,</span> with the colour indicating its magnitude. The shaded regions indicate where the subsystem dominates, for instance, where $I_{\varLambda^{**}}(\tau) / I_0(\tau) > 70\%$.
+:::
+
+The polarimeter vector field does behave consistently when we evaluate it for each of the resonances individually (by setting the couplings of other amplitudes to zero). @fig-polarimeter-vector-field-per-resonance shows the polarimeter vector field for each resonance, using the corresponding subsystem as reference for alignment. In almost each case, the vector field aligns perfectly to the <span class="nowrap">$z$&nbsp;axis</span> of the decay plane (that is, in the direction of the resonance). For the $\varLambda^{**}$ and <span class="nowrap">$\varDelta^{**}$&nbsp;subsystems,</span> this is because their recoil particle is a spin-zero meson, so that all spin information is transferred to the resonance. For the <span class="nowrap">$K^{**}$&nbsp;subsystem,</span> the vector field only aligns with the <span class="nowrap">$z$&nbsp;axis</span> in the case of the scalar mesons [$K_0^*(700)$](https://pdglive.lbl.gov/Particle.action?init=0&node=M174&home=MXXX020) and [$K_0^*(1430)$](https://pdglive.lbl.gov/Particle.action?init=0&node=M019&home=MXXX020). For the <span class="nowrap">[$K^*(892)$](https://pdglive.lbl.gov/Particle.action?init=0&node=M018&home=MXXX020)&nbsp;resonance,</span> the polarimeter field does not align, because it is a vector meson.
+
+When the polarimeter vector field aligns consistently for a specific resonance and its recoil, we essentially have the situation sketched in @fig-asymmetry. The modulus of the averaged polarimeter vector from @eq-averaged-polarimeter-vector is indicated in the top right of @fig-polarimeter-vector-field-per-resonance. The value is characteristic to that resonance and its recoil and indicates the strength of the forward–backward asymmetry in the decay via @eq-two-body-asymmetry.
+
+:::{#fig-polarimeter-vector-field-per-resonance layout="[[1], [1], [1]]"}
+[![](images/chapter7/sub-polarimeters-K.svg)]{.light-content}[![](images/chapter7/sub-polarimeters-K-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+[![](images/chapter7/sub-polarimeters-L.svg)]{.light-content}[![](images/chapter7/sub-polarimeters-L-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+[![](images/chapter7/sub-polarimeters-D.svg)]{.light-content}[![](images/chapter7/sub-polarimeters-D-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Polarimeter vector field $\vec{\alpha}$ for each resonance, aligned to the corresponding subsystem. The modulus of the averaged polarimeter vector is indicated on the top right.
+:::
+
+#### Uncertainty propagation {#sec-uncertainty-propagation}
+
+Since the computed polarimeter vector field is intended to be used in other analysis, we also propagated uncertainties over the Dalitz plane. We investigated three types of uncertainties: statistical uncertainties that are related to the size of the data sample of the original study, systematic uncertainties that are related to detector effects, and model uncertainties that come from the alternative model hypotheses in the performed amplitude analysis.
+
+We grouped the systematic and statistical uncertainties together by evaluating the default model of over a Gaussian-distributed sample of **100&nbsp;parameter sets** generated from the published fit parameters with their uncertainties taken as the standard deviation. The vector field is computed over a <span class="nowrap">$100\!\times\!100$&nbsp;**grid**</span> over the Dalitz plane that encapsulates the kinematically allowed region. In each point on the grid, the standard deviation over those 100&nbsp;model evaluations is then taken as the combined statistical and systematic uncertainty of the polarimeter field. Similarly, to propagate the model uncertainties, we evaluated the polarimeter vector field all the **18&nbsp;amplitude models** from&nbsp;[@LHCb:2022sck] but take the extrema of the deviations rather than their standard deviation.
+
+It is difficult to visualise the uncertainties of the polarimeter vector field over the Dalitz plane. We found that the best representation is given by the norm $\left|\vec{\alpha}^{(i)}-\vec{\alpha}^\text{default}\right|$ of the discrepancy between the default <span class="nowrap">model&nbsp;$\vec{\alpha}^\text{default}$</span> and the alternative <span class="nowrap">models&nbsp;$\vec{\alpha}^{(i)}$,</span> as well as the angle&nbsp;$\theta^{(i)}$ and solid <span class="nowrap">angle&nbsp;$\delta\Omega^{(i)}$</span> between the two vectors,
+
+$$
+\begin{aligned}
+\delta\Omega^{(i)} \;&=\;
+  \int_0^{2\pi}
+  \int_0^\pi
+  \mathrm{d}\phi\mathrm{d}\cos\theta
+= 2\pi\left(1-\cos\theta^{(i)}\right)
+\,, \\
+\cos\theta^{(i)} \;&=\; \frac{
+  \vec{\alpha}^{(i)} \cdot \vec{\alpha}^\text{default}
+}{
+  \left|\vec{\alpha}^{(i)}\right| \, \left|\vec{\alpha}^\text{default}\right|
+}
+\,.
+\end{aligned}
+$$
+
+:::{#fig-polarimeter-angle-norm-definition fig-pos="b!"}
+![](images/chapter7/polarimeter-norm-angle-definitions.svg)
+
+Definition of the solid <span class="nowrap">angle&nbsp;$\color{MyRed}\delta\Omega$,</span> <span class="nowrap">angle&nbsp;$\color{MyRed}\theta^{(i)}$,</span> and <font color="#BB5566">norm</font> of the discrepancy between the polarimeter vector of the default <span class="nowrap">model&nbsp;$\color{MyBlue}\vec{\alpha}^\text{default}$</span> and the alternative <span class="nowrap">models&nbsp;$\color{MyBlue}\vec{\alpha}^{(i)}$.</span>
+:::
+
+@fig-polarimeter-angle-norm-definition illustrates how the discrepancy norm and $\delta\Omega$ are defined. In the left panels of @fig-polarimeter-angle-norm-uncertainties, the observable of interest (e.g. the solid <span class="nowrap">angle&nbsp;$\delta\Omega$)</span> is evaluated across the Gaussian-distributed sample of 100&nbsp;parameter sets, and the pointwise standard deviation on the Dalitz plane is taken as the combined uncertainty. The right panels apply the same procedure, but evaluate the observable across all 18&nbsp;amplitude models. In this case, the maximum deviation at each point is taken as the model uncertainty. The plots demonstrate that the direction of the vector fields is stable under all sources of uncertainty (small deviations <span class="nowrap">in&nbsp;$\delta\Omega$),</span> whereas the magnitude can fluctuate substantially in regions where the intensity is low (see @fig-lambda-c-intensity-comparison).
+
+:::{#fig-polarimeter-angle-norm-uncertainties fig-pos="t!" layout-nrow=2}
+[![Norm of the deviations](images/chapter7/polarimetry-field-norm-uncertainties.svg)]{.light-content}[![Norm of the deviations](images/chapter7/polarimetry-field-norm-uncertainties-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+[![Solid angle of the deviations](images/chapter7/polarimetry-field-angle-uncertainties.svg)]{.light-content}[![Solid angle of the deviations](images/chapter7/polarimetry-field-angle-uncertainties-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Systematic and statistical uncertainties (left) and model uncertainties (right) of the polarimeter vector field $\vec{\alpha}$. Top row: norm of the discrepancy between the default <span class="nowrap">model&nbsp;$\vec{\alpha}^\text{default}$</span> and the alternative <span class="nowrap">models&nbsp;$\vec{\alpha}^{(i)}$.</span> Lower row: the solid <span class="nowrap">angle&nbsp;$\delta\Omega$</span> between $\vec{\alpha}^\text{default}$ <span class="nowrap">and&nbsp;$\vec{\alpha}^{(i)}$.</span>
+
+:::
+
+#### Averaged polarimeter vector
+
+The uncertainties were also propagated for the averaged polarimeter vector from @eq-averaged-polarimeter-vector. In cartesian coordinates, the polarimeter vector with its uncertainties [are](https://lc2pkpi-polarimetry.docs.cern.ch/uncertainties.html)
+
+$$
+\begin{aligned}
+\overline{\alpha_x}            \;&=\; \left( -62.6\pm  4.5_{-14.8}^{+8.4} \right) \times 10^{-3} \\
+\overline{\alpha_y}            \;&=\; \left(  +8.9\pm  8.9_{-12.7}^{+9.1} \right) \times 10^{-3} \\
+\overline{\alpha_z}            \;&=\; \left(-278.0\pm 23.7_{-40.4}^{+12.6}\right) \times 10^{-3} \\
+\overline{\left|\alpha\right|} \;&=\; \left( 669.4\pm  9.3_{-10.4}^{+15.3}\right) \times 10^{-3}
+\,.
+\end{aligned}
+$$ {#eq-averaged-polarimeter-vector-values}
+
+The uncertainties in the averaged polarimeter vector also reflect that the direction of the vector field is quite insensitive to the uncertainties, while the magnitude of the vector field can vary significantly in regions where the intensity is low. This can be clearly seen in polar coordinates, the averaged polarimeter vector and its uncertainties are
+
+$$
+\begin{aligned}
+\left|\overline{\alpha}\right| \;&=\; \left(+285.1 \pm 24.0_{-13.8}^{+37.9}\right) \times 10^{-3} \\
+\theta\left(\overline{\alpha}\right) \;&=\; +2.92 \pm 0.01_{-0.04}^{+0.05}\;\mathrm{rad} \\
+\;&=\; \left(+0.929 \pm 0.002_{-0.011}^{+0.017}\right) \times \pi \\
+\phi\left(\overline{\alpha}\right) \;&=\; +3.00 \pm 0.14_{-0.09}^{+0.21}\;\mathrm{rad} \\
+\;&=\; \left(+0.955 \pm 0.045_{-0.028}^{+0.067}\right) \times \pi
+\,,
+\end{aligned}
+$$
+
+`\noindent`{=latex}
+where we have used the general transformation for a vector&nbsp;$\vec{v}$ to its polar-coordinate angles,
+
+$$
+\begin{aligned}
+\theta(\vec{v}) \;&=\; \arccos\left(v_z \, \big/ \left|\vec{v}\right|\right) \\
+\phi(\vec{v}) \;&=\; \pi - \mathrm{atan2}\left(v_y, {-}v_x\right)
+\,.
+\end{aligned}
+$$
+
+`\noindent`{=latex}
+Note that $\overline{\left|\alpha\right|}$ is the average of the norm of the polarimeter vector field, while $\left|\overline{\alpha}\right|$ is the norm of the averaged polarimeter vector field.
+
+@fig-polarimeter-averaged-vector-distribution shows the distribution of the averaged polarimeter vector <span class="nowrap">field&nbsp;$\overline{\alpha}$</span> over the [100&nbsp;parameter samples and the 18&nbsp;amplitude models](#sec-uncertainty-propagation). The distribution shows that there is a certain correlation, or at least an upper bound, to the statistical and systematic uncertainties. This is related to the fact that the individual contributions from the resonances to the vector field are aligned, as can be seen in @fig-polarimeter-vector-field-per-resonance, which results in a slight correlation.
+
+:::{#fig-polarimeter-averaged-vector-distribution}
+[![](images/chapter7/polarimetry-correlations.svg)]{.light-content}[![](images/chapter7/polarimetry-correlations-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Distribution of the computed averaged polarimeter <span class="nowrap">vector&nbsp;$\overline{\alpha}$</span> in polar coordinates over the bootstrap sample of 100&nbsp;parameter sets and the 18&nbsp;amplitude models.
+:::
+
+### Verification of CAS-assisted model building
+
+The formulation of $\vec{\alpha}$ from the transition amplitudes was powered by the fact that the amplitude models were formulated symbolically for each reference subsystem, which allowed to easily reorder the terms using the CAS. The symbolic amplitude models were [directly rendered](https://lc2pkpi-polarimetry.docs.cern.ch/amplitude-model.html) along with the code using the self-documenting workflow described in @sec-self-documenting. In addition, the symbolic vector fields could directly be expressed as array-oriented code that could efficiently handle the evaluation of the three-dimensional vector fields, showing that the approach can be used for more than intensity evaluation in an amplitude analysis.
+
+:::{.content-hidden unless-profile="hardcover" unless-profile="paperback"}
+`\hypersetup{urlcolor=RoyalBlue}`{=latex}
+:::
+
+We found that JAX was the fastest computational backend, enabling us to propagate both systematic and statistical uncertainties for the entire analysis within an hour. All documentation and results on <span class="nowrap">[lc2pkpi-polarimetry.docs.cern.ch](https://lc2pkpi-polarimetry.docs.cern.ch)</span> were produced through continuous-integration (CI) pipelines, which demonstrates that the self-documenting workflow was both robust and fast enough for high-performance computations, even on low-performance CI machines. The use of an array-oriented computational library further simplified the evaluation of statistical uncertainties, since the models could be applied directly to the sample of 100&nbsp;parameter sets and computed over the Monte Carlo-generated phase space in a single broadcasted operation (@sec-code-conciseness). <!-- cspell:ignore pkpi -->
+
+:::{.content-hidden unless-profile="hardcover" unless-profile="paperback"}
+`\hypersetup{urlcolor=black}`{=latex}
+:::
+
+Finally, since the amplitude models were formulated using packages from the ComPWA project described in @sec-compwa, the cross-check described in @sec-computed-polarimeter verified that the amplitude models formulated with these packages were consistent with the amplitude models used in @LHCb:2022sck and the Julia implementation of the default model&nbsp;[@Mikhasenko:2022xyz].
+
+### Polarisation determination
+
+For the [uncertainty propagation](#sec-uncertainty-propagation), the polarimeter vector fields were evaluated over a <span class="nowrap">$100\!\times\!100$&nbsp;grid</span> for each of the 18&nbsp;models as well as the 100&nbsp;parameter samples. The results are [exported as JSON files](https://lc2pkpi-polarimetry.docs.cern.ch/uncertainties.html#exported-distributions), so that they can be reused in other analyses using for instance @eq-polarised-intensity-from-aligned-polarimeter-vector or @eq-b-to-lambda-c-lambda-c-k. In this section, we use the framework to determine the polarisation of the $\varLambda_c^+$ in a toy study using an interpolation over the exported grids.
+
+At first, using @eq-polarised-intensity-from-aligned-polarimeter-vector, we generate a toy-data sample for the $\varLambda_c^+ \to p K^- \pi^+$ decay including polarisation of the <span class="nowrap">decaying $\varLambda_c^+$,</span> and take that as a measured <span class="nowrap">distribution&nbsp;$I$.</span> As a test value <span class="nowrap">for&nbsp;$\vec{P}$,</span> we take the <span class="nowrap">polarisation&nbsp;$\vec{P}^0$</span> that was determined by LHCb&nbsp;[@LHCb:2022sck, p.11]. These values are, with their reported model uncertainties,
+
+$$
+\begin{aligned}
+P^0_x \;&=\; +21.65 \pm 0.36 \\
+P^0_y \;&=\;  +1.08 \pm 0.09 \\
+P^0_z \;&=\;  -66.5 \pm 1.1  \,,
+\end{aligned}
+$$
+
+`\noindent`{=latex}
+where the values are given in percentage ($\%$). Next, we reuse the exported <span class="nowrap">$100\!\times\!100$&nbsp;grids</span> to interpolate the polarimeter vector field $\vec{\alpha}$ as well as the unpolarised intensity $I_0$ over the generated phase space sample. A gradient-descent algorithm with Minuit2 is then applied to find the most optimal value for $\vec{P}$ such that the computed distribution of $I$ in @eq-polarised-intensity-from-aligned-polarimeter-vector matches the generated distribution best. As a starting guess value, we take $\vec{P} = (+0.3, -0.3, +0.4)$. The fit is repeated for each of the 18&nbsp;models in order to obtain model uncertainties. The resulting value for the default model, along with the model uncertainties are (in $\%$)
+
+$$
+\begin{aligned}
+P_x \;&=\; +21.65_{-0.62}^{+0.30} \\
+P_y \;&=\;  +1.08_{-0.05}^{+0.02} \\
+P_z \;&=\; -66.50_{-0.85}^{+1.66} \\
+\end{aligned}
+$$ {#eq-polarimeter-vector-field-fit-values}
+
+`\noindent`{=latex}
+This is consistent with the model uncertainties reported for $\vec{P}^0$.
+
+The same fit procedure was carried out using the _averaged_ polarimeter vector values from @eq-averaged-polarimeter-vector-values in @eq-polarised-intensity-from-averaged-polarimeter-vector. Again, the uncertainties were determined as extrema over the averaged polarimeter vector field values of each model, resulting in
+
+$$
+\begin{aligned}
+P_x \;&=\; +20.32_{-2.44}^{+1.04} \\
+P_y \;&=\;  -0.26_{-0.08}^{+0.17} \\
+P_z \;&=\; -66.14_{-3.32}^{+7.91}\,. \\
+\end{aligned}
+$$ {#eq-averaged-polarimeter-vector-fit-values}
+
+This fit is faster, because there is no need to interpolate values for a vector field from the grid samples. However, the uncertainties are a factor 3.5–4.8 larger than when using the polarimeter vector field (@eq-polarimeter-vector-field-fit-values). This is consistent with the increase in uncertainty when working with scalar polarisation sensitivity&nbsp;[@Davier:1992nw]. By defining
+
+$$
+\begin{aligned}
+S_0^2 \;&=\;
+  3 \left.
+    \int I_0 \left|\vec{\alpha}\right|^2 \mathrm{d}^{(n)} \tau
+    \,\middle/\,
+    \int I_0\,\mathrm{d}^{(n)} \tau
+  \right. \\
+\overline{S}_0^2 \;&=\;
+  3\left(\overline{\alpha}_x^2+\overline{\alpha}_y^2+\overline{\alpha}_z^2\right)
+\,,
+\end{aligned}
+$$
+
+`\noindent`{=latex}
+it can be shown that the increase in uncertainty is in the order of at least $S_0 / \overline{S}_0 \approx 3$. Here, $S_0$ quantifies the effective polarisation sensitivity from the full polarimeter vector field averaged over phase space, while $\overline{S}_0$ gives the corresponding sensitivity when this field is replaced by its averaged vector.
+
+::::{.content-visible when-format="pdf"}
+:::{#fig-lc2pkpi-ls-difference-pdf fig-pos="b!"}
+![](images/chapter7/lc2pkpi-ls-difference.svg)
+
+{{< include includes/fig-lc2pkpi-ls-difference.qmd >}}
+:::
+::::
+
+### Relevance to ComPWA project
+
+:::{.content-hidden unless-profile="hardcover" unless-profile="paperback"}
+`\hypersetup{urlcolor=RoyalBlue}`{=latex}
+:::
+
+The polarimetry study served as a test for the methodologies described in @sec-computational-techniques. Formulating the amplitudes symbolically allowed us to rearrange terms with the CAS and derive explicit expressions <span class="nowrap">for&nbsp;$\vec{\alpha}$.</span> From these, we generated JAX code that could evaluate the vector field efficiently, both on dense grids (e.g. <span class="nowrap">$1000\!\times\!1000$&nbsp;points</span> on the Dalitz plane for visualisations) and across a large number of bootstrap samples. The bootstraps were efficiently handled in parallel by broadcasting parameter arrays with 100&nbsp;elements against a Monte Carlo-generated phase space sample with 100,000&nbsp;events. Finally, both numerical results as well as the mathematical formulations were directly published on <span class="nowrap">[lc2pkpi-polarimetry.docs.cern.ch](https://lc2pkpi-polarimetry.docs.cern.ch)</span> using the self-documenting workflow described in @sec-self-documenting as the analysis progressed. All the results are fully reproducible and are further developed on [github.com/ComPWA/polarimetry](https://github.com/ComPWA/polarimetry).
+
+:::{.content-hidden unless-profile="hardcover" unless-profile="paperback"}
+`\hypersetup{urlcolor=black}`{=latex}
+:::
+
+Importantly, the aligned amplitudes and intensities were formulated with the [AmpForm-DPD](#sec-ampform-dpd) package, so this analysis also served as a validation of the implemented physics. A cross-check against the results from LHCb&nbsp;[@LHCb:2022sck] as well as a comparison with the Julia implementation confirmed that the numerical code is consistent to floating-point precision across all amplitude models of the original LHCb analysis. Moreover, while the default amplitude model was formulated in the helicity basis, one of the alternative models employed the canonical <span class="nowrap">$LS$&nbsp;basis</span>. As shown in [@fig-lc2pkpi-ls-difference-pdf]{.content-visible when-format="pdf"}[@fig-lc2pkpi-ls-difference]{.content-visible unless-format="pdf"}, the two bases differ by at most 3% relative to the maximum intensity over the Dalitz plane. The polarimetry analysis therefore proves that the symbolic implementation of the DPD method works correctly in both bases and can be commonly used in future analyses.
+
+::::{.content-visible unless-format="pdf"}
+:::{#fig-lc2pkpi-ls-difference}
+[![](images/chapter7/lc2pkpi-ls-difference.svg)]{.light-content}[![](images/chapter7/lc2pkpi-ls-difference-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+{{< include includes/fig-lc2pkpi-ls-difference.qmd >}}
+:::
+::::
+
+## Spin alignment tests with $J/\psi \to \bar{p} K^0_S \varSigma^+$ {#sec-jpsi-to-pbar-k-sigma}
+
+The BESIII collaboration has carried out an investigative amplitude analysis of the decay ${J/\psi \to \bar{p} K^0_S \varSigma^+}$ using the standard helicity formalism&nbsp;[@Richman:1984gh; @Chung:2014-SpinFormalismsUpdated; @Kutschke:1996-AngularDistributionCookbook]. This analysis, documented in the PhD thesis of Wollenberg&nbsp;[@Wollenberg:2024], employed the original AmpForm implementation&nbsp;[@ComPWA-AmpForm-v0.15.9], which did not account for interference between different subsystems. In the present work, we reimplemented the same amplitude model with spin alignment using the DPD method and performed new fits to assess its impact on both fit quality and decay rates.
+
+### Data and event selection {#sec-jpsi-data}
+
+The same data set as in the investigative amplitude analysis was used for this study. In total, $(10,087 \pm 44) \times 10^6$ <span class="nowrap">$e^+e^- \to J/\psi$ events</span> (about 10&nbsp;billion) were collected with the BESIII detector between 2009 and 2019&nbsp;[@BESIII:2021cxx]. From this sample, the decay channel $J/\psi \to \bar{p} K^0_S \varSigma^+$ and its charge-conjugate counterpart, $J/\psi \to p K^0_S \overline{\varSigma}^-$, were selected and reconstructed&nbsp;[@Wollenberg-BAM:2022; @BESIII:2023sus; @Wollenberg:2024]. Here, we summarise only the main steps of the event selection.
+
+In this decay, the <span class="nowrap">$\varSigma^+$&nbsp;baryon</span> and <span class="nowrap">$K^0_S$&nbsp;meson</span> are unstable and have to be reconstructed from their decay products. In the analysis, these particles were reconstructed using their dominant decay channel, as shown in @fig-jpsi-reconstruction-scheme. The $K^0_S$ was reconstructed from its decay into two charged pions, while the $\varSigma^+$ was reconstructed from its decay into a <span class="nowrap">proton&nbsp;$p$</span> and neutral <span class="nowrap">pion&nbsp;$\pi^0$.</span> The neutral pion cannot be detected directly and was reconstructed from its decay into two <span class="nowrap">photons,&nbsp;$\gamma\gamma$.</span>
+
+:::{#fig-jpsi-reconstruction-scheme}
+![](images/chapter7/jpsi-reconstruction-scheme.svg)
+
+Reconstruction of the decay $J/\psi \to \bar{p} \varSigma^+ K^0_S$. Detected particles are shown in <font color="#004488">blue</font>, while the unstable particles that have to be reconstructed are shown in <font color="#DDAA33">yellow</font>.
+:::
+
+All in all, the final state of detected particles is $p \bar{p} \pi^+ \pi^- \gamma\gamma$. Apart from the photons, these are all distinct, easily identifiable particles, which makes event selection relatively easy. The first selection criteria are therefore four charged tracks with net charge&nbsp;$0$ and at least two photons. Other typical requirements that were applied, are motivated by the BESIII detector geometry. <span class="nowrap">A&nbsp;$\left|\cos\theta\right|<0.93$</span> cut is applied on the polar <span class="nowrap">angle&nbsp;$\theta$,</span> to select tracks inside the acceptance range of the MDC.
+
+
+The reconstructed vertex of the prompt proton (or antiproton) is required to be close to the interaction point, within a cylindrical volume around the interaction point with radius $\left|V_{xy}\right|<1\text{ cm}$ and $\left|V_z\right|<10\text{ cm}$ along the direction of the beam. The vertex of the secondary proton (antiproton) that originates from the $\varSigma^+$ ($\overline{\varSigma}^-$) may not be $20\text{ cm}$ away from the interaction point due to the short lifetime of the $\varSigma$ baryon, but no cuts are applied in the <span class="nowrap">$xy$&nbsp;plane.</span> Protons were distinguished from kaons and pions using information from the TOF sub-detector and the energy loss profile from the MDC. Tracks that have a higher probability of a kaon or pion hypothesis are rejected ($\mathcal{P}(p)>\mathcal{P}(K)$ and $\mathcal{P}(p)>\mathcal{P}(\pi)$).
+
+Photons candidates from the $\pi^0$ decay are required to have an energy of at least $50\text{ MeV}$ if they are detected in the endcaps of the EMC, at $0.86<\left|\cos\theta\right|<0.92$, and at least $25\text{ MeV}$ if they are detected in the barrel part of the EMC, at $\left|\cos\theta\right|<0.8$. Photons are only selected if they are recorded $700\text{ ns}$ after the collision to suppress electronic noise. Furthermore, photons that are at an angle of less than $20^\circ$ with respect to any charged track are rejected to suppress split-offs from those charged tracks.
+
+Since only four charged particles are selected with a net-zero charge, and the proton and antiproton are already identified, no particle identification is required for the remaining two charged tracks. The remaining pions cannot be kaons, because that hardly leaves any phase space and violates strangeness conservation. Both pions should originate from short-lived <span class="nowrap">$K^0_S$&nbsp;mesons,</span> so the pions are required to be close to the interaction point, at $\left|V_z\right|<20\text{ cm}$. A secondary vertex fit is applied to the charged pion pair, which yields a distance $L(K^0_S)$ between the primary and secondary vertex (decay length), with an uncertainty $\sigma_L$. Only pion pairs with $\sigma_L<\tfrac{1}{2}L(K^0_S)$ are selected.
+
+The four-momenta of the short-lived and neutral particles are reconstructed by summing the four-momenta of their decay products, after which additional selection cuts are applied to enhance the signal-to-background ratio. For amplitude analyses, an important step is to fit the measured four-momenta to a kinematic hypothesis. In this decay channel, a **7C&nbsp;kinematic fit** is performed, imposing seven constraints: the total four-momentum of all selected particles must equal that of the initial $e^+e^- \to J/\psi$ system in the lab frame, the invariant mass of the two photons must match the <span class="nowrap">$\pi^0$&nbsp;mass,</span> the invariant mass of the (anti)proton with the <span class="nowrap">reconstructed&nbsp;$\pi^0$</span> must match the <span class="nowrap">$\varSigma^+$&nbsp;mass,</span> and the invariant mass of the charged pion pair must match the <span class="nowrap">$K^0_S$&nbsp;mass.</span> If multiple combinations are possible, the candidate with the lowest reduced chi-square value, <span class="nowrap">$\chi^2/\mathrm{n.d.f.}$,</span> is chosen. Only events with a <span class="nowrap">$\chi^2/\mathrm{n.d.f.}$&nbsp;value</span> of less than&nbsp;100 are retained.
+
+In parallel, three Monte Carlo&nbsp;(MC) samples were generated: a&nbsp;**signal** sample containing only events with the decay topology shown in @fig-jpsi-reconstruction-scheme, a&nbsp;**background** sample including all known <span class="nowrap">$J/\psi$&nbsp;decays,</span> and a **phase-space** sample in which the three-body final state is distributed uniformly over the available phase space. A&nbsp;total of <span class="nowrap">$4\times10^6$&nbsp;events</span> were generated for the signal sample, and <span class="nowrap">$8.9\times10^9$&nbsp;events</span> for the background sample, which roughly matches the size of the full data set. The initial <span class="nowrap">$e^+e^-$&nbsp;collision</span> was simulated with the KKMC event generator to account for initial-state radiation, while the subsequent decays were modelled with [`EvtGen`](https://evtgen.hepforge.org)&nbsp;[@Ping:2008zz] using the world-average branching fractions from the Review of Particle Physics&nbsp;[@ParticleDataGroup:2024cfk]. <!-- cspell:ignore KKMC -->
+
+The signal sample was used to determine the reconstruction efficiency of the decay in the branching fraction measurements, in the case of the background sample. The phase-space sample served to correct the data sample for detector efficiency by reweighting the fit model from the investigative amplitude analysis. The background sample provided estimates of the background distributions. To suppress events with $\varLambda$ or $\eta$ in the final states, two additional cuts were applied. Stricter cuts did not significantly reduce the remaining background contributions but did lower the overall event yield. By comparing the number of selected events in the data set with those in the background sample, it was estimated that about 94% of the selected events are genuine signal events and about 6% are irreducible background contributions&nbsp;[@Wollenberg:2024, Section 6.1].
+
+After applying all selection criteria, a total of <span class="nowrap">$122\,664$ measured</span> BESIII events remained in the data sample, while the detector-corrected phase-space sample consisted of <span class="nowrap">$609\,796$&nbsp;events.</span> Each event consists of three four-momenta that sum to the four-momentum of the <span class="nowrap">$J/\psi$&nbsp;system</span> in the lab frame, as ensured by the final 7C kinematic fit. The phase-space sample is about five times larger than the data sample, which provides sufficient statistics for normalisation, since no narrow structures are present in the distributions of its kinematic degrees of freedom.
+
+### Original amplitude model {#sec-original-amplitude-model}
+
+As noted in the beginning of this section, no spin alignment was considered in this investigative amplitude analysis, as it was used for the determination of the reconstruction efficiency correction. The intensity function is therefore taken to be a simple incoherent sum over the amplitudes for each helicity in the initial and final state (barring helicity&nbsp;0 for the $J/\psi$, as it is produced from $e^+e^-$&nbsp;collisions, through a virtual photon). Notating the subsystem $N^*\to K^0_S\varSigma^+$ as $(2)$ and $\varSigma^*\to \bar{p}K^0_S$ as $(3)$ as in @fig-jpsi-subsystem-definition, the fitted intensity function is
+
+$$
+\begin{aligned} &
+I\left(\sigma_{(2)},\sigma_{(3)}; \Omega_{(2)},\Omega^{(2)}_{\varSigma^+},\dots\right) \;= \\ &
+  \qquad
+  \sum_{\lambda_{J/\psi}\in\{-1,+1\}}
+  \sum_{\lambda_{\bar{p}}=-1/2}^{+1/2}
+  \sum_{\lambda_{\varSigma^+}=-1/2}^{+1/2}
+  \left|
+    A^{(2)}_{\lambda_{J/\psi}\lambda_{\bar{p}}\lambda_{\varSigma^+}} +
+    A^{(3)}_{\lambda_{J/\psi}\lambda_{\bar{p}}\lambda_{\varSigma^+}}
+  \right|^2 \,,
+\end{aligned}
+$$ {#eq-ampform-intensity}
+
+`\noindent`{=latex}
+with amplitudes of the form (taking <span class="nowrap">subsystem&nbsp;$(3)$</span> as an example),
+
+$$
+\begin{aligned} &
+  A^{(3)}_{\lambda_{J/\psi}\lambda_{\bar{p}}\lambda_{\varSigma^+}}
+  \!\left(
+    {\color{RoyalBlue}\sigma_{(3)}},
+    {\color{RoyalBlue}\Omega_{(3)}},
+    {\color{RoyalBlue}\Omega^{(3)}_{K^0_S}}
+  \right) \;=
+\\ & \qquad
+  \sum_{\rho\in\left\{\varSigma^*\right\}}
+  \sum_{\lambda_r=-J_r}^{+J_r}
+    D^{J_{J/\psi}}_{\lambda_{J/\psi},\lambda_r-\lambda_{\varSigma^+}}\!\left({\color{RoyalBlue}\Omega_{(3)}}\right) \;
+    D^{J_r}_{\lambda_r,\lambda_{K^0_S}-\lambda_{\bar{p}}}\!\left({\color{RoyalBlue}\Omega^{(3)}_{K^0_S}}\right)
+\\ & \qquad\quad\times\,
+  \sum_{L,S}
+    C^{J_{J/\psi},\lambda_r-\lambda_{\varSigma^+}}_{L,0,S,\lambda_r-\lambda_{\varSigma^+}} \;
+    C^{S,\lambda_r-\lambda_{\varSigma^+}}_{J_r,\lambda_r,J_{\varSigma^+},\,\text{-}\lambda_{\varSigma^+}}
+\\ & \qquad\quad\times\,
+  \sum_{\ell,s}
+    C^{J_{\varSigma^*},\lambda_{K^0_S}-\lambda_{\bar{p}}}_{\ell,0,s,\lambda_{K^0_S}-\lambda_{\bar{p}}} \;
+    C^{s,\lambda_{K^0_S}-\lambda_{\bar{p}}}_{J_{K^0_S},\lambda_{K^0_S},J_{\bar{p}},\,\text{-}\lambda_{\bar{p}}}
+\\ & \qquad\qquad\quad\times\;
+  {\color{DarkOrange}c^r_{L,S;\ell,s}} \;
+  X^r_{L,S;\ell,s}\!\left(
+    {\color{RoyalBlue}\sigma_{(3)}},
+    {\color{DarkOrange}m_r},
+    {\color{DarkOrange}\Gamma_r}
+  \right)\,.
+\end{aligned}
+$$ {#eq-ampform-amplitudes}
+
+Here, $\sigma_{(i)}$ denotes the squared invariant mass of <span class="nowrap">subsystem&nbsp;$(i)$</span>, $\Omega^{(i)}$ denotes the helicity angles for that subsystem in the rest frame of $J/\psi$, $\Omega^{(i)}$ are the helicity angle of final-state <span class="nowrap">particle&nbsp;$k$</span> in the rest frame <span class="nowrap">of&nbsp;$(i)$,</span> and $\lambda_k$ is the helicity of particle&nbsp;$k$. The helicity of the spinless <span class="nowrap">$K_0^S$&nbsp;meson</span> is <span class="nowrap">always&nbsp;$0$</span> and is not listed in the indices of the amplitudes. This equation is an implementation of @eq-sequential-decay-amplitude-helicity-formalism, using @eq-transformation-canonical-helicity to transform it to the canonical basis. Scalar factors have been absorbed into a single complex-valued scalar factor&nbsp;$c^r_{L,S;\ell,s}$ for each partial wave with angular momentum and coupled spin&nbsp;$L, S$ for the production vertex of the intermediate state and $\ell,s$ for the decay vertex of the intermediate state (see @fig-jpsi-subsystem-definition). The function&nbsp;$X^r_{L,S;\ell,s}$ parametrises the dynamics of the entire decay chain for <span class="nowrap">resonance&nbsp;$r$</span> with <span class="nowrap">mass&nbsp;$m_r$</span> and <span class="nowrap">width&nbsp;$\Gamma_r$.</span> Optimisable parameters are indicated in <font color=DarkOrange>orange</font>, while kinematic variables computed for each event in the data are indicated in <font color="#0071bc">blue</font>.
+
+:::{#fig-jpsi-subsystem-definition layout-ncol=2}
+![Subsystem $(2)$](images/chapter7/amplitude-subsystem2.svg)
+
+![Subsystem $(3)$](images/chapter7/amplitude-subsystem3.svg)
+
+The two subsystems that the amplitude model in @eq-ampform-intensity defines. The $J^{P(C)}$ values of the initial state and final state are shown in gray.
+:::
+
+Several versions of the model were optimised to the data by minimising an unbinned negative log-likelihood function using gradient descent with Minuit2 and JAX as the computational backend. The models differed in the number of included resonances but shared a common parametrisation for the dynamics <span class="nowrap">function&nbsp;$X$,</span> formulated in the canonical basis with angular momentum truncated <span class="nowrap">at&nbsp;4.</span> Each resonance was described by a Breit–Wigner <span class="nowrap">function&nbsp;$\mathcal{R}_\ell(s)$</span> with an energy-dependent <span class="nowrap">width&nbsp;$\Gamma_\ell(\sigma)$</span> over Mandelstam variable&nbsp;$\sigma$, multiplied by two form factors: $\mathcal{F}_L$ for the production vertex and $\mathcal{F}_\ell$ for the decay vertex. For example, a decay chain $A\xrightarrow{L}(r\xrightarrow{\ell}i\,j)\,k$ would be parametrised as
+
+$$X^r_{L,S;\ell,s}(\sigma_k,m_r,\Gamma_r) \;=\;
+  \mathcal{F}_L(\mu_{J/\psi}^2,\sigma_k,\mu_k^2) \;
+  \mathcal{R}_\ell\left(\sigma_k,m_r,\Gamma_r\right) \;
+  \mathcal{F}_\ell(\sigma_k,\mu_i^2,\mu_j^2) \,,
+$$
+
+`\noindent`{=latex}
+with <span class="nowrap">$\mu_i$&nbsp;the</span> rest mass of <span class="nowrap">particle&nbsp;$i$.</span> Each of the functions is defined as
+
+$$
+\begin{aligned}
+  \mathcal{R}_\ell\left(\sigma,m_r,\Gamma_r\right) \;&=\;
+    \frac{\Gamma_r m_r}{m_r^2 - i m_r \Gamma_\ell\left(\sigma\right) - \sigma} \\
+  \Gamma_\ell\left(\sigma\right) \;&=\;
+    \frac{\Gamma_r
+  \mathcal{F}_\ell\left(\sigma, \mu_i^2, \mu_j^2\right)^2 \rho\left(\sigma\right)}{\mathcal{F}_\ell\left(m_r^2,\mu_i^2,\mu_j^2\right)^2 \rho\left(m_r^2\right)} \\
+  \rho\left(\sigma\right) \;&=\;
+    \frac{2 \sqrt{q^2\left(\sigma\right)}}{\sqrt{\sigma}} \\
+  q^2\left(\sigma\right) \;&=\;
+    \frac{\left(\sigma - \left(\mu_i - \mu_j\right)^2\right) \left(\sigma - \left(\mu_i+\mu_j\right)^2\right)}{4\sigma} \,.
+\end{aligned}
+$$
+
+`\noindent`{=latex}
+Some models contained "non-resonant" contributions that were parametrised without a Breit–Wigner, but with two form factors only.
+
+The final resonance set was determined by iteratively including resonances and selecting the model with the lowest Akaike information criterion (AIC) to penalise overfitting. The optimal model (referred to as the **non-DPD model** in the following) includes five <span class="nowrap">$\varSigma^*$&nbsp;resonances,</span> one <span class="nowrap">$N^*$&nbsp;resonance,</span> and a non-resonant contribution in the <span class="nowrap">$\bar{p}K^0_S$&nbsp;subsystem.</span> In the reported fit result, the resonance masses were fixed to the mean values listed in the 2022 Review of Particle Physics of 2022&nbsp;[@ParticleDataGroup:2024cfk], while the widths were left free. Production and decay couplings were combined into a single complex coefficient per amplitude, also treated as a free parameter, with one coefficient fixed <span class="nowrap">to&nbsp;$1$</span> to remove the overall phase and scaling ambiguity.
+
+The measured data sample is shown in @fig-jpsi-dalitz-data (left) and the optimised non-DPD model is shown in @fig-jpsi-dalitz-models. The right pane in @fig-jpsi-dalitz-data shows the MC-generated, acceptance-corrected phase space that is used for plotting the intensity model, which shows that part of the kinematically allowed region is not covered by the detector. Even without a proper treatment of spin alignment, the amplitude models describe the data distributions decently. However, certain structures are not yet well accounted for. In addition, the decay rates of this model&nbsp;[@Wollenberg:2024, p.76] were remarkably high, which might be caused by interference effects (see @fig-decay-rates-comparison, left).
+
+:::{#fig-jpsi-dalitz-data}
+[![](images/chapter7/jpsi-dalitz-data.svg)]{.light-content}[![](images/chapter7/jpsi-dalitz-data-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Dalitz-plot visualisation of BESIII data (left) and acceptance-corrected phase space (right) for the decay $J/\psi \to \bar{p} K^0_S \varSigma^+$. The bin values of the phase space sample have been normalised with regard to the integral over the data sample. Higher energies in the invariant &nbsp;$K^0_S \varSigma^+$&nbsp;mass are limited by the detector acceptance.
+:::
+
+:::{#fig-jpsi-dalitz-models}
+[![](images/chapter7/jpsi-dalitz-models.svg)]{.light-content}[![](images/chapter7/jpsi-dalitz-models-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Comparison between the non-DPD model that did not use spin alignment (left) and the DPD model (right).
+:::
+
+:::{#fig-jpsi-dalitz-differences}
+[![](images/chapter7/jpsi-dalitz-differences.svg)]{.light-content}[![](images/chapter7/jpsi-dalitz-differences-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Bin-by-bin differences between the BESIII data and the non-DPD model of the previous study (left) and the DPD model (right), relative to each bin uncertainty.
+:::
+
+### Fit result with DPD
+
+For this work, we performed another investigative fit with the same resonance content, but reformulated it with the DPD method&nbsp;[@JPAC:2019ufm]. The main intensity function is an aligned version of @eq-ampform-intensity, which contains a <span class="nowrap">Wigner&nbsp;$d$</span>-function for each initial and final state that has spin (three in this case: $J/\psi$, $\bar{p}$, and $\varSigma^+$). Using DPD, the unpolarised intensity function of @eq-differential-cross-section-multi-body-unpolarised for the decay in @fig-jpsi-subsystem-definition becomes
+
+$$
+\begin{aligned} &
+I\left(\sigma_{(2)},\sigma_{(3)}; \theta_{(2)},\theta^{(2)}_{\varSigma^+},\dots,\zeta^3_{3(3)}\right) \;=\;
+  \sum_{\lambda^{\prime}_{J/\psi}=-1}^{+1}
+  \sum_{\lambda^{\prime}_{\bar{p}}=-1/2}^{+1/2}
+  \sum_{\lambda^{\prime}_{\varSigma^+}=-1/2}^{+1/2}
+\\ & \qquad\;
+  \left| \,
+    \sum_{\lambda_{J/\psi}=-1}^{+1}
+    \sum_{\lambda_{\bar{p}}=-1/2}^{+1/2}
+    \sum_{\lambda_{\varSigma^+}=-1/2}^{+1/2}
+  \right.
+\\ & \qquad\qquad\;
+  \left.
+    A^{(2)}_{\lambda_{J/\psi}\lambda_{\bar{p}}\lambda_{\varSigma^+}}
+    \; d^{J_{J/\psi}}_{\lambda^{\prime}_{J/\psi} \lambda_{J/\psi}}\left(\zeta^0_{2(3)}\right)
+    \; d^{J_{\bar{p}}}_{\lambda_{\bar{p}} \lambda^{\prime}_{\bar{p}}}\left(\zeta^2_{2(3)}\right)
+    \; d^{J_{\varSigma^+}}_{\lambda_{\varSigma^+} \lambda^{\prime}_{\varSigma^+}}\left(\zeta^3_{2(3)}\right)
+  \right.
+\\ & \qquad\quad +\;
+  \left.
+    A^{(3)}_{\lambda_{J/\psi}\lambda_{\bar{p}}\lambda_{\varSigma^+}}
+    {\color{Gray}
+    \; d^{J_{J/\psi}}_{\lambda^{\prime}_{J/\psi} \lambda_{J/\psi}}\left(\zeta^0_{3(3)}\right)
+    \; d^{J_{\bar{p}}}_{\lambda_{\bar{p}} \lambda^{\prime}_{\bar{p}}}\left(\zeta^2_{3(3)}\right)
+    \; d^{J_{\varSigma^+}}_{\lambda_{\varSigma^+} \lambda^{\prime}_{\varSigma^+}}\left(\zeta^3_{3(3)}\right)
+    }
+  \vphantom{
+    \sum_{\lambda_{J/\psi}=-1}^{+1}
+    \sum_{\lambda_{\bar{p}}=-1/2}^{+1/2}
+    \sum_{\lambda_{\varSigma^+}=-1/2}^{+1/2}
+  }
+  \, \right|^2 \,,
+\end{aligned}
+$$ {#eq-ampform-dpd-intensity}
+
+`\noindent`{=latex}
+where $\zeta^i_{j(k)}$ are additional rotation angles that can be computed from Mandelstam variables using @eq-dpd-angles. The Wigner rotations for <span class="nowrap">subsystem&nbsp;$(3)$</span> are marked <font color="gray">gray</font>, because their corresponding rotation <span class="nowrap">angles&nbsp;$\zeta^i_{k(k)}$</span> are zero. As opposed to @eq-ampform-intensity, the longitudinal polarisation of $J/\psi$ is also summed over, consistently with the derivation in @eq-differential-cross-section-multi-body-unpolarised. As an example of one of the amplitudes, the amplitude for <span class="nowrap">subsystem&nbsp;$(3)$</span> in @fig-jpsi-subsystem-definition is
+
+$$
+\begin{aligned} &
+A^{(3)}_{\lambda_{J/\psi}\lambda_{\bar{p}}\lambda_{\varSigma^+}}
+  \left(
+    {\color{RoyalBlue}\sigma_{(3)}},
+    {\color{RoyalBlue}\theta^{(3)}_{K^0_S}}
+  \right) \;=\;
+  (-1)^{J_{\varSigma^+}-\lambda_{\varSigma^+}} \;
+  (-1)^{J_{\bar{p}}-\lambda_{\bar{p}}}
+\\ & \qquad
+  \sum_{r\in\left\{\varSigma^*\right\}}
+  \sum_{\lambda_r=-J_r}^{+J_r}
+  \delta_{\lambda_{J/\psi},\lambda_r-\lambda_{\varSigma^+}} \;
+  d^{J_r}_{\lambda_r,\lambda_{K^0_S}-\lambda_{\bar{p}}}\left(
+    {\color{RoyalBlue}\theta^{(3)}_{K^0_S}}
+  \right)
+\\ & \qquad\quad\times\,
+  \sum_{L,S}
+    C^{J_{J/\psi},\lambda_r-\lambda_{\varSigma^+}}_{L,0,S,\lambda_r-\lambda_{\varSigma^+}} \;
+    C^{S,\lambda_r-\lambda_{\varSigma^+}}_{J_r,\lambda_r,J_{\varSigma^+},\,\text{-}\lambda_{\varSigma^+}}
+\\ & \qquad\quad\times\,
+  \sum_{\ell,s}
+    C^{J_{\varSigma^*},\lambda_{K^0_S}-\lambda_{\bar{p}}}_{\ell,0,s,\lambda_{K^0_S}-\lambda_{\bar{p}}} \;
+    C^{s,\lambda_{K^0_S}-\lambda_{\bar{p}}}_{J_{K^0_S},\lambda_{K^0_S},J_{\bar{p}},\,\text{-}\lambda_{\bar{p}}}
+\\ & \qquad\qquad\quad\times\;
+  {\color{DarkOrange}\mathcal{H}^r_{L,S}} \;
+  {\color{DarkOrange}\mathcal{H}^r_{\ell,s}} \;
+  X^r_{L,S;\ell,s}\left(
+    {\color{RoyalBlue}\sigma_{(3)}};
+    {\color{DarkOrange}m_r},
+    {\color{DarkOrange}\Gamma_r}
+  \right)\,.
+\end{aligned}
+$$ {#eq-ampform-dpd-amplitudes}
+
+There are small differences with the amplitude in @eq-ampform-amplitudes. There is only one <span class="nowrap">Wigner&nbsp;$d$</span>-function rather than two <span class="nowrap">Wigner&nbsp;$D$</span>-functions (the <span class="nowrap">Wigner&nbsp;$d$</span>-function for the production node simplifies to a Kronecker delta). The single scaling factor $c^r_{L,S;\ell,s}$ is replaced by two couplings $\mathcal{H}^r_{L,S}$ and $\mathcal{H}^r_{\ell,s}$, for the production node and the decay node, respectively.
+
+The same set of resonances and the non-resonant term were retained, but their masses and widths were fixed to the values reported by the Review of Particle Physics&nbsp;[@ParticleDataGroup:2024cfk]. We refer to this as a **coupling-only fit**, which is computationally efficient because the free parameters enter only as linear coefficients. In the non-DPD model, production and decay couplings were combined into a single complex coefficient per partial wave. In the coupling-only fit, however, only the production couplings $\mathcal{H}^r_{L,S}$ were treated as free parameters, with one fixed to&nbsp;1 to remove phase and magnitude ambiguities. All decay couplings $\mathcal{H}^r_{\ell,s}$ were set to&nbsp;1. Although this simplification is not strictly physical, since it removes certain degrees of freedom in some partial waves, it reduces the parameter space considerably. To ensure convergence to the global minimum, the fit was repeated 600&nbsp;times with randomised initial parameter values, and the solution with the best likelihood value was selected.
+
+The fitted non-DPD and DPD models across the Dalitz plane are shown in @fig-jpsi-dalitz-models, with the invariant mass of the $K^0_S \bar{p}$ <span class="nowrap">($\varSigma^*$)&nbsp;subsystem</span> on the vertical axis and the invariant mass of the $K^0_S \varSigma^+$ <span class="nowrap">($N^*$)&nbsp;subsystem</span> on the horizontal axis. The two models exhibit no substantial differences across these kinematic degrees of freedom. A more detailed comparison is provided in @fig-jpsi-dalitz-differences, which shows the normalised bin-by-bin deviations between each model and the data. These distributions demonstrate that both models reproduce the data well within statistical uncertainties across the Dalitz plane.
+
+More pronounced differences appear in one-dimensional projections onto specific kinematic variables. @fig-jpsi-dpd-1d compares the BESIII data with the fitted DPD model and the original non-DPD model. The data distributions are shown as transparent blue histograms, while the acceptance-corrected phase-space distributions are indicated in gray to highlight where observed structures must arise from dynamics rather than kinematics. The green and orange histogram outlines represent the DPD and non-DPD models, respectively, evaluated over the phase-space sample and normalised to the number of data events. For invariant-mass and helicity-angle distributions, the resonance contributions of the DPD model are overlaid as coloured lines in the relevant subsystem. The upper panels display the bin-by-bin residuals (pulls) between the models and the data, normalised to the statistical uncertainty of each bin. The sum of squared pulls, divided by the number of degrees of freedom (bins minus fitted parameters), defines the reduced <span class="nowrap">chi-square&nbsp;$\chi^2_\mathrm{red}$</span> shown in each plot. Despite having fewer degrees of freedom, the DPD model consistently achieves a lower $\chi^2_\mathrm{red}$ across all projections compared to the non-DPD model. The <span class="nowrap">$\phi$ distributions</span> are included for completeness, although neither model contains explicit $\phi$-dependent terms.
+
+:::::{.content-visible when-format="html"}
+::::{.column-page-inset-right}
+{{< include includes/fig-jpsi-dpd-1d.qmd >}}
+::::
+:::::
+
+::::{.content-visible unless-format="html"}
+{{< include includes/fig-jpsi-dpd-1d.qmd >}}
+::::
+
+An explanation for the fact that the DPD model performs much better can be found when we investigate the decay-rate matrix of both models. @fig-decay-rates-comparison displays the decay rates per resonance, obtained by setting all couplings except those of the resonance under consideration to zero. In the non-DPD model, the decay rates show large contributions from individual resonances that interfere destructively to reproduce the data. Despite this cancellation, the total sum of decay rates still far exceeds&nbsp;100%, leading to large off-diagonal terms in the matrix, $(I_{ij} - I_i - I_j)/I_\mathrm{tot}$. By contrast, the DPD model does not rely on strong destructive interference: its decay-rate matrix has a lower triangle and diagonal that add up consistently to&nbsp;100%.
+
+:::{#fig-decay-rates-comparison layout-ncol=2}
+[![Non-spin-aligned model](images/chapter7/fit-comparison-resonance-rates-wollenberg.svg)]{.light-content}[![Non-spin-aligned model](images/chapter7/fit-comparison-resonance-rates-wollenberg-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+[![Dalitz-plot decomposition](images/chapter7/fit-comparison-resonance-rates-dpd.svg)]{.light-content}[![Dalitz-plot decomposition](images/chapter7/fit-comparison-resonance-rates-dpd-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Decay-rate matrix for non-DPD model (left) and the correct DPD model (right).
+:::
+
+@fig-sub-intensities-dalitz-wollenberg shows the model in the Dalitz plane for each element of the decay-rate matrix in the non-DPD model (@fig-decay-rates-comparison, left). The mass positions of the relevant resonances are indicated to aid the interpretation of the interference patterns. Many of the $\varSigma^*$ resonances lie above the upper limit of the phase space and contribute only through their low-mass tails. Interestingly, resonance structures appear inverted in some of the off-diagonal elements, with the resonance peak showing a reduced intensity compared to other regions of the Dalitz plane (most notably for $\varSigma(1750)$ <span class="nowrap">and&nbsp;$\varSigma(1900)$).</span> This behaviour arises from fully destructive interference between the corresponding partial waves, which may explain the unusually large fit fractions obtained in the non-DPD model.
+
+:::{#fig-sub-intensities-dalitz-wollenberg}
+[![](images/chapter7/fit-comparison-dalitz-wollenberg.svg)]{.light-content}[![](images/chapter7/fit-comparison-dalitz-wollenberg-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Sub-intensity distributions across the Dalitz plane for each element of the decay-rate matrix in @fig-decay-rates-comparison for the non-DPD model. Axis labels are given in @fig-jpsi-dalitz-data. Resonance mass positions are marked by dashed lines: <font color="#004488">blue</font> for resonances associated with the vertical axis and <font color="#bb5566">red</font> for those associated with the horizontal axis. The non-resonant term has no defined mass position.
+:::
+
+The DPD model in @fig-sub-intensities-dalitz-dpd, on the other hand, produces interference patterns where resonances from different subsystems meet, with some intersections showing constructive and others destructive interference. Moreover, the off-diagonal elements no longer display the inverted peaks observed in the non-DPD distributions of @fig-sub-intensities-dalitz-wollenberg.
+
+:::{#fig-sub-intensities-dalitz-dpd}
+[![](images/chapter7/fit-comparison-dalitz-dpd.svg)]{.light-content}[![](images/chapter7/fit-comparison-dalitz-dpd-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Sub-intensity distributions across the Dalitz plane for each element of the decay-rate matrix in @fig-decay-rates-comparison for the DPD model. Axis labels are given in @fig-jpsi-dalitz-data. Resonance mass positions are marked by dashed lines: <font color="#004488">blue</font> for resonances associated with the vertical axis and <font color="#bb5566">red</font> for those associated with the horizontal axis. The non-resonant term has no defined mass position.
+:::
+
+For reference, @fig-decay-rates-per-wave presents the decay rates per partial wave for the selected DPD model. Within a given subsystem, partial waves do not interfere (as indicated by the absence of non-zero off-diagonal elements in each sub-matrix), whereas interference is present between subsystems. Strong interference within the same subsystem is observed only between resonances with identical quantum numbers, such as $\varSigma(1750)$, $\varSigma(1900)$, and the non-resonant term. This suggests that a more sophisticated parametrisation of the dynamics is needed to disentangle their contributions and to properly describe threshold openings.
+
+:::{#fig-decay-rates-per-wave}
+[![](images/chapter7/decay-rates-wollenberg-dpd.svg)]{.light-content}[![](images/chapter7/decay-rates-wollenberg-dpd-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Decay-rate matrix for each partial wave in the DPD model. The decay rate is similar to that of @fig-decay-rates-comparison, but the sub-intensities are now computed for each coupling separately.
+:::
+
+Further analyses are required to determine whether the selected resonances in the DPD model have physical significance. As mentioned, the focus in @Wollenberg:2024 was the determination of the branching fraction of $J/\psi \to \bar{p} K^0_S \varSigma^+$, along with a test whether the infrastructure can converge amplitude models efficiently to the data sample. The reimplementation with DPD is a first step towards a more complex amplitude model that includes spin alignment, but a systematic analysis of the resonance and individual partial-wave contributions, interference effects, and correlations between the parameters for each of the different models needs to be performed before any conclusions can be drawn about the $N^*$ and <span class="nowrap">$\varSigma^*$&nbsp;spectrum.</span>
+
+As a final thought, although the amplitude in @eq-ampform-dpd-amplitudes carries three helicity indices, it can be used to construct three polarimeter vector fields (one for each $\lambda_{J/\psi}$ in the rest frame) using @eq-aligned-polarimeter-vector. These polarimeter vector fields encode the spin correlations of the final-state baryons and thus carry information about the underlying dynamics. This makes it possible to relate the study of these three-body decays to the spin-transfer observables and moment expansions commonly extracted in scattering experiments (@sec-nucleon-excitations), in addition to matching dynamical modelling through pole positions (@sec-pole-residue-extraction). Conceptually, the idea is to reinterpret the recoiling $\bar{p}$ as being crossed to the initial state and the $J/\psi$ as an effective virtual photon via vector meson dominance, yielding a photo-production process $p \gamma^* \to K^0_S \varSigma^+$ (see @fig-jpsi-to-scattering). Furthermore, the decay $\varSigma^+\to p\pi^0$ can be used to increase sensitivity to the polarisation of $\varSigma^+$. These ideas can be developed further once the modelling of the dynamics becomes more advanced.
+
+:::{#fig-jpsi-to-scattering layout-ncol=2 layout-valign="center"}
+![](./images/chapter7/jpsi-to-pbar-sigma-k.svg){fig-align="center"}
+
+![](./images/chapter7/p-gamma-to-sigma-k.svg){fig-align="center"}
+
+The three-body decay $J/\psi \to \bar{p} K \varSigma$ produced by $e^+e^-$ (left) and scattering process $p \gamma \to K \varSigma$ (right) that are related through crossing and vector meson dominance. The charges of $K^0_S$ and $\varSigma^+$ are omitted to highlight that the same idea can be applied to other final states with a $\bar{p}$, a baryon, and a meson.
+:::
+
+## Performance benchmarks {#sec-performance-benchmarks}
+
+The analyses described in this section were performed on standard desktop PCs and laptops. Running on this environment, we found that JAX is fast enough as a computational backend for the evaluation of the uncertainties over the polarimeter vector field <span class="nowrap">of&nbsp;$\varLambda_c$</span> (@sec-polarimeter-vector-field) and the fit of the amplitude model in the $J/\psi$ study (@sec-jpsi-to-pbar-k-sigma). All notebooks of the polarimetry study, including appendices, can be run in less than one hour on a 8-Core AMD Ryzen&nbsp;7 5800X Processor. The fits for the BESIII analysis typically take around an hour to converge using Minuit2, while coupling-only fits over the same data take around 5&nbsp;minutes. <!-- cspell:words Ryzen -->
+
+### Hardware accelerator comparison
+
+To have an indication of computational performance across different hardware accelerators, we carried out several fits for the decay channel $J/\psi \to \bar{p} K^0_S \varSigma^+$ using the amplitude models of @eq-ampform-dpd-intensity, which JAX as numerical backend. The fits were performed on a hit-and-miss–generated data sample of the same size as that described in @sec-jpsi-data, together with a Monte Carlo–generated phase space sample of equal size to that used in the actual analysis. Both datasets assumed an ideal detector without efficiency losses. The data were generated with the same DPD model and parameter values as reported in @sec-jpsi-to-pbar-k-sigma. To maximise model complexity, all parameters were left free except for one coupling, which was fixed to avoid phase ambiguities.
+
+- Data size: **180,296**&nbsp;events
+- Phase space: **609,796**&nbsp;events
+- Model complexity:
+  - **82** free parameters: 18&nbsp;real-valued masses, 32&nbsp;complex
+  - **2** subsystems: <span class="nowrap">$N^*$ and $\varSigma^*$</span>
+  - **9** resonances: <span class="nowrap">3&nbsp;$N^*$</span>, <span class="nowrap">6&nbsp;$\varSigma^*$</span>
+  - **248** amplitudes: <span class="nowrap">96&nbsp;$N^*$</span>, <span class="nowrap">152&nbsp;$\varSigma^*$</span>
+  - **405,342** operations in the symbolic expression tree (via [`sympy.count_ops()`](https://docs.sympy.org/latest/modules/core.html#sympy.core.basic.Basic.count_ops))
+
+@tbl-performance shows the performance on different hardware accelerators. Of importance to the comparison is the number of iterations (function evaluations) per second that Minuit2 performs, because the fit does not converge to the global minimum. Minuit2 finishes the fit after exactly 34,241&nbsp;iterations on all devices, even if the resulting likelihood differs slightly due to floating-point precision differences. The speed-up is computed with respect to the AMD Ryzen&nbsp;7 5800X, which was used to perform the analyses reported in this chapter.
+
+:::{#tbl-performance}
+
+| Device                        | Specifications                 | Duration&nbsp;(s) | Speed‑up | Frequency&nbsp;(Hz) |
+|:------------------------------|:-------------------------------|:--------------:|-----------:|:-----------------:|
+| A100‑SXM4‑40GB          | 19.5&nbsp;TFLOPS, 400&nbsp;W |    $280 \pm   3$ |                        20x |      $122 \pm 1$ |
+| NVIDIA&nbsp;L4          | 30.3&nbsp;TFLOPS, 72&nbsp;W  | $1\,352 \pm   4$ |                       4.2x |   $25.3 \pm 0.1$ |
+| Tesla&nbsp;T4           | 8.1&nbsp;TFLOPS, 70&nbsp;W   | $2\,484 \pm  13$ |                       2.2x |   $13.8 \pm 0.1$ | <!-- cspell:ignore TFLOPS -->
+| AMD Ryzen&nbsp;7 5800X  | 3.8&nbsp;GHz, 8‑Core         | $5\,675 \pm 124$ | <font color=gray>1x</font> |  $6.04 \pm 0.01$ |
+| 13th Gen Intel i7‑1355U | 2.6&nbsp;GHz, 6‑Core         | $9\,916 \pm  43$ |                       0.6x |  $3.45 \pm 0.01$ |
+
+Performance comparison of the Minuit2 fit of the DPD model for $J/\psi \to \bar{p} K^0_S \varSigma^+$ on three types of GPU devices and two CPU devices. The fit duration includes callbacks that write current parameter values to disk and the frequency is given by the number of iterations per second. The standard deviations are determined by rerunning the entire analysis two to three times.
+:::
+
+Clearly, GPUs have an advantage over CPUs, even with large amplitude models that have non-linear parametrisations. As described in @sec-hardware-accelerators, the reason is that GPUs are designed to perform many operations in parallel, as long as the operations are independent and do not contain branching logic. It should be noted that the analysis could simply be performed on each of these devices by simply installing [`jax[cuda12]`](https://docs.jax.dev/en/latest/quickstart.html#installation). On the NVIDIA devices we tested, JAX automatically detected the GPU and could run the analysis without any changes to the codebase.
+
+### Parallelisation of parameter space
+
+In each iteration during a gradient-descent optimisation, the likelihood is evaluated for one set of parameter values. Here, parallelisation on the hardware devices is achieved by parallelising the evaluation of the intensity function over the data sample and the phase space sample (which is used for normalising the intensity function to a probability-density function). From the simple benchmark presented in the previous section, fit performance depends on how well hardware devices parallelise the computation.
+
+A bottleneck in the gradient-descent process is the copy operation to the optimiser and the decision step that determines the parameter update for the next iteration. @fig-evaluation-frequency shows the distribution of evaluation frequencies of the likelihood function during the fits reported in @tbl-performance for the three GPUs. The **frequency** is defined as the inverse of the time required to complete one iteration. Each iteration consists of one evaluation of the likelihood function on the hardware accelerator, in addition to the copy operation and any optimisation logic executed by the optimiser. The figure reveals two types of iterations: fast iterations, in which the backend only evaluates and returns the likelihood for a given parameter set, and slow iterations, in which the optimiser performs additional optimisation logic. The more performant the GPU, the larger the frequency gap between these two types of iterations, and the larger the computational bottleneck, with the NVIDIA A100 showing the largest gap between the evaluation band (high frequency) and optimisation band (lower frequency).
+
+:::{#fig-evaluation-frequency fig-pos="t!"}
+[![](images/chapter7/frequency-distribution.svg)]{.light-content}[![](images/chapter7/frequency-distribution-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Distribution of the evaluation frequency of the likelihood function during the fits performed for @tbl-performance on the three GPUs. Indicated in <font color="#1f77b4">blue</font> is the duration (frequency in&nbsp;Hz) of each function call, with each histogram on the left showing the distribution of the frequencies during the entire optimisation process. The negative log-likelihood value returned by each function call is shown in <font color="#BB5566">red</font>.
+:::
+
+Because of [memory locality](#sec-memory-locality), hardware accelerators are most efficient when as many operations as possible are executed on the same device. A gradient-descent optimiser such as Minuit2 cannot fully exploit this, as it is inherently sequential and runs in a separate process from the likelihood evaluation. To test how well parallelism can be used instead, we remove the minimiser and evaluate the likelihood for fully randomised parameter values directly on the accelerator. This setup is similar to the uncertainty evaluations in the polarimetry study and allows many likelihoods to be computed simultaneously through broadcasting (@sec-code-conciseness), keeping the computation entirely on the device and avoiding copy operations to the CPU until all results are available.
+
+@fig-parameter-parallelisation shows the evaluation time of the likelihood function in @eq-ampform-dpd-intensity for 100,000 randomly generated production couplings on an AMD Ryzen&nbsp;7 5800X. Since it is impossible to process all couplings simultaneously, the sample was divided into smaller chunks that were passed sequentially to CPU memory. Different chunk sizes, ranging from&nbsp;1 to&nbsp;6,000, were tested to assess how the total evaluation time depends on the array size that can be accommodated within the accelerator memory. As shown, filling the memory with batches of 6,000&nbsp;couplings yields a speed-up of up to a factor of&nbsp;10. The top panel displays the number of likelihood evaluations (iterations) per second as a function of chunk size; the middle panel shows the total evaluation time for all 100,000&nbsp;couplings; and the bottom panel illustrates the corresponding memory consumption during the evaluation process. The result suggests that even higher performance could be achieved with devices offering larger memory capacity or with more highly parallelised hardware such as GPUs.
+
+:::{#fig-parameter-parallelisation}
+[![](images/chapter7/parallelisation-parameter-space.svg)]{.light-content}[![](images/chapter7/parallelisation-parameter-space-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Performance of the doubly-parallelised likelihood evaluation of the DPD model in @eq-ampform-dpd-intensity for $100\,000$ randomly generated production couplings on an AMD Ryzen&nbsp;7 5800X, using JAX broadcasting over the phase-space and data sample with varying array sizes ("chunks"). Top: number of coupling combinations (iterations) evaluated per second. Middle: total time to evaluate the full coupling sample. Bottom: average memory usage during evaluation, with the red line marking the 32&nbsp;GB RAM limit.
+:::
+
+This "doubly-parallelised" likelihood evaluation keeps all computations on the hardware accelerator and within its memory. In the analyses described in this chapter, we used such parallelisation techniques primarily for fast uncertainty propagation, but it is equally applicable to likelihood scans. Moreover, whereas traditional gradient-descent methods such as Minuit2 act as local fitters that explore the parameter space sequentially around a minimum, this approach enables the use of inherently parallel global algorithms, such as particle swarm optimisation or stochastic gradient descent, which evaluate many parameter configurations simultaneously. In this way, both local and global strategies can benefit from accelerator memory locality, which makes amplitude-analysis fits with highly dimensional parameter spaces more performant.

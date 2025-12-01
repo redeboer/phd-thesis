@@ -1,0 +1,124 @@
+---
+title: Summary and outlook
+aliases:
+  - "8"
+  - 8.html
+  - ch8
+  - chapter8
+  - outlook
+  - outlook.html
+  - summary
+  - summary.html
+format:
+  html:
+    toc-depth: 4
+    toc-expand: 4
+  pdf:
+    toc-depth: 1
+---
+
+<!-- cspell:disable -->
+
+```{=latex}
+\rehead{\bfseries Chapter~\leftmark}
+\lohead{\bfseries Chapter~\leftmark}
+\setcounter{tocdepth}{0}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+
+\newcommand{\paragraphbreak}{\par\bigskip\noindent}
+```
+
+<!-- cspell:ignore paragraphbreak -->
+<!-- cspell:enable -->
+
+Hadron physics occupies a distinctive place in the study of nature: it addresses the strongly interacting particles and resonances that make up the vast majority of the visible universe. Within it, hadron spectroscopy is concerned with mapping the spectrum of hadronic states and interpreting their excitations to uncover the principles of the strong interaction. This pursuit relies on a broad set of methods -- from lattice QCD, which can make first-principles predictions, to amplitude analyses, which apply the principles of scattering theory to disentangle complex experimental data. The latter approach is particularly challenging and inherently interdisciplinary, as it requires combining theoretical constraints, precise measurements, and advanced computational tools. In this context, the present thesis has focused on baryon spectroscopy -- particularly the spectrum of nucleon excitations -- and has used this domain as a testbed for a new analysis workflow.
+
+:::{.content-visible unless-format="pdf"}
+
+### Computational innovations
+
+:::
+
+`\paragraphbreak`{=latex}
+For this work, we transferred the original Common Partial-Wave Analysis (ComPWA) <span class="nowrap">{{< meta var.cxx >}}&nbsp;framework</span> to the Python programming language. This opened the door to outsourcing the computations over amplitude models to modern, array-based libraries such as NumPy, JAX, and TensorFlow, removing the workload of maintaining low-level code for numerical evaluation. In addition, these array computing libraries provide many additional advantages out-of-the-box, including automatic parallelisation, GPU acceleration, JIT-compilation, and automatic differentiation.
+
+As a follow-up, we realised that the concept of a function tree around which the ComPWA framework was built, could be generalised with the use of a Computer Algebra System (CAS). This led us to completely formulate amplitude models in terms of symbolic expressions, which the CAS represents as trees of mathematical operations in the back. These trees in turn can be used to generate numerical code -- array-based code in particular -- for evaluating the model efficiently over large data samples.
+
+The switch to a dynamical programming language also enabled more flexible workflows in the form of Jupyter notebooks and other convenient development tools. While these tools are ideal for quick prototyping when exploring specific challenges in an analysis, they naturally evolve into more general code libraries that can be reused in other analysis pipelines. In addition, with the combination of CAS-assisted model building, the mathematical expressions of the implemented amplitude models can directly visualised in the analysis notebook. Combined with the latest advancements in data science -- to render collections of analysis notebooks themselves in the form of a website or as static documents -- this turns the formulation and evaluation of amplitude models through notebooks into a transparent and self-documenting workflow.
+
+The transformation of the ComPWA framework has resulted in three main open-source Python libraries that can be used independently. QRules encodes quantum number conservation rules, which can be used to quickly check decay hypotheses and build trees of decay topologies. AmpForm and its extension Ampform-DPD offer a collection of functions for formulating amplitude models as symbolic expressions with SymPy, the most commonly used CAS in the Python ecosystem. And TensorWaves streamlines the conversion of symbolic models to multiple array-oriented libraries for fitting the models to large data samples with high performance. Not only are these Python libraries easily be extended externally in scripts or extension modules, but the generated symbolic expressions can be modified algebraically to fit the needs of an analysis.
+
+:::{.content-visible unless-format="pdf"}
+
+### Spin-alignment and polarimetry
+
+:::
+
+`\paragraphbreak`{=latex}
+On the physics level, we focused on a correct formulation of amplitude models for three-body decays that have a spinful final state. As discussed, when using the helicity formalism, transition amplitudes of decay chains with different topological structures have phase differences that originate from different Lorentz boost sequences. This work has outlined some of the techniques to deal with these phase differences. The Dalitz-plot decomposition method has been implemented in the AmpForm-DPD library.
+
+The new approach has been validated to floating-point precision by modelling the decay ${\varLambda_c \to p K^- \pi^+}$ and evaluating it over data from the LHCb experiment. The symbolic workflow with array-based computations turned out to have another advantage: it allowed for the computation of a vector field over the Dalitz plane rather than a conventional intensity model.
+
+Using the same library, we performed the next step in the ongoing analysis of the decay ${J/\psi \to \bar{p} \varSigma^+ K^0_S}$. The previous study formulated the amplitude model with the helicity formalism, but without taking account of spin alignment. A new model formulated with AmpForm-DPD was fit to the same data sample and resulted in an improved description of the data distributions. The spin-aligned model also greatly improved the description of interference between the different subsystems, resulting in decay rates that better agree with expectations.
+
+### Future directions
+
+In the course of this study, we encountered many promising opportunities to either broaden the application of the devised workflow or enhance its performance, but these lay beyond the scope of the present thesis. They can be grouped into two broad categories: advances in computation and refinements in physics modelling.
+
+:::{.content-visible unless-format="pdf"}
+
+#### Algebraic enhancements
+
+:::
+
+`\paragraphbreak`{=latex}
+The use of a Computer Algebra System aligns well with a field that relies heavily on theoretical modelling. So far, its immediate benefit has been that implemented amplitude models can be directly inspected as explicit mathematical expressions and manipulated symbolically. Beyond this, a CAS may be leveraged to derive parts of the amplitude models from first principles, rather than constructing them methodologically. AmpForm already provides a small example: the Blatt–Weisskopf form factors are derived from Hankel functions instead of being hard-coded as polynomials. Further possibilities include the use of SymPy's bra–ket classes to obtain specific linear representations of states, or symbolic integration and differentiation to generate parametrisations of the dynamics. A potential drawback is SymPy's speed, which is typically slower than CAS libraries in other languages such as Mathematica. This limitation, however, may be mitigated by serialising and importing pre-derived expressions.
+
+The algebraic features of a CAS may also translate into computational benefits. For instance, we found that symbolic substitution of fixed parameters yields modest performance gains by simplifying the expression trees. Another unexplored avenue would be to algebraically substitute the DPD angles directly into the <span class="nowrap">Wigner&nbsp;$d$</span>-functions, thereby eliminating many trigonometric functions from the expression tree of the full amplitude model.
+
+:::{.content-visible unless-format="pdf"}
+
+#### Performance boosts
+
+:::
+
+`\paragraphbreak`{=latex}
+In preliminary testing, we found that automatic differentiation does not apply efficiently to large amplitude models. Gradient-descent fits with Minuit showed no overall improvement in speed or stability, and the strong non-linearity of the models leads to very large function trees that consume substantial memory. This limitation may stem from the current code-generation strategy: our implementation relies on SymPy to produce a single numerical function for the entire model. While numerical frameworks such as JAX or NumPy appear to handle this well in direct model evaluation, it remains to be investigated whether such large, single-function representations hinder differentiation algorithms. If this is the case, code generation would have to be improved by partitioning the generated function into smaller definitions that can be differentiated or JIT-compiled separately.
+
+Another challenge is the parallelisation of computations across multiple devices, such as in a cluster environment. Thus far, we have not explored this avenue, since all computations and fits could be performed on a single device -- a preferable setup due to memory locality. In the long term, however, growing data volumes may exceed the capacity of individual devices. Most computational frameworks already provide mechanisms for distributed computing, as they are designed to train large neural networks that demand larger amounts of memory. In the case of JAX, community-maintained extensions such as [`mpi4jax`](https://github.com/mpi4jax/mpi4jax) specifically address this issue.
+
+In the short term, a promising opportunity is to parallelise the evaluation of amplitude models across parameter space. Traditionally, amplitude-analysis frameworks reduced fit times by parallelising only the likelihood evaluation. With array-oriented code, however, parallelism can be applied just as easily along a second axis: the parameter space itself. First tests of this "doubly-parallelised" model evaluation performed for this work already indicate a twenty-fold speed-up on simple multithreaded CPU devices. However, to exploit this technique fully, non-sequential fit algorithms would be required. This points toward global fitting strategies rather than the commonly used local gradient-descent Minuit optimiser, and could in turn facilitate more systematic scans of the likelihood landscape, as well as the exploration of alternative hypotheses associated with different local minima of an amplitude model.
+
+:::{.content-visible unless-format="pdf"}
+
+#### Ecosystem integration
+
+:::
+
+`\paragraphbreak`{=latex}
+The High-Energy Physics community offers a growing ecosystem of Python libraries for data analysis in particle physics. QRules already makes use of one of these -- the Scikit-HEP [`particle`](https://github.com/scikit-hep/particle) package -- but the ComPWA project could benefit from deeper integration with other tools in this ecosystem. Most notably, the [`zfit`](https://zfit.readthedocs.io) optimisation library, which offers a valuable alternative to the optimisation functionality currently provided by TensorWaves. <!-- cspell:ignore zfit -->
+
+Another direction for improvement is to broaden the range of numerical backends supported in SymPy's code generation, for example by targeting PyTorch or the upcoming [Mojo](https://docs.modular.com/mojo) language. Much of this is already being explored within the SymPy project itself, but it remains to be investigated whether these backends are suitable for the specific requirements of amplitude analysis. <!-- cspell:ignore Mojo -->
+
+Finally, code generation could be extended to serialise amplitude models into human-readable formats. Conversely, the ComPWA libraries would need to provide methods for importing such [serialised amplitude models](https://github.com/RUB-EP1/amplitude-serialization). This would enable interoperability between different amplitude-analysis frameworks, which would be a large step forwards in the cross-verification of analysis results.
+
+:::{.content-visible unless-format="pdf"}
+
+#### Analysis refinements
+
+:::
+
+`\paragraphbreak`{=latex}
+As demonstrated in this thesis, the DPD method yields an improved description of the data distributions, though certain regions of the fit remain imperfect. As outlined, a key requirement for amplitude models is that they respect fundamental constraints such as unitarity and analyticity. Only by employing coupled-channel techniques can channel-specific structures in the spectrum, such as threshold-induced drops and kinks, be described correctly. This in turn enables the reliable extraction of deeper properties like pole positions and residues. The <span class="nowrap">$\mathbfit{K}$‑matrix</span> framework provides the necessary tools for such analyses. This is particularly relevant to the nucleon excitation spectrum in <span class="nowrap">$J/\psi$&nbsp;decays,</span> where threshold effects can only be captured by simultaneously modelling related channels such as $J/\psi \to \bar{p}p\eta$, $J/\psi \to \bar{p}\varLambda K^+$, and $J/\psi \to \bar{p}p\eta'$.
+
+CAS-assisted model building appears well suited to this task, especially within the <span class="nowrap">$\mathbfit{K}$‑matrix</span> framework. While AmpForm already provides helper functionality for constructing coupled-channel dynamics parametrisations, its model-building framework does not yet support amplitude models with multiple channels. The main challenge is the pre-computation of the Chew–Mandelstam function for higher angular momenta, which must be evaluated through numerical integration before a fit can begin. Although such analytic continuations [have been demonstrated](https://compwa.github.io/report/003) within the symbolic workflow, the class structure for amplitude models needs to be reorganised so that the pre-computed values can be inserted at the appropriate stage of the analysis workflow.
+
+Finally, the techniques developed for evaluating the polarimeter vector field could be applied to the <span class="nowrap">$J/\psi$&nbsp;analyses.</span> These fields encode information about the spin correlations of the final state, which may help in inspecting and comparing different models. Up to now, model comparisons have relied mainly on conventional information criteria, such as AIC, BIC, or $\chi^2$, and on fit fractions, while a systematic study of interference between subsystems and partial waves has not yet been undertaken. In addition, it may be possible to relate the polarimeter vector field of three-body decay analyses to spin-transfer observables and moment expansions that have been reported for corresponding channels in scattering experiments.
+
+<!-- cspell:disable -->
+
+```{=latex}
+\boldPDFchaptersfalse
+\italicPDFchapterstrue
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
+```

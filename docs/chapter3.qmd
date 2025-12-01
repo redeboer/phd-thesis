@@ -1,0 +1,796 @@
+---
+aliases:
+  - "3"
+  - 3.html
+  - ch3
+  - chapter3
+  - helicity-formalism
+  - helicity-formalism.html
+  - spin-formalism
+  - spin-formalism.html
+  - spin-alignment
+  - spin-alignment.html
+toc-expand: true
+---
+
+{{< include _macros.qmd >}}
+
+# Helicity formalism {#sec-helicity-formalism}
+
+`\noindent`{=latex}
+@sec-scattering-theory developed scattering theory techniques starting from 2-to-2 processes. In particular, this led to the partial-wave expansion (@sec-partial-wave-expansion), which separates the amplitude into a universal angular dependence and a reduced amplitude that contains the full information about the interaction as a function of energy. Extending this framework to _multi-body_ decays is more challenging, because a proper relativistic treatment of spin states must account for their dependence on the chosen reference frame. Several spin formalisms have been developed to describe transitions involving spinful particles, such as the Rarita–Schwinger formalism&nbsp;[@Rarita:1941mf], Lorentz-_covariant_ tensor approaches&nbsp;[@Chung:1993da; @Filippini:1995yc; @Anisovich:2006bc; @Chung:2007nn], and spin-projection formalisms. Among these, spin-projection formalisms -- particularly the helicity formalism -- are most widely used in amplitude analyses, as they are computationally convenient and align naturally with how experimental observables are expressed. However, as we will see, amplitudes constructed from helicity states are inherently frame-dependent and do not transform covariantly under Lorentz transformations. This _non-covariant_ nature requires careful treatment when combining amplitudes from different spin projections across different decay chains. <!-- cspell:ignore Anisovich Filippini -->
+
+The helicity formalism assumes that a multi-body decay can be described as a sequence of two-body decays&nbsp;[@Jacob:1959at]. In the rest frame of the parent particle, constructing the amplitude for each two-particle spin state is relatively straightforward, because conservation of angular momentum fixes how the spins couple at each vertex. By choosing convenient spin quantisation axes, the amplitudes for each decay step can then be combined into a single expression for the full decay chain, with the Lorentz-invariant parametrisations developed in @sec-scattering-theory inserted at each two-body amplitude.
+
+Using the helicity formalism effectively requires a clear understanding of how Lorentz transformations (boosts and rotations) affect spin states. For this reason, treatises on the helicity formalism typically follow the following structure&nbsp;[@Richman:1984gh; @Chung:2014-SpinFormalismsUpdated; @Kutschke:1996-AngularDistributionCookbook; @Martin:1970hmp; @Weinberg:1995mt; @Leader:2011vwq]:
+
+1. Review how single-particle spin states at rest change under spatial rotations.
+2. Boost and rotate these states to a convenient quantisation axis.
+3. Investigate the coupling of two-particle spin states using conservation of angular momentum.
+4. Construct the amplitude for a chain of two-body decays.
+
+In this chapter, we follow the same build-up and extend the discussion to multi-body decays with decay chains that are topologically distinct.
+
+## Single-particle states {#sec-single-particle-states}
+
+### Rotating spin states {#sec-rotating-spin-states}
+
+Consider a single massive particle with spin&nbsp;$j$ (massless particles will be treated later in terms of their helicity). Its spin state can be denoted $\ket{j,m}$, where $m$ is the spin projection along a chosen quantisation axis, typically the <span class="nowrap">$z$&nbsp;axis.</span> We seek to determine how this quantum state transforms under an arbitrary spatial rotation $\mathbfit{R}(\alpha,\beta,\gamma)$, which rotates coordinate <span class="nowrap">system&nbsp;$(x,y,z)$</span> <span class="nowrap">into&nbsp;$(x',y',z')$</span> over **Euler angles** $\alpha,\beta,\gamma$ in the <span class="nowrap">**$zyz$‑convention**</span>. In the active convention used here, the coordinate axes remain fixed while the particle three-vectors themselves are rotated:</span> first by an "intrinsic twist" angle&nbsp;$\gamma$ around the <span class="nowrap">$z$&nbsp;axis,</span> then by a "polar" angle $\beta$ around the new <span class="nowrap">$y$&nbsp;axis,</span> and finally by an "azimuthal" angle&nbsp;$\alpha$ around the new <span class="nowrap">$z$&nbsp;axis</span> (see @fig-euler-angles). In this thesis, we use the symbols $\alpha, \beta, \gamma$ when deriving general angular properties and use other Greek letters like $\phi, \theta, \chi$ to refer to rotations between specific physical frames.
+
+::::{#fig-euler-angles layout-ncol=1}
+
+:::{.content-visible when-format="html"}
+<iframe scrolling="no" title="ZYZ Euler Angles" src="https://www.geogebra.org/material/iframe/id/q84nwpmt/sri/true" style="border:0px;aspect-ratio:2"> </iframe>
+<!-- with disks: https://geogebra.org/classic/v92n6uy5 -->
+:::
+
+:::{.content-visible unless-format="html"}
+![](/images/chapter3/zyz-euler-angles.svg){fig-align="center"}
+:::
+
+Euler angles for rotation&nbsp;$\mathbfit{R}({\color{MyBlue}\alpha},{\color{MyYellow}\beta},{\color{MyRed}\gamma})$ in the <span class="nowrap">$zyz$‑convention.</span> [In this widget, the angles can be adjusted by dragging the tips of the axes of the rotated system. Static image available [here](images/chapter3/zyz-euler-angles.svg).]{.content-visible when-format="html"}
+::::
+
+In the context of spin states, the <span class="nowrap">operator&nbsp;$\mathbf{U}[\mathbfit{R}]$</span> represents the effect of the spatial rotation&nbsp;$\mathbfit{R}$ on the Hilbert space in which the spin state&nbsp;$\ket{j,m}$ resides. Since spatial rotations are represented in quantum mechanics by unitary operators, $\mathbf{U}[\mathbfit{R}]$ is itself unitary. For this reason, $\mathbf{U}[X]$ is often referred to as the **unitary operator** corresponding to the spatial <span class="nowrap">transformation&nbsp;$X$.</span> It now becomes important to keep track of the labels in bra-ket states like $\ket{j,m}$, as they can refer to different bases and degrees of freedom that are not always in the same Hilbert space. The operator $\mathbf{U}[\mathbfit{R}]$ must rotate $\ket{j,m}$ according to the same group action that the spatial rotation $\mathbfit{R}(\alpha,\beta,\gamma)$ induces in three dimensions. Because $\ket{j,m}$ is an eigenstate of the total angular momentum operators&nbsp;$\mathbf{J}^2$ and its <span class="nowrap">$z$&nbsp;component&nbsp;$J_z$,</span> a rotation about the <span class="nowrap">$z$&nbsp;axis</span> is generated by exponentiating $J_z$. Similarly, a rotation about the <span class="nowrap">$y$&nbsp;axis</span> is generated by exponentiating $J_y$, the <span class="nowrap">$y$&nbsp;component</span> of the total angular momentum&nbsp;$\mathbf{J}$. This yields the standard factorisation for a rotation,
+
+$$
+\mathbf{U}\!\left[\mathbfit{R}(\alpha, \beta, \gamma)\right] \;=\; e^{-i\alpha J_z} \, e^{-i\beta J_y} \, e^{-i\gamma J_z}
+\,.
+$$ {#eq-rotation-generators}
+
+The rotated state can be expanded as a linear combination of basis states&nbsp;$\ket{j,m'}$ defined with respect to the new quantisation axis&nbsp;$z'$. Because we have decomposed $\mathbfit{R}$ into a sequence of rotations in which two are about the quantisation axis&nbsp;$z$, the expansion can be written explicitly as
+
+$$
+\begin{aligned}
+\mathbf{U}\!\left[\mathbfit{R}(\alpha, \beta, \gamma)\right]\ket{j,m}
+\;&=\;
+  \sum_{m'} e^{-i m'\alpha} \, d^j_{m'm}(\beta) \, e^{-i m\gamma}\,\ket{j,m'} \\
+\;&=\;
+  \sum_{m'} D^j_{m'm}(\alpha, \beta, \gamma)\,\ket{j,m'}\,,
+\end{aligned}
+$$ {#eq-rotation-decomposition}
+
+`\noindent`{=latex}
+where $d^j_{m'm}$ and $D^j_{m'm}$ are the elements of the (small) <span class="nowrap">[Wigner&nbsp;$d$‑](https://en.wikipedia.org/wiki/Wigner_D-matrix#Wigner_%28small%29_d-matrix)</span> and <span class="nowrap">[Wigner&nbsp;$D$](https://en.wikipedia.org/wiki/Wigner_D-matrix)</span>-matrices of the total angular momentum representation (German: "**D**arstellung") in spin space&nbsp;[@Wigner:1931-Gruppentheorie]. The <span class="nowrap">Wigner&nbsp;$d$</span>-matrix is a <span class="nowrap">$2j+1$‑dimensional</span> matrix that encodes the rotation about the <span class="nowrap">$y$&nbsp;axis,</span> while the <span class="nowrap">Wigner&nbsp;$D$</span>-matrix represents the full unitary operator in the spin basis. Note that a rotation about the <span class="nowrap">$z$&nbsp;axis</span> acts only by shifting the phase of the <span class="nowrap">$z$&nbsp;component</span> of the angular momentum, since $e^{i\phi J_z} \ket{j,m} = e^{i\phi m} \ket{j,m}$, giving us <!-- cspell:ignore arstellung Gruppentheorie -->
+
+$$
+\begin{aligned}
+D^j_{m'm}(\alpha, \beta, \gamma) \;&=\; \Braket{j,m'| \mathbf{U}\!\left[\mathbfit{R}(\alpha, \beta, \gamma)\right] |j,m} \,, \\
+d^j_{m'm}(\beta) \;&=\; \Braket{j,m'| e^{-i\beta J_y} |j,m}
+\,.
+\end{aligned}
+$$
+
+It is important to keep track of the direction of rotation, as in some instances, the inverse rotation will be used. This results in a conjugate of the <span class="nowrap">Wigner&nbsp;$D$</span>-matrix with flipped lower indices, giving
+
+$$
+\mathbf{U}\!\left[\mathbfit{R}(\alpha, \beta, \gamma)^{-1}\right]\ket{j,m}
+\;=\;
+\sum_{m'} D^{j\,*}_{m m'}(\alpha, \beta, \gamma)\,\ket{j,m'}\,.
+$$ {#eq-inverse-rotation-decomposition}
+
+It should be noted that the spatial rotations $\mathbfit{R}$ belong to the **special orthogonal group&nbsp;$\mathrm{SO}(3)$**, whereas the corresponding unitary <span class="nowrap">operators&nbsp;$\mathbf{U}[\mathbfit{R}]$</span> belong to the **special unitary group&nbsp;$\mathrm{SU}(2)$**. These two Lie groups are not isomorphic. Rather, there is a two-to-one homomorphism between $\mathrm{SU}(2)$ and $\mathrm{SO}(3)$, meaning that $\mathrm{SU}(2)$ is a **double cover** of $\mathrm{SO}(3)$. As a result, while a spatial rotation in $\mathrm{SO}(3)$ by $2\pi$ around any axis leaves the spatial orientation unchanged, its corresponding rotation in $\mathrm{SU}(2)$ produces a spin state with reversed sign. Only after a <span class="nowrap">$4\pi$&nbsp;rotation</span> in space does the spin state return to its original form. We will return to this subtlety in @sec-spin-alignment.
+
+### Boosting spin states {#sec-boosting-spin-states}
+
+Knowing how spin states at rest transform under spatial rotations, we can now examine how they transform under general Lorentz transformations. This provides a consistent description of a massive particle with <span class="nowrap">spin&nbsp;$j$</span> and four-momentum $p=(E,p_x,p_y,p_z)$, which is an essential ingredient for constructing amplitudes in two-body decay chains.
+
+So far, we described spin states in terms of spinors transforming under the rotation group $\mathrm{SU}(2)$, which is isomorphic to the three-dimensional spin group $\mathrm{Spin}(3)$. To include boosts as well as rotations, the symmetry group must be extended to the (orthochronous) Lorentz group $\mathrm{SO}^+(1,3)$. Its double cover is $\mathrm{Spin}(1,3)\cong \mathrm{SL}(2,\mathbb{C})$, under which spin states transform. This extension introduces two additional features: <span class="nowrap">(1)&nbsp;Wigner</span> rotations, which describe the induced rotation of spin under Lorentz boosts, and <span class="nowrap">(2)&nbsp;the</span> coupling of spin with four-momentum, most commonly expressed through helicity.
+
+Lorentz transformations include both pure boosts and rotations. A boost that brings the rest-frame momentum to a spatial momentum&nbsp;$\vec{p}=(p_x,p_y,p_z)$ is denoted by $\boldsymbol{\varLambda}(\vec{p})$. Analogous to $\mathbf{U}[\mathbfit{R}]$, the action of this boost on a spin state is represented by a unitary <span class="nowrap">operator&nbsp;$\mathbf{U}[\boldsymbol{\varLambda}(\vec{p})]$.</span> This relates the moving spin state&nbsp;$\ket{\vec{p},j,m}$ to the **rest-frame spin state**&nbsp;$\ket{j,m}\equiv\ket{\vec{0},j,m}$ via
+
+$$
+\ket{\vec{p},j,m} \;=\; \mathbf{U}[\boldsymbol{\varLambda}(\vec{p})] \, \ket{j,m}
+\,.
+$$
+
+`\noindent`{=latex}
+Here, the spin projection&nbsp;$m$ is defined in the particle's rest frame. As with spatial rotations (@eq-rotation-generators), the <span class="nowrap">operator&nbsp;$\mathbf{U}[\boldsymbol{\varLambda}(\vec{p})]$</span> can be written in terms of the boost <span class="nowrap">generators&nbsp;$\vec{\mathbf{K}}$.</span> Together with the rotation generators&nbsp;$\vec{\mathbf{J}}$, the six operators $\mathbf{K}_i$ and $\mathbf{J}_i$ span the Lie algebra&nbsp;$\mathfrak{so}(1,3)$ of the Lorentz group&nbsp;$\mathrm{SO}(1,3)$. Explicitly, this gives us
+
+$$
+\mathbf{U}[\boldsymbol{\varLambda}(\vec{p})]
+\;=\; \exp(-i\,\vec{p} \cdot \vec{\mathbf{K}})
+\;=\; e^{-i\,\mathbf{K}_x p_x}\,e^{-i\,\mathbf{K}_y p_y}\,e^{-i\,\mathbf{K}_z p_z}.
+$$
+
+However, unlike in @eq-rotation-decomposition, this representation does not directly help to decompose the boosted state $\ket{\vec{p},j,m}$ into a linear combination of basis states with definite angular properties. Instead, we exploit the fact that a Lorentz boost along an arbitrary direction $\vec{p}=(p,\theta,\phi)$ can be written as a rotation and a boost along the <span class="nowrap">$z$&nbsp;axis.</span> This factorisation will allow us to construct one convenient description of the spin state for a particle with momentum $\vec{p}$. Later, we will see that there is an alternative but equivalent description that is often more practical for analysing angular distributions in decays.
+
+The factorisation works as follows. To boost a state with <span class="nowrap">momentum&nbsp;$\vec{p}$,</span> we first rotate the momentum into the <span class="nowrap">$z$&nbsp;direction</span> <span class="nowrap">with&nbsp;$\mathring{\mathbfit{R}}^{-1}$,</span> then apply the <span class="nowrap">boost&nbsp;$\boldsymbol{\varLambda_z}(p)$</span> <span class="nowrap">along&nbsp;$z$,</span> and finally rotate back <span class="nowrap">with&nbsp;$\mathring{\mathbfit{R}}$:</span>
+
+$$
+\boldsymbol{\varLambda}(\vec{p}) \;=\; \mathring{\mathbfit{R}}(\phi,\theta,0) \, \boldsymbol{\varLambda_z}(p) \, \mathring{\mathbfit{R}}^{-1}(\phi,\theta,0)
+\,.
+$$
+
+`\noindent`{=latex}
+Crucially, since unitary representations are multiplicative,
+
+$$
+\mathbf{U}[\boldsymbol{\varLambda}_1\,\boldsymbol{\varLambda}_2] \;=\; \mathbf{U}[\boldsymbol{\varLambda}_1] \, \mathbf{U}[\boldsymbol{\varLambda}_2]
+\,,
+$$ {#eq-unitary-multiplicative}
+
+`\noindent`{=latex}
+and satisfies $\mathbf{U}[\mathbfit{R}^{-1}] = \mathbf{U}^{-1}[\mathbfit{R}]$, we find
+
+$$
+\mathbf{U}[\boldsymbol{\varLambda}(\vec{p})] \;=\;
+  \mathbf{U}[\mathring{\mathbfit{R}}(\phi,\theta,0)] \,
+  \mathbf{U}[\boldsymbol{\varLambda_z}(p)] \,
+  \mathbf{U}^{-1}[\mathring{\mathbfit{R}}(\phi,\theta,0)]
+\,.
+$$ {#eq-boost-decomposition}
+
+The state $\ket{\vec{p},j,m}$ defined in this way is known as the **canonical basis** of the spin state (see @fig-relativistic-spin-state-bases). It is obtained by applying a pure Lorentz boost to the rest-frame state:
+
+$$
+\Ket{\vec{p},j,m}
+\;=\; \mathbf{U}[\boldsymbol{\varLambda}] \, \Ket{j,m}
+\;=\; \mathbf{U}[\mathring{\mathbfit{R}}] \, \mathbf{U}[\boldsymbol{\varLambda_z}] \, \mathbf{U}^{-1}[\mathring{\mathbfit{R}}] \, \ket{j,m}
+\,.
+$$ {#eq-canonical-state}
+
+Importantly, @eq-canonical-state shows that a spin state in the canonical basis transforms under spatial rotations just like the spin state at rest in @eq-rotation-decomposition. Applying a rotation $\mathbfit{R}$ to the canonical state $\ket{\vec{p},j,m}$, we find
+
+$$
+\begin{aligned}
+\mathbf{U}[\mathbfit{R}] \, \Ket{\vec{p},j,m}
+\;&=\; \mathbf{U}[\mathbfit{R}]
+  \; \underbrace{\mathbf{U}[\mathring{\mathbfit{R}}] \, \mathbf{U}[\boldsymbol{\varLambda_z}] \, \mathbf{U}^{-1}[\mathring{\mathbfit{R}}]}_{\mathbf{U}[\boldsymbol{\varLambda}(\vec{p})]}
+  \; \underbrace{\mathbf{U}[\mathbfit{R}^{-1}] \, \mathbf{U}[\mathbfit{R}]}_{\mathbfit{1}}
+  \; \ket{j,m} \\
+\;&=\;
+  \underbrace{\mathbf{U}[\mathbfit{R}\,\mathring{\mathbfit{R}}] \, \mathbf{U}[\boldsymbol{\varLambda_z}] \, \mathbf{U}^{-1}[\mathbfit{R}\,\mathring{\mathbfit{R}}]}_{\mathbf{U}[\boldsymbol{\varLambda}(\mathbfit{R}\,\vec{p})]}
+  \; \mathbf{U}[\mathbfit{R}] \, \ket{j,m} \\
+\;&=\; \mathbf{U}[\boldsymbol{\varLambda}(\mathbfit{R}\,\vec{p})] \, \sum_{m'} D^j_{m'm}(\mathbfit{R}) \, \ket{j,m'} \\
+\;&=\; \sum_{m'} D^j_{m'm}(\mathbfit{R}) \, \Ket{\mathbfit{R}\,\vec{p},j,m'}
+\,.
+\end{aligned}
+$$ {#eq-rotate-canonical}
+
+In the canonical basis, the spin quantisation axis is fixed (e.g. along the laboratory <span class="nowrap">$z$&nbsp;axis)</span> and therefore not generally aligned with the momentum of the particle. An alternative is the **helicity basis** (see @fig-relativistic-spin-state-bases), in which the quantisation axis is chosen along the particle's momentum direction. In this basis, the spin projection along the momentum is called the <span class="nowrap">**helicity**&nbsp;$\lambda$,</span> and the spin state is denoted by $\ket{\vec{p},j,\lambda}$. An additional advantage of the helicity basis is that it remains well-defined even for massless particles.
+
+The relativistic helicity state can be constructed from the rest-frame spin state by first boosting along the <span class="nowrap">$z$&nbsp;axis</span> and then rotating the momentum direction into $\vec{p}$, or equivalently (using @eq-boost-decomposition), by boosting directly along $\vec{p}$ and then rotating the spin quantisation axis accordingly. Explicitly, this yields
+
+$$
+\begin{aligned}
+\Ket{\vec{p},j,\lambda}
+\;&=\; \mathbf{U}[\mathring{\mathbfit{R}}(\phi,\theta,0)] \, \mathbf{U}[\boldsymbol{\varLambda_z}(p)] \ket{j,\lambda} \\
+\;&=\; \mathbf{U}[\boldsymbol{\varLambda}(\vec{p})] \, \mathbf{U}[\mathring{\mathbfit{R}}(\phi,\theta,0)] \ket{j,\lambda}
+\,,
+\end{aligned}
+$$
+
+`\noindent`{=latex}
+which is essentially the same as @eq-canonical-state, but without the final rotation $\mathbf{U}^{-1}[\mathring{\mathbfit{R}}]$ that restores the canonical orientation. The <span class="nowrap">helicity&nbsp;$\lambda$</span> is invariant under rotations about the momentum direction and under boosts along $\vec{p}$. For an arbitrary <span class="nowrap">rotation&nbsp;$\mathbfit{R}$,</span> we find
+
+$$
+\begin{aligned}
+\mathbf{U}[\mathbfit{R}] \, \Ket{\vec{p},j,\lambda}
+\;&=\; \mathbf{U}[\mathbfit{R}\,\mathring{\mathbfit{R}}] \, \mathbf{U}[\boldsymbol{\varLambda_z}]\,  \ket{j,\lambda} \\
+\;&=\; \Ket{\mathbfit{R}\,\vec{p},j,\lambda}
+\,.
+\end{aligned}
+$$ {#eq-rotate-helicity}
+
+Compare this to @eq-rotate-canonical for the canonical basis, where the rotation mixes different spin projection states. Similarly, a <span class="nowrap">boost&nbsp;$\boldsymbol{\varLambda}'$</span> that maps $\vec{p}$ to a new <span class="nowrap">momentum&nbsp;$\vec{p}'$</span> _parallel_ to $\vec{p}$ leaves the helicity unchanged:
+
+$$
+\begin{aligned}
+\mathbf{U}[\boldsymbol{\varLambda}(\vec{p}')] \, \Ket{\vec{p},j,\lambda}
+\;&=\; \mathbf{U}[\boldsymbol{\varLambda}(\vec{p}')] \, \mathbf{U}[\boldsymbol{\varLambda}(\vec{p})] \, \mathbf{U}[\mathring{\mathbfit{R}}] \, \ket{j,\lambda} \\
+\;&=\; \mathbf{U}[\boldsymbol{\varLambda}(\vec{p}')] \, \mathbf{U}[\mathring{\mathbfit{R}}] \, \ket{j,\lambda} \\
+\;&=\; \Ket{\vec{p}',j,\lambda}
+\,.
+\end{aligned}
+$$ {#eq-boost-helicity-with-parallel-momentum}
+
+In summary, helicity states are invariant under rotations and boosts along the momentum direction, which makes the helicity basis especially convenient for describing multi-body decays. In this basis, the sequential factorisation into two-body amplitudes becomes transparent, with each two-body decay carrying an angular structure that arises from the coupling of spin and orbital angular momenta.
+
+::::{.content-visible when-format="html"}
+:::{#fig-relativistic-spin-state-bases}
+<iframe scrolling="no" title="Canonical frame" src="https://www.geogebra.org/material/iframe/id/pdebuxma/sdz/true/sri/true" style="border:0px;aspect-ratio:1.3;display: inline-block;" height="100%" width="49%"></iframe>
+<iframe scrolling="no" title="Helicity frame" src="https://www.geogebra.org/material/iframe/id/fd6u737p/sdz/true/sri/true" style="border:0px;aspect-ratio:1.3;display: inline-block;" height="100%" width="49%"></iframe>
+
+The canonical basis $\ket{\vec{p},j,m}$ ([[left](images/chapter3/canonical-basis.svg)]{.content-visible when-format="html"}[left]{.content-visible unless-format="html"}) and the helicity basis $\ket{\vec{p},j,\lambda}$ ([[right](images/chapter3/helicity-basis.svg)]{.content-visible when-format="html"}[right]{.content-visible unless-format="html"}).
+:::
+::::
+
+::::{.content-visible unless-format="html"}
+:::{#fig-relativistic-spin-state-bases layout-ncol=2}
+![ ](/images/chapter3/canonical-basis.svg){fig-align="center"}
+
+![ ](/images/chapter3/helicity-basis.svg){fig-align="center"}
+
+The canonical basis $\ket{\vec{p},j,m}$ (left) and the helicity basis $\ket{\vec{p},j,\lambda}$ (right). The quantisation axes in each frame are indicated with a <font color="#004488">blue</font> arrow.
+:::
+::::
+
+## Two-particle states {#sec-two-particle-states}
+
+We now construct the **two-particle spin state** for a decay $a \to 1\,2$, in which a parent particle $a$ decays into two daughter particles&nbsp;$1$ and&nbsp;$2$. We first review the standard theory of how spin states couple in the rest frame, which is necessary to correctly extend the construction to the relativistic case. Just like in the single-particle spin state (@sec-single-particle-states), this leads to two practical spin bases for describing the two-particle state: the canonical basis and the helicity basis. The canonical basis is more intuitive, as it is built from the canonical spin states of the decay products. The helicity basis is more convenient for constructing amplitudes in decay chains, because, like the single-particle helicity basis, it is invariant under rotations (up to phases coming from the <span class="nowrap">$\mathrm{SU}(2)$&nbsp;group,</span> which must be tracked carefully to avoid apparent contradictions).
+
+### Joint tensor product state
+
+Two-particle spin states can be constructed from the tensor product of two single-particle spin states. This is the next step towards formulating the amplitude of a multi-body decay as a chain of two-body decays. The tensor product combines the two states into a single state that lives in a Hilbert space of higher dimension. If $J$ is the (total) angular momentum of a state&nbsp;$\ket{J,M}$ with spin projection&nbsp;$M$, then the dimension of its Hilbert space is $2J+1$. The dimension of the tensor product space is the product of the dimensions of the individual spaces, i.e. $(2J_1+1)(2J_2+1)$, and its possible total angular momentum quantum numbers range from $|J_1 - J_2|$ to $J_1 + J_2$.
+
+Imagine we have two such states, $\ket{J_1,M_1}$ and $\ket{J_2,M_2}$, where $J_1$ and $J_2$ are the intrinsic spins (or total angular momenta) of the two particles, and $M_1, M_2$ are their respective projections along a chosen quantisation axis. In the helicity formalism, these spins $J_1,J_2$ are assumed to be known: each two-body decay product is either a known final-state particle or an intermediate resonance, in which case its spin state is itself treated as a definite $\ket{J,M}$ state. The composite two-particle state, or **joint state**, is then given in the uncoupled basis by the **tensor product**
+
+$$
+\ket{J_1,M_1;J_2,M_2}\equiv\ket{J_1,M_1} \otimes \ket{J_2,M_2}
+\,.
+$$
+
+At this stage, we only know that this is a mathematical object living in a Hilbert space that is the tensor product of the two Hilbert spaces of the individual particles. For our purposes, it is more convenient to represent this higher-dimensional state in terms of **total spin** basis vectors, denoted $\ket{S,M_S}$, which form the irreducible representation basis (see also @sec-eightfold-way) for the combined spin. The individual spin states $\ket{J_i,M_i}$ are eigenstates of the spin operators $\mathbf{J}_i$, while the coupled states $\ket{S,M_S}$ are eigenstates of the total spin operator $\mathbf{S}=\mathbf{J}_1+\mathbf{J}_2$.
+
+The relation between these two bases is given by a unitary transformation, whose matrix elements are the **[Clebsch–Gordan coefficients](https://pdg.lbl.gov/2024/reviews/rpp2024-rev-clebsch-gordan-coefs.pdf)**,
+
+$$
+C^{S,M_S}_{J_1,M_1;J_2,M_2} \;=\; \braket{J_1,M_1;J_2,M_2|S,M_S}
+\,.
+$$
+
+Written as a matrix (for fixed $J_1, J_2, S$), the rows correspond to the uncoupled basis $\bra{J_1,M_1;J_2,M_2}$ and the columns to the coupled basis <span class="nowrap">$\ket{S, M_S}$&nbsp;[@ParticleDataGroup:2024cfk, Section 46].</span> These coefficients show which combinations of individual spin projections contribute to each allowed total spin state. A familiar consequence is that the total spin $S$ can only take values between $|J_1-J_2|$ and $J_1+J_2$ in integer steps, and that $M_S = M_1 + M_2$.
+
+Applying this unitary transformation explicitly yields:
+
+$$
+\ket{S,M_S} \;=\; \sum_{M_1,M_2} C^{S,M_S}_{J_1,M_1; J_2,M_2} \left(\ket{J_1,M_1} \otimes \ket{J_2,M_2}\right)
+\,,
+$$ {#eq-total-spin-tensor-product-s-ms}
+
+`\noindent`{=latex}
+or, equivalently,
+
+$$
+\ket{J_1, M_1} \otimes \ket{J_2, M_2}
+\;=\; \sum_{S, M_S} C^{S, M_S}_{J_1, M_1; J_2, M_2} \ket{S, M_S}
+\,.
+$$ {#eq-total-spin-tensor-product-j1-times-j2}
+
+`\noindent`{=latex}
+The inverse relation takes the same form, because the Clebsch–Gordan coefficients are real in the standard convention, so the same coefficients appear in both directions of the basis change.
+
+### Coupling to the decaying particle {#sec-spin-coupling}
+
+Once we assume that two particles are produced in the decay of a parent state $\ket{J_a, M_a}$, their joint state is described as a **coupled state**. The decay process must conserve total angular momentum, so the spin $J_a$ of particle $a$ is carried by the combination of the two final-state spins and their relative motion. To describe this, we introduce the **orbital angular momentum** $\ket{L,M_L}$, which accounts for the relative motion of the two particles in the decay. The **total angular momentum** $\ket{J,M_J}$ is then formed by coupling the joint total spin state $\ket{S,M_S}$ to the orbital part $\ket{L, M_L}$. In operator terms, if $\ket{L,M_L}$ are eigenstates of the orbital angular momentum operator&nbsp;$\mathbf{L}$, then the total angular momentum operator is given by angular-momentum addition, $\mathbf{J}=\mathbf{L}+\mathbf{S}$ (see @fig-two-stage-coupling-scheme).
+
+Applying the same Clebsch–Gordan machinery as before, we have
+
+$$
+\ket{J,M_J} \;=\; \sum_{\substack{L,M_L\\S,M_S}} C^{J,M_J}_{L,M_L;S,M_S} \left(\ket{L,M_L} \otimes \ket{S,M_S}\right)
+\,.
+$$
+
+::::{.content-visible when-format="html"}
+:::{.column-margin}
+![The two spin-coupling stages, $\mathbf{S}=\mathbf{J}_1+\mathbf{J}_2$ and $\mathbf{J}=\mathbf{L}+\mathbf{S}$, for the decay $a \to 1\,2$.](/images/chapter3/two-stage-coupling-scheme.svg){#fig-two-stage-coupling-scheme}
+:::
+::::
+
+:::{.content-visible unless-format="html"}
+![The two spin-coupling stages, $\mathbf{S}=\mathbf{J}_1+\mathbf{J}_2$ and $\mathbf{J}=\mathbf{L}+\mathbf{S}$, for the decay $a \to 1\,2$.](/images/chapter3/two-stage-coupling-scheme.svg){#fig-two-stage-coupling-scheme}
+:::
+
+Unlike in @eq-total-spin-tensor-product-s-ms, we sum over all allowed values of $L,M_L,S,M_S$, because the intrinsic spins $J_1, J_2$ are known, but the intermediate total spin $S$ and orbital angular momentum $L$ are *not* fixed in advance. Alternatively, we can keep $L$ and $S$ explicit as known quantum numbers and write
+
+$$
+\ket{J,M_J,L,S} \;=\; \sum_{M_L,M_S} C^{J,M_J}_{L,M_L;S,M_S} \left(\ket{L,M_L} \otimes \ket{S,M_S}\right)
+\,.
+$$ {#eq-total-angular-momentum-tensor-product}
+
+`\noindent`{=latex}
+Combining this with @eq-total-spin-tensor-product-s-ms yields a fully expanded form in terms of the known intrinsic spin states,
+
+$$
+\begin{aligned}
+& \ket{J,M_J,L,S} \;= \\
+& \qquad
+  \sum_{M_L,M_S,M_1,M_2}
+  C^{J,M_J}_{L,M_L;S,M_S}\,
+  C^{S,M_S}_{J_1,M_1;J_2,M_2} \\
+& \qquad \qquad
+  \left(\ket{L,M_L}\otimes\ket{J_1,M_1}\otimes\ket{J_2,M_2}\right)
+\,.
+\end{aligned}
+$$ {#eq-total-angular-momentum-tensor-product-expanded}
+
+Finally, conservation of angular momentum requires that the quantum numbers match those of the initial parent particle: $J = J_a$ and $M_J = M_a$. The resulting state defines the **canonical basis** for the two-particle system. It plays a role analogous to the canonical basis of a single-particle spin state, but now the pair $(L, S)$ serves as the two-particle analogue of the single spin projection $m$. Unlike the single-particle case (see @fig-relativistic-spin-state-bases), these internal quantum numbers do not have a simple interpretation as directions in physical space. We will revisit this when introducing the helicity basis, which reformulates the spin states in a relativistic way using the four-momenta of the decay products.
+
+### Relativistic, coupled states {#sec-relativistic-coupled-states}
+
+In the rest frame, two spin states are coupled with Clebsch–Gordan coefficients. To describe decays where the particles carry momentum, this tensor-product construction must be extended to account for Lorentz boosts. As in the single-particle case (@sec-boosting-spin-states), we first obtain the canonical basis from the boosted canonical spin states of the decay products, and then the helicity basis through spin projections along the momentum of each particle. In both cases, the kinematic degrees of freedom are separated step by step[ (see @fig-transformation-schemes)]{.content-visible unless-format="html"}.
+
+#### Canonical basis
+
+The "relativistic" spin states of the decay products take the form&nbsp;$\ket{\vec{p}_i, J_i, M_i}$, as introduced in @eq-canonical-state. The relativistic analogue of the coupled spin state from @eq-total-spin-tensor-product-s-ms can then be written as
+
+$$
+\Ket{\vec{p}_a, S, M_S}
+\;=\;
+  \sum_{M_1, M_2} C^{S, M_S}_{J_1, M_1;\, J_2, M_2}
+  \left( \Ket{\vec{p}_1, J_1, M_1} \otimes \Ket{\vec{p}_2, J_2, M_2} \right)
+\,.
+$$ {#eq-tensor-product-relativistic-canonical}
+
+`\noindent`{=latex}
+Here, $\vec{p}_a$ denotes the total three-momentum of the two-particle system. While formally $\vec{p}_a = \vec{p}_1 + \vec{p}_2$, it is crucial to note that the individual spin states depend on the reference frame. The coupling in @eq-tensor-product-relativistic-canonical strictly applies only in the rest frame of the two-body system. The necessary Lorentz transformations introduce Wigner rotations of the spin states, as discussed in @sec-spin-alignment.
+
+::::{.content-visible when-format="html"}
+:::{.column-margin}
+![](/images/chapter3/canonical-basis-scheme.svg)
+:::
+::::
+
+In the center-of-mass (CM) frame, where $\vec{p}_a = 0$, the two-particle state of @eq-tensor-product-relativistic-canonical is fully characterised by the magnitude of the relative momentum, $p = |\vec{p}_1| = |\vec{p}_2|$, and its orientation given by the polar and azimuthal angles $\theta, \phi$ (see @fig-two-particle-frame-definitions). The magnitude&nbsp;$p$ is related to the CM energy $s$ via the breakup momentum $q(s)$ defined in @eq-phase-space-factor-and-breakup-momentum.
+
+Factoring out the total-momentum eigenstate&nbsp;$\ket{p_a}$ of the four-momentum operator&nbsp;$\mathbf{P}$, the two-particle state becomes
+
+$$
+\Ket{\vec{p}_a, \theta, \phi, S, M_S} \;=\;
+  (2\pi)^3 \left[\frac{4\sqrt{s}}{p}\right]^{\frac{1}{2}}
+  \left( \Ket{\theta, \phi, S, M_S} \otimes \Ket{p_a} \right)
+\,.
+$$
+
+`\noindent`{=latex}
+Since we work in the CM frame with $\vec{p}_a = 0$, the dependence on $\Ket{p_a}$ can be omitted, leaving only the energy-dependent normalisation factor.
+
+To construct the relativistic equivalent of $\ket{L, M_L} \otimes \ket{S, M_S}$ as in @eq-total-angular-momentum-tensor-product, we integrate over the angular variables $(\theta, \phi)$. This procedure mirrors the discrete Clebsch–Gordan decomposition but now employs spherical harmonics $Y^L_{M_L}(\theta, \phi)$ as continuous basis functions. The resulting integral reads
+
+$$
+\ket{L, M_L, S, M_S} \;=\; N_L \iint d\phi \, d\theta \, Y^L_{M_L}(\theta, \phi) \ket{\theta, \phi, S, M_S}
+\,,
+$$ {#eq-relativistic-fixed-orbital-angular-momentum}
+
+`\noindent`{=latex}
+with normalisation <span class="nowrap">$N_L = \sqrt{\frac{2L + 1}{4\pi}}$&nbsp;[@Chung:1971ri, Section 4.2].</span> This integration removes the angular dependence, yielding states that are labelled by fixed orbital angular momentum&nbsp;$L$. These states $\ket{L, M_L, S, M_S}$ transform under rotations just like tensor-product states of angular momentum eigenstates. Specifically, applying a rotation&nbsp;$\mathbfit{R}$ yields&nbsp;[@Chung:2014-SpinFormalismsUpdated, p.9]
+
+$$
+\mathbf{U}[\mathbfit{R}] \, \ket{L, M_L, S, M_S}
+\;=\; \sum_{M_L', M_S'}
+  D^L_{M_L' M_L}(R) \,
+  D^S_{M_S' M_S}(R) \,
+  \ket{L, M_L', S, M_S'}
+\,.
+$$
+
+`\noindent`{=latex}
+Likewise, for the tensor-product states, we have
+
+$$
+\mathbf{U}[\mathbfit{R}] \left( \Ket{L, M_L} \otimes \Ket{S, M_S} \right)
+\;=\; \sum_{M_L', M_S'}
+  D^L_{M_L' M_L}(R) \,
+  D^S_{M_S' M_S}(R) \,
+  \ket{L, M_L'} \otimes \ket{S, M_S'}
+\,.
+$$
+
+`\noindent`{=latex}
+For all practical purposes, we can therefore identify $\ket{L, M_L, S, M_S} \equiv \ket{L, M_L} \otimes \ket{S, M_S}$. In analogy with @eq-total-angular-momentum-tensor-product, we can couple these and form states of definite total angular momentum&nbsp;$J$ using
+
+$$
+\begin{aligned}
+\ket{J_a, M_a, L, S}
+\;&=\;
+  \sum_{M_L, M_S} C^{J_a, M_a}_{S, M_S; L, M_L} \ket{L, M_L, S, M_S} \\
+\;&=\;
+  N_L
+  \sum_{M_L, M_S} C^{J_a, M_a}_{S, M_S; L, M_L}
+  \iint d\phi \, d\theta \, Y^L_{M_L}(\theta, \phi) \ket{\theta, \phi, S, M_S}
+\,.
+\end{aligned}
+$$
+
+This completes the construction of the **canonical basis** of @eq-total-angular-momentum-tensor-product from two-particle momentum states, serving as the two-body analogue of @eq-canonical-state. Note that $L$ and $S$ label rotationally invariant properties, meaning that
+
+$$
+\mathbf{U}[\mathbfit{R}] \, \ket{J_a, M_a, L, S} \;=\; \sum_{M'} D^J_{M' M_a}(R) \, \ket{J_a, M', L, S}
+\,.
+$$
+
+Expressing two-particle states in this form provides access to the angular-momentum content explicit, which facilitates the inclusion of dynamical factors, such as the centrifugal suppression factors discussed in @sec-vertex-parametrisation.
+
+#### Helicity basis
+
+One limitation of the canonical basis is that it is not invariant under Lorentz boosts. This becomes problematic when constructing amplitudes for cascades of two-body decays, where intermediate frames vary along different decay chains. As we saw in the single-particle case (@sec-single-particle-states), it is often more convenient to choose the particle's direction of motion as the spin quantisation axis. For a two-particle system, we typically define the quantisation axis along the momentum of particle&nbsp;$1$ (consistent with how the angle&nbsp;$\theta, \phi$ were defined). This leads naturally to the helicity quantum numbers $\lambda_1, \lambda_2$ and their corresponding helicity states $\ket{J_1, \lambda_1}$ and $\ket{J_2, \lambda_2}$. The difference between the canonical and helicity constructions is shown in @fig-two-particle-frame-definitions.
+
+::::{.content-visible when-format="html"}
+:::{.column-margin}
+![](/images/chapter3/helicity-basis-scheme.svg)
+:::
+::::
+
+::::{.content-visible unless-format="html"}
+:::{#fig-transformation-schemes layout-ncol=2}
+![ ](/images/chapter3/canonical-basis-scheme.svg){fig-align="center"}
+
+![ ](/images/chapter3/helicity-basis-scheme.svg){fig-align="center"}
+
+Construction schemes for the canonical basis (left) and helicity basis (right) of the two-particle system.
+:::
+::::
+
+In analogy with @eq-tensor-product-relativistic-canonical, to construct the two-particle state in the helicity basis, we again start from the tensor product of the individual helicity states. However, because helicity is defined as the projection of spin along the particle's own momentum direction, we must first rotate our standard frame's <span class="nowrap">$z$&nbsp;axis</span> into the direction of $\vec{p}_1$. This is accomplished by a rotation&nbsp;$\mathring{\mathbfit{R}}(\theta, \phi, 0)$, which aligns the <span class="nowrap">$z$&nbsp;axis</span> with the momentum of particle&nbsp;$1$.
+
+Starting from a reference state $\ket{0, 0, \lambda_1, \lambda_2}$, where both particles in the direction of the <span class="nowrap">$z$&nbsp;axis</span> along which the helicities are defined, we obtain the physical state via
+
+$$
+\begin{aligned}
+\ket{\theta, \phi, \lambda_1, \lambda_2}
+\;&=\; \mathbf{U}[\mathring{\mathbfit{R}}(\theta, \phi, 0)] \left( \ket{s_1, \lambda_1} \otimes \ket{s_2, \lambda_2} \right) \\
+\; &\equiv \; \mathbf{U}[\mathring{\mathbfit{R}}] \, \ket{0, 0, \lambda_1, \lambda_2}
+\,.
+\end{aligned}
+$$
+
+This ensures that the helicities $\lambda_1, \lambda_2$ are defined with respect to the physical momentum directions of the particles.
+
+Similar to @eq-relativistic-fixed-orbital-angular-momentum, we integrate over the solid angle
+$\mathrm{d}\Omega' = \sin\theta'\,\mathrm{d}\theta'\,\mathrm{d}\phi'$ to obtain states of definite total angular <span class="nowrap">momentum&nbsp;$J$.</span> Conservation of angular momentum implies $J_a = J$ and $M_a = M_J$, leading to the **helicity basis** state
+
+$$
+\ket{J_a, M_a, \lambda_1, \lambda_2}
+\;=\;
+  \frac{N_J}{2\pi} \iint \mathrm{d}\Omega'\,
+  D^{J\,*}_{M_a, \lambda_1 - \lambda_2}(\theta', \phi') \,
+  \mathbf{U}[\mathring{\mathbfit{R}}]\,\ket{0, 0, \lambda_1, \lambda_2}
+\,.
+$$ {#eq-two-particle-helicity-state}
+
+`\noindent`{=latex}
+The appearance of the difference $\lambda_1 - \lambda_2$ in the <span class="nowrap">Wigner&nbsp;$D$</span>-function reflects the fact that the two decay products emerge back-to-back in the parent rest frame (@fig-two-particle-frame-definitions, right). Under a rotation with <span class="nowrap">angle&nbsp;$\phi$</span> about the parent's momentum axis, particle&nbsp;1 picks up a phase $e^{-i\lambda_1\phi}$ while particle&nbsp;2 picks up <span class="nowrap">$e^{+i\lambda_2\phi}$.</span> The combined state therefore transforms with net phase $e^{-i(\lambda_1-\lambda_2)\phi}$, which fixes the lower index of the <span class="nowrap">Wigner&nbsp;$D$</span>-function. The rotation <span class="nowrap">angles&nbsp;$(\theta,\phi)$</span> are defined as the polar and azimuthal angles of particle&nbsp;1 in the parent rest frame, so the convention of "$\lambda_1-\lambda_2$" is tied to choosing particle&nbsp;1 as the helicity reference axis.
+
+Importantly, these states transform under rotations just like the single-particle helicity states introduced in @eq-rotate-helicity, with $J$ and $M_J$ being invariant under any <span class="nowrap">rotation&nbsp;$\mathbfit{R}$&nbsp;[@Chung:2014-SpinFormalismsUpdated, p.10],</span> meaning that
+
+$$
+\mathbf{U}[\mathbfit{R}] \, \ket{J_a, M_a, \lambda_1, \lambda_2}
+\;=\; \sum_{M_a'} D^J_{M_a' M_a}(R) \, \ket{J_a, M_a', \lambda_1, \lambda_2}
+\,.
+$$
+
+`\noindent`{=latex}
+This property will later enable the construction of amplitudes for decay chains involving sequential two-body decays.
+
+:::{#fig-two-particle-frame-definitions layout-ncol=2 layout-valign=bottom}
+![](/images/chapter3/two-particle-state-canonical.svg){fig-align="center"}
+
+![](/images/chapter3/two-particle-state-helicity.svg){fig-align="center"}
+
+Two-particle state in the canonical basis (left) and the helicity basis (right).
+:::
+
+#### Transformation between the two bases
+
+The two formulations serve as basis vectors to the Hilbert space of spin states. One can therefore find a transformation to switch between the <font color=DarkOrange>helicity</font> and <font color="#0071bc">canonical</font> bases&nbsp;[@Chung:1971ri, Section 4.3]
+
+$$
+\begin{aligned}
+{\color{DarkOrange}\ket{J,M,{\color{DarkOrange}\lambda_1},{\color{DarkOrange}\lambda_2}}} \;&=\;
+  \sum_{{\color{RoyalBlue}L},{\color{RoyalBlue}S}}
+  \sqrt{\frac{2{\color{RoyalBlue}L}+1}{2J+1}}
+  C^{J,{\color{DarkOrange}\lambda}}_{{\color{RoyalBlue}L},0,{\color{RoyalBlue}S},{\color{DarkOrange}\lambda}}
+  C^{{\color{RoyalBlue}S},{\color{DarkOrange}\lambda}}_{J_1,{\color{DarkOrange}\lambda_1},J_2,\,\text{-}{\color{DarkOrange}\lambda_2}}
+  {\color{RoyalBlue}\ket{J,M,{\color{RoyalBlue}L},{\color{RoyalBlue}S}}} \\
+{\color{RoyalBlue}\ket{J,M,{\color{RoyalBlue}L},{\color{RoyalBlue}S}}} \;&=\;
+  \sum_{{\color{DarkOrange}\lambda_1},{\color{DarkOrange}\lambda_2}}
+  \sqrt{\frac{2{\color{RoyalBlue}L}+1}{2J+1}}
+  C^{J,{\color{DarkOrange}\lambda}}_{{\color{RoyalBlue}L},0,{\color{RoyalBlue}S},{\color{DarkOrange}\lambda}}
+  C^{{\color{RoyalBlue}S},{\color{DarkOrange}\lambda}}_{J_1,{\color{DarkOrange}\lambda_1},J_2,\,\text{-}{\color{DarkOrange}\lambda_2}}
+  {\color{DarkOrange}\ket{J,M,{\color{DarkOrange}\lambda_1},{\color{DarkOrange}\lambda_2}}}
+\end{aligned}
+$$ {#eq-transformation-canonical-helicity}
+
+`\noindent`{=latex}
+with $\lambda = \lambda_1 - \lambda_2$. Note how the coefficients of the transformations are the same in both directions. @eq-transformation-canonical-helicity allows us to construct the amplitude for a sequential two-body decay chain with the helicity basis and transform it to the canonical basis in order to get access to the angular-momentum content of each decay node.
+
+## Amplitude construction
+
+Finally, we have the mechanisms to construct the amplitude of a general multi-body decay of the form&nbsp;$0\to 1\,2\dots n$. As discussed in @sec-scattering-theory, the transition amplitude for a transition from initial state&nbsp;$\ket{\psi_\text{in}}$ to final state&nbsp;$\ket{\psi_\text{out}}$ comes from the application of the transition operator&nbsp;$\mathbf{T}$ to these states using @eq-transition-matrix-element. In the helicity formalism, the initial state is a single spin state $\ket{\psi_\text{in}} = \ket{p_0, j_0, \lambda_0}$. The final state is a set of $n$ spin states that are assumed to be stable and non-interacting and can therefore be written as a tensor product,
+
+$$
+\ket{\psi_\text{out}} \;=\;
+  \ket{p_1,j_1,\lambda_1} \times
+  \ket{p_2,j_2,\lambda_2} \times
+  \dots
+  \ket{p_n,j_n,\lambda_n} \,.
+$$
+
+To construct the amplitude explicitly, we exploit the fact that conservation laws (in particular angular momentum conservation at each vertex) allow us to decompose the full multi-body transition into a product of two-body transitions, analogous to internal lines in a Feynman diagram, connected through sums over intermediate helicities. This leads naturally to the sequential-decay parametrisation of the amplitude.
+
+### Sequential-decay parametrisation
+
+The strategy for formulating the transition amplitude is to split up the decay into two-body decays, which we can describe using our knowledge of relativistic, coupled two-particle spin states. This approach is often referred to as the _isobar model_, but a better term would be **sequential-decay**&nbsp;[@Chung:2014-SpinFormalismsUpdated; @Richman:1984gh; @Kutschke:1996-AngularDistributionCookbook; @Chen:2017gtx] or _cascade-decay_&nbsp;[@Habermann:2024sxs] parametrisation.
+
+In the sequential-decay parametrisation, we consider the multi-body decay&nbsp;$0\to 1\,2\dots n$ to proceed via a cascade of two-body decays. For $n>2$, there are multiple two-body decay topologies that can be constructed. We call such a topology a **chain**, or path, and denote it with a Fraktur <span class="nowrap">index&nbsp;$\mathfrak{c}$&nbsp;[@Habermann:2024sxs].</span> A decay chain can be visualised in the form of a directed graph of two-body decay nodes labelled by $\kappa$. The naming scheme for each node&nbsp;$\kappa$ is shown in @fig-topology-symbol-definitions: the digits of the final-state particles to which it decays are listed and grouped with parentheses depending on how it decays further. In each node&nbsp;$\kappa$, the parent state is denoted by $\kappa_0$, and the two decay products by $\kappa_1$ and $\kappa_2$. Decay chains can be named with the same labeling scheme by taking the label of its first decay node. For instance, the left chain in @fig-topology-symbol-definitions would be labelled&nbsp;$1(2(34))$.
+
+:::{#fig-topology-symbol-definitions layout="[1.2, 1]"}
+![](/images/chapter3/4-body-topology-1.svg){fig-align="center"}
+
+![](/images/chapter3/4-body-topology-2.svg){fig-align="center"}
+
+Vertex notations for two decay chains, $1(2(34))$ and $(12)(34)$, in a sequential four-body decay. Topologies and nodes are labelled by grouping the children of each node in parentheses.
+:::
+
+Parametrisations of the scattering matrix can be found with path-integral methods&nbsp;[@Weinberg:1995mt, Section 9.2]. The decay topologies in the sequential-decay parametrisation can be seen as a 'discrete' path integral from the initial to the final state once we assume that each of the two-body decay nodes in the chain takes place independently. The **helicity amplitude for chain&nbsp;$\mathfrak{c}$** can therefore be constructed as the product of the helicity amplitudes of all its two-body decay nodes&nbsp;$\kappa$, that is
+
+$$
+\begin{aligned}
+& A^{\mathfrak{c}}_{\lambda_0,\{\lambda\}}(\tau_{\mathfrak{c}}) \;=\;
+  \sum_{\{\lambda_\text{int.}\}} \,
+  \prod_{\kappa}^{n-1}
+  D^{j_{\kappa_0}\,*}_{\lambda_{\kappa_0}, \lambda_{\kappa_1}-\lambda_{\kappa_2}}\!\left(\Omega^{\mathfrak{c}}_\kappa\right) \\
+& \qquad \times \;
+  X_\kappa\!\left(\mu_{\kappa_0}\right) \,
+  H^{\kappa_0\to \kappa_1,\kappa_2}_{\lambda_{\kappa_1},\lambda_{\kappa_2}}\!\left(\mu_{\kappa_0},\mu_{\kappa_1},\mu_{\kappa_2}\right) \,.
+\end{aligned}
+$$ {#eq-sequential-decay-amplitude-helicity-formalism}
+
+`\noindent`{=latex}
+with $\tau_{\mathfrak{c}}$ the set of relevant kinematic variables for the chain&nbsp;$\mathfrak{c}$, such as the helicity angles&nbsp;$\Omega^{\mathfrak{c}}_\kappa$ for node&nbsp;$\kappa$ and the invariant masses&nbsp;$\mu_{\kappa_0},\mu_{\kappa_1},\mu_{\kappa_2}$ of its parent and decay products. We have denoted the set of allowed helicities of the final-state particles with $\{\lambda\}=\{\lambda_1,\dots,\lambda_n\}$ and those of the intermediate spin states with $\{\lambda_\text{int.}\}$. The latter helicities cannot be observed and have to be summed over, but this has to be done carefully, as some decay products of each node appear as the parent of the next node. Also note that $\lambda_{\kappa_0},\lambda_{\kappa_1},\lambda_{\kappa_2}$ can be any of $\lambda_0$, $\{\lambda\}$, or $\{\lambda_\text{int.}\}$, depending on which node&nbsp;$\kappa$ is considered. The <span class="nowrap">Wigner&nbsp;$D$</span>-functions originate from the rotations over the helicity angle $\Omega^{\mathfrak{c}}_\kappa=(\theta^{\mathfrak{c}}_\kappa,\phi^{\mathfrak{c}}_\kappa)$ applied before boosting into the rest frame of the next helicity state in the decay chain. The function&nbsp;$X_\kappa$ parametrises the lineshape of the decaying resonance&nbsp;$\kappa_0$ (propagator) in the two-body decay&nbsp;$\kappa$, whereas the function&nbsp;$H^{\kappa_0\to\kappa_1,\kappa_2}_{\lambda_{\kappa_1},\lambda_{\kappa_2}}$ parametrises its vertex (see @sec-analytic-structure). The angular-momentum content can be applied by inserting the transformation of @eq-transformation-canonical-helicity.
+
+Each symbol $\mu_i$ indicates the _invariant_ mass of state &nbsp;$i$. The initial and final state are considered stable, that is, their masses are not variables of the dynamics functions. For example, in single-channel analyses, $X_k\!\left(\mu_{\kappa_0}\right)$ is often parametrised as @eq-breit-wigner-vertex. For non-zero angular momenta, the energy-dependent width depends on the masses of the decay products, $\mu_{\kappa_1},\mu_{\kappa_2}$, but these are taken to be constant. From a computational point of view, one has to assume these masses to be fixed if one implements a proper analytic continuation, otherwise the dispersion integral @eq-dispersion-integral-sigma has to be solved for each each iteration during a fit.
+
+The <span class="nowrap">Wigner&nbsp;$D$</span>-functions in @eq-sequential-decay-amplitude-helicity-formalism originate from the rotations over the helicity angle $\Omega^{\mathfrak{c}}_\kappa$ applied before boosting into the rest frame of the next helicity state in the decay chain. As explained in @eq-two-particle-helicity-state, their lower index $\lambda_{\kappa 1}-\lambda_{\kappa 2}$ encodes this helicity-difference phase, which ensures the correct angular-momentum coupling at each decay node.
+
+### Wigner rotations {#sec-spin-alignment}
+
+In a sequential-decay amplitude that contains topologically distinct decay chains, the same set of final-state helicities can be reached through different sequences of Lorentz boosts and rotations. Because the spin quantisation axis that defines the helicity of each final-state particle (@fig-relativistic-spin-state-bases) is determined by the specific boost sequence of its decay chain, the helicity labels from different chains correspond to different physical axes. In this case, the **total transition amplitude**&nbsp;$A_{\lambda_0,\{\lambda\}}$ cannot be obtained by simply summing all chain amplitudes&nbsp;$A^{\mathfrak{c}}_{\lambda_0,\{\lambda\}}$ of @eq-sequential-decay-amplitude-helicity-formalism. To combine them meaningfully, the final-state helicities from each chain must first be rotated into a common reference frame, ensuring that all spin quantisation axes are aligned.
+
+The mismatch between the different chains can be corrected by an alignment factor&nbsp;$W^{\mathfrak{c}(\mathfrak{o})}_{\{\lambda'\},\{\lambda\}}(\tau_{\mathfrak{c}}\mid\tau_{\mathfrak{o}})$ for each chain&nbsp;$\mathfrak{c}$ and a selected **reference chain**&nbsp;$\mathfrak{o}$. The total transition amplitude for all chains is then given by
+
+$$
+A_{\lambda_0,\{\lambda\}}(\tau_{\mathfrak{o}})
+\;=\;
+  \sum_{\{\lambda'\}} \sum_{\mathfrak{c}}
+  A^{\mathfrak{c}}_{\lambda_0,\{\lambda'\}}(\tau_{\mathfrak{c}}) \,
+  W^{\mathfrak{c}(\mathfrak{o})}_{\{\lambda'\},\{\lambda\}}(\tau_{\mathfrak{c}}\mid\tau_{\mathfrak{o}})
+\,.
+$$ {#eq-total-transition-amplitude}
+
+`\noindent`{=latex}
+The alignment factor is a product of (inverse) **Wigner rotations** in spin space, one for each final-state particle&nbsp;$i$ with spin&nbsp;$j_i$,
+
+$$
+W^{\mathfrak{c}(\mathfrak{o})}_{\{\lambda'\},\{\lambda\}}(\tau_{\mathfrak{c}}\mid\tau_{\mathfrak{o}})
+\;=\;
+  \prod_{i=1}^n D^{j_i\,*}_{\lambda'_i \lambda_i}\!\left(
+  \phi^i_{\mathfrak{c}(\mathfrak{o})},
+  \theta^i_{\mathfrak{c}(\mathfrak{o})},
+  \chi^i_{\mathfrak{c}(\mathfrak{o})}
+\right)
+\,.
+$$ {#eq-spin-alignment-factor}
+
+`\noindent`{=latex}
+Here, $\phi^i_{\mathfrak{c}(\mathfrak{o})}, \theta^i_{\mathfrak{c}(\mathfrak{o})}, \chi^i_{\mathfrak{c}(\mathfrak{o})}$ are the Euler angles (@fig-euler-angles) describing the spatial rotation&nbsp;$\mathbfit{R}^i_{\mathfrak{c}(\mathfrak{o})}$ that connects the two helicity frames for particle&nbsp;$i$. Computing these angles is a non-trivial task that generally requires a numerical procedure&nbsp;[@Habermann:2024sxs]. The key idea is that the product of Lorentz transformations from the initial state&nbsp;$0$ to a final-state particle&nbsp;$i$ along chain&nbsp;$\mathfrak{c}$, followed by the inverse transformations along reference chain&nbsp;$\mathfrak{o}$, cancels the net boost and yields a pure (Wigner) rotation,
+
+$$
+\mathbfit{R}^i_{\mathfrak{c}(\mathfrak{o})} \;=\;
+\left( \prod_{a}^{0 \to i} \boldsymbol{\varLambda}^{\mathfrak{c}}_{a \leftarrow a_{\text{next}}} \right)^{-1}
+\times \left( \prod_{b}^{0 \to i} \boldsymbol{\varLambda}^{\mathfrak{o}}_{b \leftarrow b_{\text{next}}} \right)
+\,.
+$$ {#eq-wigner-rotation}
+
+The Euler angles of $\mathbfit{R}^i_{\mathfrak{c}(\mathfrak{o})}$ can be extracted by applying @eq-wigner-rotation to a four-momentum in a suitably chosen coordinate system. Although $\mathbfit{R}^i_{\mathfrak{c}(\mathfrak{o})}$ is an element of the Lorentz group $\mathrm{SO}^+(1,3)$, its action on spin states is represented in the spinor space $\mathrm{SL}(2,\mathbb{C})$, the double cover of $\mathrm{SO}^+(1,3)$ (see @sec-relativistic-coupled-states). In this representation, a spatial rotation of&nbsp;$2\pi$ changes the sign of a half-integer spin state, so spinors exhibit a <span class="nowrap">$4\pi$&nbsp;periodicity.</span> This phase behaviour must be tracked when combining amplitudes from different decay chains. To determine whether a sign flip occurs, the same transformation sequence can be applied with Lorentz transformation matrices in&nbsp;$\mathrm{SL}(2,\mathbb{C})$ to a reference Dirac spinor, and the resulting phase compared to the original.
+
+@fig-wigner-rotations illustrates this procedure for final-state particle&nbsp;$1$ in two topologically distinct four-body decay chains, $\mathfrak{c}=(1(23))4$ and $\mathfrak{o}=((12)3)4$, showing how the Lorentz transformations differ and how their combination yields the required Wigner rotations for the spin-alignment factor.
+
+:::{#fig-wigner-rotations}
+[![](images/chapter3/wigner-rotation.svg)]{.light-content}
+[![](images/chapter3/wigner-rotation-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Sketch of how aligning a four-body decay chain $\mathfrak{c}=(1(23))4$ (left) to a reference chain $\mathfrak{o}=((12)3)4$ (right) leads to four <span class="nowrap">Wigner&nbsp;$D$</span> rotation functions. The symbols in the arguments of the <span class="nowrap">Wigner&nbsp;$D$</span>-functions indicate how angles for these rotations are obtained: boost and rotate along the reference chain from the initial state (yellow) to each final state (green), then back along chain&nbsp;$\mathfrak{c}$. The lower row shows the sequence of Lorentz transformations that lead to the rest frame of particle&nbsp;$1$ and that is coloured in the chains. Adapted from&nbsp;[@Habermann:2024sxs, Figure 2].
+:::
+
+### Differential decay rate {#sec-differential-decay-rate}
+
+Finally, the total transition amplitudes from @eq-total-transition-amplitude can be combined into an expression for the differential decay rate of a general multi-body decay. This is the analogue of @eq-differential-cross-section for differential cross sections, but now applied to a decay process with an arbitrary number of final-state particles. To write down this expression, we must first identify the relevant degrees of freedom in the differential. The decaying particle&nbsp;$0$ is produced with a certain spatial orientation, which is typically described relative to the production plane in terms of Euler angles $\Omega = (\phi, \theta, \chi)$. In addition, the <span class="nowrap">$n$‑body</span> decay process itself has $k=3n-7$ internal degrees of freedom: $3n$ for each three-momentum, minus $4$ for the overall energy-momentum conservation, and minus $3$ for the spatial orientation of the decay. These $k$ variables are collected in the <span class="nowrap">set&nbsp;$\tau$</span>, and they govern the internal dynamics of the decay, that is, they only affect the helicity amplitudes.
+
+In contrast to the internal decay <span class="nowrap">variables&nbsp;$\tau$,</span> the angles $\Omega = (\phi, \theta, \chi)$ encode the orientation of an external spin quantisation axis of the decaying particle&nbsp; $0$ with respect to the production frame. An example of this is discussed in @sec-polarimeter-vector-field, particularly @fig-rotation-angles. Since the production process may leave $0$ in a polarised state, we must account for the statistical mixture of spin projections $m_0$ that it can occupy. This information is encoded in the elements&nbsp;&nbsp;$\rho_{m_0' m_0}$ of **spin-density matrix**&nbsp;$\mathbfit{\rho}$, which describe the coherence between spin projections $m_0$ and $m_0'$ along a quantisation axis defined by the production mechanism.
+
+However, the helicity formalism expresses decay amplitudes in terms of spin projections&nbsp;$\lambda_0$ along the momentum direction of the decaying particle. This direction is determined by the first decay node of reference chain&nbsp;$\mathfrak{o}$ in @eq-total-transition-amplitude, that is, by the two states to which particle&nbsp;$0$ decays in chain&nbsp;$\mathfrak{o}$. To relate the two frames, we rotate the total transition amplitudes&nbsp;$A_{\lambda_0,\{\lambda\}}$ _back_ over the <span class="nowrap">angles&nbsp;$\Omega$</span> using @eq-inverse-rotation-decomposition, giving
+
+$$
+\widetilde{A}_{m_0,\{\lambda\}}(\Omega, \tau)
+\;=\; \sum_{\lambda_0} D^{j_0\,*}_{m_0 \lambda_0}(\phi,\theta,\chi) \, A_{\lambda_0,\{\lambda\}}(\tau)
+$$ {#eq-production-aligned-amplitude}
+
+The resulting sum over matrix elements&nbsp;$D^{j_0\,*}_{m_0 \lambda_0}$ implement the change of spin basis from the decay frame to the production frame, allowing us to coherently sum over all possible spin orientations in the decay process. This gives the **differential decay rate**,
+
+$$
+\begin{aligned}
+\frac{\mathrm{d}\Gamma}{\mathrm{d}^3\Omega\,\mathrm{d}^k\tau} \;
+&\cong \;
+  \sum_{\{\lambda\}}
+  \sum_{m_0, m_0'}
+  \widetilde{A}^*_{m_0',\{\lambda\}}(\Omega, \tau) \,
+  \rho_{m_0' m_0} \,
+  \widetilde{A}_{m_0,\{\lambda\}}(\Omega, \tau) \,
+  \\
+&=\;
+  \sum_{\{\lambda\}} \sum_{m_0, m_0'} \rho_{m_0' m_0} \\
+&\qquad \times \;
+  \sum_{\lambda_0}
+  D^{j_0\,*}_{m_0 \lambda_0}(\phi,\theta,\chi) \, A_{\lambda_0,\{\lambda\}}(\tau) \\
+&\qquad \times \;
+  \sum_{\lambda_0'}
+  D^{j_0}_{m_0' \lambda_0'}(\phi,\theta,\chi) \, A_{\lambda_0',\{\lambda\}}^*(\tau)
+\,.
+\end{aligned}
+$$ {#eq-differential-cross-section-multi-body-polarised}
+
+The spin-density matrix $\rho_{m_0' m_0}$ is a Hermitian matrix of dimension&nbsp;$2j_0+1$. Its diagonal elements give the distribution of the spin projections along a chosen quantisation axis in the production plane and its off-diagonal elements encode any coherences between them. As discussed in @sec-connecting-to-experiment, the differential cross section serves as an intensity function that describes the measured data distributions over each degree of freedom. Since this function is fit to data using maximum likelihood techniques, any normalisation factors can be left out (indicated by $\cong$) in practical applications.
+
+In many analyses, the polarisation of the decaying particle is not of interest and the Euler angles $\phi, \theta, \chi$ in @eq-differential-cross-section-multi-body-polarised are effectively integrated out. This results in an **unpolarised** intensity function
+
+$$
+\begin{aligned}
+I_0(\tau)
+\;&=\;
+  \int_{0}^{2\pi} \!\! \mathrm{d}\phi \int_{0}^{\pi} \!\! \sin\theta \, \mathrm{d}\theta \int_{0}^{2\pi} \!\! \mathrm{d}\chi \;
+  \frac{\mathrm{d}\Gamma}{\mathrm{d}^3\Omega\,\mathrm{d}^k\tau} \\
+\; &\cong \;
+  \sum_{\{\lambda\}} \sum_{m_0,m_0'}
+    \rho_{m_0' m_0}
+    \delta_{m_0 m_0'}
+  \sum_{\lambda_0,\lambda_0'}
+    \delta_{\lambda_0 \lambda_0'}
+    A_{\lambda_0,\{\lambda\}}(\tau) \,
+    A_{\lambda_0',\{\lambda\}}^*(\tau) \\
+\;&=\;
+  \sum_{\{\lambda\}} \operatorname{Tr}\,\rho
+  \sum_{\lambda_0}
+    A_{\lambda_0,\{\lambda\}}(\tau) \,
+    A_{\lambda_0',\{\lambda\}}^*(\tau) \\
+\; &\cong \;
+  \sum_{\lambda_0} \sum_{\{\lambda\}}
+  \left|A_{\lambda_0,\{\lambda\}}(\tau)\right|^2
+\,.
+\end{aligned}
+$$ {#eq-differential-cross-section-multi-body-unpolarised}
+
+`\noindent`{=latex}
+Here, we have used the fact that the <span class="nowrap">Wigner&nbsp;$D$</span>-functions form a set of orthogonal functions over the Euler angles, meaning that
+
+$$
+\begin{aligned}
+& \int_{0}^{2\pi} \!\! \mathrm{d}\alpha \int_{0}^{\pi} \!\! \sin\beta \, \mathrm{d}\beta \int_{0}^{2\pi} \!\! \mathrm{d}\gamma \;
+  D^j_{m n}(\alpha, \beta, \gamma) \, D^{j'\,*}_{m' n'}(\alpha, \beta, \gamma) \\
+& \quad\quad =\;
+  \frac{8 \pi^{2}}{2j + 1} \, \delta_{j j'} \, \delta_{m m'} \, \delta_{n n'}
+\,.
+\end{aligned}
+$$
+
+### Dalitz-Plot Decomposition {#sec-dpd}
+
+In the case of a three-body decay&nbsp;$0 \to 1 2 3$, the three-momenta of final-state particles $\vec{p}_1, \vec{p}_2, \vec{p}_3$ in the rest frame of the decaying particle span a unique plane, since momentum conservation enforces $\vec{p}_1 + \vec{p}_2 + \vec{p}_3 = 0$ (see @fig-three-body-decay-variables). We refer to the plane spanned by these momenta as the **Dalitz plane**, as it fully captures the internal kinematic degrees of freedom of the decay, analogous to the Dalitz plot. As before, the remaining degrees of freedom are the Euler angles $\Omega=(\phi,\theta,\chi)$ that specify the orientation of the Dalitz plane with respect to the production frame.
+
+Since all kinematically relevant variables lie within the Dalitz plane, the amplitude construction only requires <span class="nowrap">Wigner&nbsp;$d$</span>-functions to describe rotations within the plane, without an 'off-plane' azimuthal component. The **Dalitz-Plot Decomposition** (DPD) method exploits this fact to derive analytic expressions for the remaining polar rotation angles in terms of Mandelstam invariants&nbsp;$\sigma_1=(p_2+p_3)^2$, $\sigma_2=(p_3+p_1)^2$, $\sigma_3=(p_1+p_2)^2$ and rest masses <span class="nowrap">$\mu_0,\mu_1,\mu_2,\mu_3$&nbsp;[@JPAC:2019ufm].</span> Using @eq-mandelstam-total, that leaves only $k=2$ degrees of freedom within the Dalitz plane, as expected.
+
+:::{#fig-three-body-decay-variables layout="[1, 1.3]" layout-valign=center}
+![](/images/chapter3/space-fixed-cm-frame.svg){fig-align="center"}
+
+![](/images/chapter3/three-body-decay-variables.svg){fig-align="center"}
+
+In the rest frame of decaying particle&nbsp;$0$ in a three-body decay, the momenta $\vec{p}_1, \vec{p}_2, \vec{p}_3$ of the final state span the Dalitz plane (left). The orientation of this plane is specified by the Euler angles $\color{MyRed} \phi, \theta, \chi$. Within the plane (right), the Mandelstam invariants $\color{MyBlue} \sigma_1, \sigma_2, \sigma_3$ and the rest masses $\color{MyBlue} \mu_0, \mu_1, \mu_2, \mu_3$ fully describe the internal dynamics of Dalitz-plot function&nbsp;$\mathcal{O}^{\lambda_0}_{\{\lambda\}}$.
+:::
+
+Sequential three-body decays have only one type of topological structure with two decay nodes: particle&nbsp;$0$ decays to a spectator&nbsp;$k$ and an intermediate state&nbsp;$i,j$ (the **production node**), and then the intermediate state decays to final-state particles $i,j$ (the **decay node**). Such a decay chain&nbsp;$\mathfrak{c}=(ij)k$ is often referred to as a **subsystem** and is sometimes simply labelled by index&nbsp;$k$. The decay chain with regard to which we align the other decay chains (chain&nbsp;$\mathfrak{o}$ in @eq-total-transition-amplitude) is called the **reference subsystem**, and we label it with index&nbsp;$l$ of its spectator. With this notation, the three-body analogue of @eq-total-transition-amplitude is the **Dalitz-plot function**,
+
+$$
+\begin{aligned}
+\mathcal{O}^{\lambda_0}_{\{\lambda\}}(\tau) \;
+&=\;
+  \sum_{\{\lambda'\}} \sum_{(ij)k} \sum_s^{(ij)\to i,j} \sum_{\lambda_s}
+  n_{j_0} \, n_s \\
+&\times \;
+  d^{j_0}_{\lambda_0,\lambda_s-\lambda'_k}(\hat\theta_{k(l)}) \,
+  d^s_{\lambda_s,\lambda'_i-\lambda'_j}(\theta_{ij}) \\
+&\times \;
+  H^{0 \to (ij),k}_{\lambda_s,\lambda'_k}(\mu_0^2,\sigma_k,\mu_k^2) \,
+  X_s(\sigma_k) \,
+  H^{(ij) \to i,j}_{\lambda'_i,\lambda'_j}(\sigma_k,\mu_i^2,\mu_j^2) \\
+&\times \;
+  d^{j_1}_{\lambda'_1 \lambda_1}(\zeta^{1}_{k(0)}) \,
+  d^{j_2}_{\lambda'_2 \lambda_2}(\zeta^{2}_{k(0)}) \,
+  d^{j_3}_{\lambda'_3 \lambda_3}(\zeta^{3}_{k(0)}) \,.
+\end{aligned}
+$$ {#eq-dpd-aligned-amplitude}
+
+Here, $(ij)k$ sums over all decay chains $(23)1$, $(31)2$, and $(12)3$, label&nbsp;$s$ indicates all expected intermediate spins in the two-body decay&nbsp;$(ij)\to i,j$, and $\lambda_s$ are the helicities of that intermediate spin state. The normalisation factors $n_{j_0}=\sqrt{2j_0+1}$ and $n_s=\sqrt{2s+1}$ are similar to those appearing @eq-relativistic-fixed-orbital-angular-momentum. Two <span class="nowrap">Wigner&nbsp;$d$</span>-functions follow: one for the production node with angle&nbsp;$\hat\theta_{k(l)}$ measured in the rest frame of&nbsp;$0$, and one for the decay node with scattering angle&nbsp;$\theta_{ij}$ measured in the rest frame of&nbsp;$(ij)\to i,j$. The vertex functions&nbsp;$H$ and propagator function $X_s$ were introduced in @eq-sequential-decay-amplitude-helicity-formalism. Finally, the three <span class="nowrap">Wigner&nbsp;$d$</span>-functions with angles $\zeta^{i}_{k(0)}$ describe the Wigner rotations required to align the three decay chains $(ij)k$ with regard to the production frame.
+
+```{python}
+#| echo: false
+import itertools
+import sympy as sp
+from ampform_dpd.angles import formulate_theta_hat_angle, formulate_zeta_angle
+
+for k, l in itertools.product([1, 2, 3], repeat=2):
+    _, theta_hat = map(sp.cos, formulate_theta_hat_angle(k, l))
+    _, zeta = map(sp.cos, formulate_zeta_angle(0, k, l))
+    assert theta_hat == zeta
+```
+
+Since $\hat\theta_{k(l)} = {\color{RoyalBlue}\zeta^{0}_{k(l)}}$, the <span class="nowrap">Wigner&nbsp;$d$</span> for the production node can be interpreted as a Wigner rotation. In addition, for computations it is more efficient to compute the Wigner rotation angles with regard to the reference subsystem&nbsp;$l$, meaning that $\zeta^i_{k(0)} \to \zeta^i_{k({\color{RoyalBlue}l})}$, so that the Wigner rotations in the amplitude for that subsystem vanish (this choice affects the definition of the Euler <span class="nowrap">angles&nbsp;$\Omega$</span> of the decay plane orientation in @eq-differential-cross-section-multi-body-polarised). This results in the alternative form of @eq-dpd-aligned-amplitude,
+
+$$
+\begin{aligned}
+\mathcal{O}^{\lambda_0}_{\{\lambda\}}(\tau) \;
+&=\;
+  {\color{RoyalBlue}\sum_{\lambda'_0}} \sum_{\{\lambda'\}} \sum_{(ij)k} \sum_s^{(ij)\to i,j} \sum_{\lambda_s}
+  n_{j_0} \, n_s \\
+&\times \;
+  {\color{RoyalBlue}\delta_{\lambda'_0, \lambda_s - \lambda'_k}} \,
+  d^s_{\lambda_s,\lambda'_i-\lambda'_j}(\theta_{ij}) \\
+&\times \;
+  H^{0 \to (ij),k}_{\lambda_s,\lambda'_k}(\mu_0^2,\sigma_k,\mu_k^2) \,
+  X_s(\sigma_k) \,
+  H^{(ij) \to i,j}_{\lambda'_i,\lambda'_j}(\sigma_k,\mu_i^2,\mu_j^2) \\
+&\times \;
+  {\color{RoyalBlue}d^{j_0}_{\lambda_0 \lambda'_0}(\zeta^{0}_{k(l)})} \,
+  d^{j_1}_{\lambda'_1 \lambda_1}(\zeta^{1}_{k({\color{RoyalBlue}l})}) \,
+  d^{j_2}_{\lambda'_2 \lambda_2}(\zeta^{2}_{k({\color{RoyalBlue}l})}) \,
+  d^{j_3}_{\lambda'_3 \lambda_3}(\zeta^{3}_{k({\color{RoyalBlue}l})}) \,.
+\end{aligned}
+$$ {#eq-dpd-aligned-amplitude-ampform}
+
+An unpolarised intensity function for the decay $J/\psi \to \bar{p} K^0_S \varSigma^+$ with only two subsystems, $2$ and $3$ as reference subsystem, is provided in @eq-ampform-dpd-intensity. The model also uses @eq-transformation-canonical-helicity to transform the chain amplitudes to the canonical basis and get access to the angular momentum content of each decay node (@eq-ampform-dpd-amplitudes).
+
+The angles $\theta_{ij}$, $\hat\theta_{k(l)}=\zeta^{0}_{k(l)}$, and $\zeta^{i}_{k(0)}$ can be computed analytically from Mandelstam invariants $\sigma_1, \sigma_2, \sigma_3$ and the rest masses $\mu_0, \mu_1, \mu_2, \mu_3$ of the initial- and final-state particles. The expressions are given in Appendix&nbsp;A of @JPAC:2019ufm. Taking $(ij)k \in \set{(23)1, (31)2, (12)3}$, the three relevant Wigner rotation angles in @eq-dpd-aligned-amplitude and @eq-dpd-aligned-amplitude-ampform are
+
+$$
+\begin{aligned}
+\cos\theta_{ij}
+\;&=\;
+  \frac{
+    2\sigma_k(\sigma_j-\mu_k^2-\mu_i^2)
+    - (\sigma_k+\mu_i^2-\mu_j^2)(\mu_0^2-\sigma_k-\mu_k^2)
+  }{
+    \lambda^{1/2}(\mu_0^2,\mu_k^2,\sigma_k) \,
+    \lambda^{1/2}(\sigma_k,\mu_i^2,\mu_j^2)
+  } \\
+\cos\hat\theta_{i(j)}
+\;&=\;
+  \frac{
+    (\mu_0^2+\mu_i^2-\sigma_i)(\mu_0^2+\mu_j^2-\sigma_j)
+    - 2\mu_0^2(\sigma_k-\mu_i^2-\mu_j^2)
+  }{
+    \lambda^{1/2}(\mu_0^2,\mu_j^2,\sigma_j) \,
+    \lambda^{1/2}(\mu_0^2,\sigma_i,\mu_i^2)
+  } \\
+\cos\zeta_{k(0)}^{i}
+\;&=\;
+  \frac{
+    2\mu_i^2(\sigma_j-\mu_0^2-\mu_j^2)
+    + (\mu_0^2+\mu_i^2-\sigma_i)(\sigma_k-\mu_i^2-\mu_j^2)
+  }{
+    \lambda^{1/2}(\mu_0^2,\mu_i^2,\sigma_i) \,
+    \lambda^{1/2}(\sigma_k,\mu_i^2,\mu_j^2)
+  } \,. \\
+\end{aligned}
+$$ {#eq-dpd-angles}
+
+In addition, $\zeta^i_{k(i)}=\zeta^i_{k(0)}$, and $\hat\theta_{l(k)}$ can be found by replacing it with $\hat\theta_{k(l)}$ at the cost of a sign flip, following $d^j_{\lambda\lambda'}(\hat\theta_{l(k)}) = (-1)^{\lambda-\lambda'}d^j_{\lambda\lambda'}(\hat\theta_{k(l)})$. Angles with equal indices are zero, so $\theta_{kk}=0$, $\hat\theta_{k(k)}=0$, and $\zeta^i_{k(k)}=0$. In some decays, this fact can be used to simplify the expression for the Dalitz-plot function with a suitable choice of reference subsystem.

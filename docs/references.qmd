@@ -1,0 +1,26 @@
+---
+aliases:
+  - bibliography
+  - bibliography.html
+  - citations
+  - citations.html
+  - references
+format:
+  html:
+    code-links:
+      - href: references.bib
+        icon: download
+        text: BibTeX
+---
+
+<!-- cspell:ignore lohead rehead -->
+
+```{=latex}
+\rehead{\headmark}
+\lohead{\headmark}
+```
+
+# References {.unnumbered}
+
+:::{#refs}
+:::

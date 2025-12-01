@@ -1,0 +1,63 @@
+repos:
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: (?x)^(.*\.svg)$
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+        exclude: (?x)^(.*\.svg)$
+
+  - repo: https://github.com/ComPWA/prettier-pre-commit
+    rev: v3.8.1
+    hooks:
+      - id: prettier
+
+  - repo: https://github.com/ComPWA/taplo-pre-commit
+    rev: v0.9.3
+    hooks:
+      - id: taplo-format
+
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.24.3
+    hooks:
+      - id: toml-sort
+        args: [--in-place]
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.36.1
+    hooks:
+      - id: check-jsonschema
+        name: Check CITATION.cff
+        args:
+          - --default-filetype=yaml
+          - --schemafile=https://citation-file-format.github.io/1.2.0/schema.json
+          - CITATION.cff
+        pass_filenames: false
+
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v9.6.0
+    hooks:
+      - id: cspell
+
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: 3.6.0
+    hooks:
+      - id: editorconfig-checker
+        name: editorconfig
+        alias: ec
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.9.27
+    hooks:
+      - id: uv-lock

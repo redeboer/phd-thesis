@@ -1,0 +1,66 @@
+---
+aliases:
+  - introduction
+  - introduction.html
+---
+
+`\pagenumbering{arabic}`{=latex} <!-- cspell:ignore pagenumbering -->
+
+<!-- prettier-ignore-start -->
+:::{.content-visible unless-format="html"}
+# Introduction {.unnumbered}
+:::
+<!-- prettier-ignore-end -->
+
+<!-- cspell:ignore bibtex langid phdthesis shorttitle tabset -->
+
+::::{.content-hidden unless-format="html"}
+:::{.panel-tabset}
+
+### IEEE
+
+R. E. de Boer, “Aligning Baryons: High-performance computations with symbolic, spin-aligned amplitude models for hadron spectroscopy,” PhD thesis, Ruhr University Bochum, 2025. [10.13154/294-13854](https://doi.org/10.13154/294-13854)
+
+### BibTeX
+
+```{.bibtex .code-overflow-wrap}
+@phdthesis{Boer:2025-AligningBaryons,
+  title = {Aligning {{Baryons}}: {{High-performance}} computations with symbolic, spin-aligned amplitude models for hadron spectroscopy},
+  shorttitle = {Aligning {{Baryons}}},
+  author = {{de Boer}, Remco E.},
+  year = 2025,
+  month = sep,
+  day = 24,
+  doi = {10.13154/294-13854},
+  url = {https://redeboer.github.io/phd-thesis},
+  school = {Ruhr University Bochum},
+  langid = {en}
+}
+```
+
+:::
+::::
+
+At the smallest scales of nature, particle and nuclear physics seek to unravel the fundamental constituents of matter and the forces that bind them. From the structure of nuclei to the search for fundamental particles, the field seeks a unified understanding of nature's building blocks and their interactions. Particle physics in particular has long captured the public imagination: colliding particles at the Large Hadron Collider, the hunt for the Higgs boson, and the effort to bring the fundamental interactions under one theoretical roof in the Standard Model. This is the world of **high-energy physics**, where theorists strip matter to its most elementary constituents and experiments probe phenomena at ever smaller scales.
+
+Alongside this pursuit lies a domain less widely known yet no less fundamental. This is the world of **hadron physics**, which focuses not on the most elementary particles, but on the hadronic states that the strong force binds together. The subdiscipline of **hadron spectroscopy** in particular classifies and analyses the discrete, stable and unstable states produced by strong-force dynamics, much as atomic spectra reflect underlying electron configurations. It is a study not of ultimate building blocks, but of the intricate structures that emerge from them.
+
+Where high-energy physics often aims to reduce, hadron spectroscopy seeks to classify, understand, and predict emergent structures in the strongly interacting regime&nbsp;[@Castellani:2000bk; @Harlander:2023kak]. The challenge here is different: hadron physicists must grapple with the non-perturbative regime of Quantum Chromodynamics&nbsp;[@Capstick:2000dk]. At these lower energies, the basic question of "What states can exist?" requires experimental guidance. Each newly observed state provides additional information about the underlying binding mechanism and the principles that govern the formation of hadrons. The discipline has therefore historically always drawn on experimental data to spot patterns, guide classification, and build effective models of strong interactions. Among the methods developed for this task, **amplitude analysis** serves to process experimental data, untangling interfering contributions, and extract information about short-lived hadronic states. <!-- cspell:ignore Capstick Castellani Harlander -->
+
+The distinction between high-energy physics and hadron physics is a relatively modern development. Both disciplines trace their roots to **nuclear physics**, which emerged in the early 20th century with the discovery of the atomic nucleus, the exploration of radioactive decays, and the first investigations into nuclear forces. Early accelerators and detectors were originally built to probe the structure of nuclei, but soon began uncovering phenomena that pointed beyond them and resulted in the discovery of new particles and short-lived resonances in scattering experiments&nbsp;[@Neeman:1986ixa]. As the energy reach of experiments grew from the 1960s, research began to diverge&nbsp;[@Pickering:1984tk]. One line of inquiry led toward ever higher energies and the search for more elementary constituents. The other gave rise to hadron physics, which remained focused on the emergent complexity of the strong interaction and the spectrum of hadrons it produces&nbsp;[@Schweber:1997hk]. Both, however, ultimately study aspects of the same underlying theory that manifests differently across energy scales. <!-- cspell:ignore Neeman Schweber -->
+
+Against this historical backdrop, the present thesis is situated within hadron physics, and more specifically in the study of **baryon spectroscopy**. Here, the spin degrees of freedom of fermions add a level of complexity that makes theoretical modelling especially demanding. Nucleon excitations in particular form a challenging but rich arena: their spectrum is dense, resonances often overlap, and many predicted states remain difficult to isolate experimentally. Addressing these excitations requires both advanced parametrisations and computational techniques capable of evaluating models across vast experimental data samples.
+
+The central motivation of this work is therefore the need for flexible, transparent, and computationally efficient tools that can bridge the gap between the intricate theoretical description of hadron physics and the rapidly growing body of experimental data. Much of this description rests on scattering theory and partial-wave expansions, which provide the language in which amplitudes are modelled. At its core, this thesis develops a framework that unites symbolic, computer-algebra–assisted model building with array-based high-performance computing to produce a transparent, extendable, and self-documenting workflow to address these needs. The techniques are validated through two case studies -- nucleon excitations in charmonium decays and polarimetry in <span class="nowrap">$\varLambda_c$&nbsp;decays.</span>
+
+:::{.content-hidden unless-profile="hardcover" unless-profile="paperback"}
+`\hypersetup{urlcolor=RoyalBlue}`{=latex}
+:::
+
+Beyond computational efficiency, this work places strong emphasis on **reproducibility**, both in methodology and in exposition. The computational methodology evolved with an eye for transparency and long-term maintainability, with lock files, documentation, and open code to make analyses verifiable and extendable. Hadron spectroscopy sits at the crossroads of many disciplines -- experiment, theory, statistics, and computing -- and newcomers must master a wide range of skills that are rarely spelled out in one place. For this reason, the first three chapters provide an overview of the theoretical background that builds up concepts gradually. For a more interlinked reading experience, the thesis is also available in an online form at [redeboer.github.io/phd-thesis](https://redeboer.github.io/phd-thesis), the source code of which can be easily reused and extended. The underlying philosophy is simple: in hadron spectroscopy, with its many intersecting disciplines, both theory and code should strive for reproducibility, clarity, and accessibility.
+
+:::{.content-hidden unless-profile="hardcover" unless-profile="paperback"}
+`\hypersetup{urlcolor=black}`{=latex}
+:::
+
+The remainder of the thesis is organised to first establish the physics background and then develop and apply this methodological framework. The first three chapters[ -- @sec-hadron-physics, @sec-scattering-theory, and @sec-helicity-formalism --]{.content-visible when-format="html"} set the stage by introducing hadron spectroscopy with emphasis on symmetries, quantum numbers, and nucleon excitations, and by developing the theoretical framework of amplitude analysis. These chapters are not meant as original contributions but as a structured overview of the relevant physics background, presented with an emphasis on clarity and gradual build-up of concepts. [Chapters&nbsp;]{.content-visible unless-format="html"}[-@sec-computational-techniques] and&nbsp;[-@sec-compwa] present the methodological contribution of this work, namely new computational techniques based on symbolic representations and high-performance computational implementations. Finally, Chapters&nbsp;[-@sec-experiment] and&nbsp;[-@sec-application-to-data] turn to the experimental situation and demonstrate the methods with real data from the BESIII and LHCb experiments. The closing chapter offers a summary and points to future developments, notably the implementation of more advanced amplitude-model parametrisations using symbolic expressions and the exploration of new optimisation techniques that array computing makes feasible.

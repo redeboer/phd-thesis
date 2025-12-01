@@ -1,0 +1,49 @@
+cff-version: 1.2.0
+message: When using materials from this thesis, please cite it as below.
+title: &title >-
+  Aligning Baryons: High-performance computations with symbolic, spin-aligned amplitude models for hadron spectroscopy
+authors: &authors
+  - family-names: de Boer
+    given-names: Remco E.
+    orcid: https://orcid.org/0000-0001-5846-2206
+    affiliation: Ruhr University Bochum
+abstract: |-
+  Amplitude analysis is a key technique in hadron physics, linking experimental observables to the dynamics of scattering and decay processes. This thesis advances both the computational formulation of amplitude models and their application to baryonic decays. On the computational side, amplitude models are formulated symbolically in a Computer Algebra System and automatically translated into array-oriented code for parallel numerical evaluation. Implemented in Python, this approach lowers the barrier for model development, integrates with modern scientific software, and produces self-documenting, reproducible analyses. On the physics side, a consistent framework for three-body decays with spin is implemented using Dalitz-plot decomposition. A polarimetry analysis of Λ(c) to p K π (LHCb) validates numerical accuracy of the implementation and an amplitude analysis of J/ψ to p̅ K⁰ₛ Σ⁺ (BESIII) shows that spin-aligned models improve the description of data.
+date-released: 2025-09-24
+keywords:
+  - amplitude analysis
+  - baryons
+  - BESIII
+  - computational physics
+  - computer algebra systems
+  - Dalitz-plot decomposition
+  - hadron spectroscopy
+  - high-performance computing
+  - LHCb
+  - partial-wave analysis
+  - polarimetry
+  - reproducible research
+  - self-documenting workflow
+  - spin alignment
+  - symbolic computation
+  - three-body decays
+license: Apache-2.0
+doi: 10.13154/294-13854
+repository-code: https://github.com/redeboer/phd-thesis
+url: &url https://redeboer.github.io/phd-thesis
+preferred-citation:
+  type: thesis
+  thesis-type: "PhD thesis"
+  title: *title
+  authors: *authors
+  institution:
+    name: Ruhr University Bochum
+    country: DE
+  languages: [en]
+  license:
+    - Apache-2.0
+    - CC-BY-4.0
+  pages: 166
+  url: *url
+  year: 2025
+  month: 9

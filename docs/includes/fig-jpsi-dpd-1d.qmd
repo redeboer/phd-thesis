@@ -1,0 +1,9 @@
+:::{#fig-jpsi-dpd-1d layout-nrow=3}
+[![](images/chapter7/fit-comparison-masses.svg)]{.light-content}[![](images/chapter7/fit-comparison-masses-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+[![](images/chapter7/fit-comparison-theta.svg)]{.light-content}[![](images/chapter7/fit-comparison-theta-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+[![](images/chapter7/fit-comparison-phi.svg)]{.light-content}[![](images/chapter7/fit-comparison-phi-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Comparison between the BESIII data (<font color="#bbd6e8">blue</font>) for $J/\psi \to \bar{p} K^0_S \varSigma^+$, the fit of the DPD model (<font color="#2ca02c">green</font>), and the original non-DPD model (<font color="#ff7f0e">orange</font>) across nine kinematic variables. The acceptance-corrected phase-space distribution is shown in gray. Each panel quotes the reduced chi-square $\chi^2_\mathrm{red}$ for both models, computed from the sum of squared differences between data and model in each bin, normalised to the statistical uncertainty of the bin. The corresponding residuals ("pulls") are shown above each histogram. Thin coloured lines indicate the resonance contributions of the DPD model in the relevant subsystems ($\varSigma^*$ in $K^0_S\bar{p}$ and $N^*$ <span class="nowrap">in&nbsp;$K^0_S\varSigma^+$).</span>
+:::

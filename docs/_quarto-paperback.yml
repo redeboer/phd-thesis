@@ -1,0 +1,30 @@
+# cspell:disable
+book:
+  output-file: phd-thesis-paperback
+format:
+  pdf:
+    classoption:
+      - numbers=endperiod
+      - open=right
+      - twoside
+    documentclass: scrbook
+    geometry:
+      - inner=3cm
+      - outer=2cm
+      - top=2.5cm
+      - bottom=2.5cm
+      - headsep=20pt
+      - headheight=14pt
+      - footskip=30pt
+      - includeheadfoot
+      - heightrounded
+    include-in-header:
+      - preamble/configuration.tex
+      - text: \renewcommand{\custompagebreak}{\cleardoublepage}
+      - text: \renewcommand{\mediumtype}{Paperback}
+    # remove link colors for print edition
+    citecolor: black
+    filecolor: black
+    linkcolor: black
+    toccolor: black
+    urlcolor: black

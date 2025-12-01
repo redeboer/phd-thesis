@@ -1,0 +1,5 @@
+[![](images/chapter7/decay-rates-default-canonical-pv.svg)]{.light-content}[![](images/chapter7/decay-rates-default-canonical-pv-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+[![](images/chapter7/decay-rates-default-canonical-pc.svg)]{.light-content}[![](images/chapter7/decay-rates-default-canonical-pc-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+Decay rates of all partial waves in the model formulated in the canonical basis. A distinction is made between parity-violating (left) and parity-conserving (right) currents.

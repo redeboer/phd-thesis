@@ -1,0 +1,11 @@
+:::{.hidden}
+
+$$
+\definecolor{C0}{RGB}{31, 119, 180}
+\definecolor{C1}{RGB}{255, 127, 14}
+\definecolor{MyBlue}{RGB}{0, 68, 136}
+\definecolor{MyYellow}{RGB}{221, 170, 51}
+\definecolor{MyRed}{RGB}{187, 85, 102}
+$$
+
+:::

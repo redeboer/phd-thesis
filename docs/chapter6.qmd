@@ -1,0 +1,145 @@
+---
+aliases:
+  - "6"
+  - 6.html
+  - ch6
+  - chapter6
+  - experiment
+  - experiment.html
+format:
+  html:
+    toc-expand: 2
+---
+
+<!-- cspell:disable -->
+
+```{=latex}
+\setcounter{tocdepth}{1}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+```
+
+<!-- cspell:enable -->
+<!-- cspell:ignore paragraphbreak -->
+
+# Experimental set-ups {#sec-experiment}
+
+For this work, we carried out two studies using data from two collider experiments: the **LHCb experiment** at the Large Hadron Collider at CERN, and the **BESIII experiment** at the Beijing Electron–Positron Collider&nbsp;II (BEPCII) at IHEP in Beijing. The following sections describe both experimental setups.
+
+## LHCb experiment {#sec-lhcb}
+
+The Large Hadron Collider (LHC) at CERN is the world's largest and most powerful particle accelerator. It collides beams of protons or heavy ions at center-of-mass energies of up <span class="nowrap">to&nbsp;$13.6\text{ TeV}$</span> at several interaction points around its 27-km ring (see @fig-lhc). Dedicated experiments at these points pursue different physics programs: ATLAS and CMS conduct general-purpose searches, ALICE focuses on heavy-ion physics, and LHCb is optimised for precision studies of heavy-flavour hadrons and spectroscopy.
+
+:::{#fig-lhc}
+![](/images/chapter6/lhc.svg)
+
+Schematic view of the Large Hadron Collider and its four main experiments located underground near Geneva&nbsp;[@Stark:2018jbe]. The position of the LHCb experiment is highlighted in <font color="#DDAA33">yellow</font>.
+:::
+
+The LHCb experiment is dedicated to the study of heavy-flavour hadrons. Its primary aim is to test the Standard Model through precision measurements of <span class="nowrap">$CP$&nbsp;violation,</span> rare decays, and other processes that are sensitive to potential new physics. An important part of its program is devoted to the spectroscopy of hadrons containing charm and bottom quarks, where LHCb has provided some of the most precise results worldwide, including the discovery and characterisation of exotic states such as tetraquarks and pentaquarks. In addition, the experiment contributes to electroweak measurements, QCD&nbsp;studies, and heavy-ion collisions.
+
+The LHCb detector is a single-arm forward spectrometer covering the pseudorapidity <span class="nowrap">range&nbsp;$2 < \eta < 5$,</span> which corresponds to particles produced at small angles with respect to the beam. Its geometry is optimised for the study of heavy-flavour hadrons, which are predominantly produced in this forward region. The detector combines precise tracking and vertex reconstruction with efficient photon and particle identification, complemented by a fast trigger system. The following sections provide a more detailed description of its subsystems, grouped by their main functions: tracking, photon reconstruction, particle identification, and event triggering. @fig-lhcb-detector shows a side view of the detector and its subsystems at the time of the LHC Run&nbsp;2 period (2015–2018), after its trigger system was upgraded to accommodate the increased luminosity of the LHC&nbsp;[@LHCb:2018zdd; @Belyaev:2021cyr]. <!-- cspell:ignore Belyaev -->
+
+:::::{.content-visible when-format="html"}
+::::{.column-page-inset-right}
+{{< include includes/fig-lhcb-detector.qmd >}}
+::::
+:::::
+
+::::{.content-visible unless-format="html"}
+{{< include includes/fig-lhcb-detector.qmd >}}
+::::
+
+### Tracking
+
+Among all sub-detectors of the LHCb experiment, the **Vertex Locator&nbsp;(VELO)** is located most closely to the interaction point. It is designed to measure particle trajectories extremely close to the interaction region (in the order of a few millimetres), which makes it possible to accurately determine the primary (collision) and secondary (decay) vertices. The module consists of several disks of radial and azimuthal silicon sensor strips that are arranged in parallel along the beam pipe. The beam goes through the center of the disks. As such, each disk is split into two halves that are moved towards each other around the beam once it is in operation and stable&nbsp;[@LHCb:2008vvz, Figures 5.1 and 5.6].
+
+Prior to Upgrade&nbsp;1 (LHC Run&nbsp;2 and before) of the LHCb experiment (2018), two **Silicon Tracker&nbsp;(ST)** systems were located right after the VELO detector to further improve tracking efficiency. The **Tracker Turicensis (TT)** is located upstream of the dipole magnet and covers LHCb's full acceptance range. The TT is therefore used to measure the trajectory and momentum before they enter the magnetic field. Three planar tracking stations (T1, T2, T3) are located downstream of the magnet. They consist of silicon microstrips near the beam pipe (Inner Tracker, IT) and straw-tubes further away from the beam pipe (Outer Tracker, OT). While the IT is well-adapted at detecting high-energy, high-density particles, the OT has a better angular resolution for lower-energy particles that are further away from the beam pipe. <!-- cspell:words Turicensis -->
+
+### Photon reconstruction
+
+Photons are reconstructed primarily with the **electromagnetic calorimeter (ECAL)**, which measures their energy deposition and impact position with fine granularity. Since photons leave no track in the upstream tracking detectors, the absence of a matching track is used to confirm their neutral nature. To further suppress background signals, the **Scintillating Pad Detector (SPD)** and **Pre-shower Detector (PS)**, placed directly in front of the ECAL, distinguish photons from electrons and reject background signals from charged and neutral pions. This system enables efficient photon reconstruction and the identification of neutral mesons such as $\pi^0 \to \gamma\gamma$.  <!-- cspell:words ECAL -->
+
+### Particle identification
+
+Charged-particle identification is achieved with a combination of Cherenkov, calorimeter, and muon detectors. Two **Ring Imaging Cherenkov (RICH)** detectors measure the velocity of charged particles over a wide momentum range. **RICH 1**, located between the VELO and TT, covers low-momentum tracks&nbsp;($1$–$60\text{ GeV}/c$) over the full angular acceptance using aerogel and <span class="nowrap">$\mathrm{C}_4\mathrm{F}_{10}$&nbsp;radiators.</span> **RICH 2**, located downstream after T3, identifies higher-momentum particles <span class="nowrap">($15$–$100\text{ GeV}/c$</span> and beyond) with a <span class="nowrap">$\mathrm{CF}_4$&nbsp;radiator</span> and a reduced angular acceptance <span class="nowrap">($15$–$120\text{ mrad}$).</span>
+
+For electrons, the ECAL response is used in combination with the SPD and PS to provide a clean separation from hadrons, while hadrons deposit most of their energy in the downstream **hadronic calorimeter (HCAL)**, which is segmented into two zones with larger cell sizes to match their broader showers.  <!-- cspell:words HCAL -->
+
+Finally, muons are identified in five dedicated stations (**M1–M5**) consisting of 1,380 muon chambers that are placed downstream of the calorimeters and interleaved with iron absorbers. Only penetrating particles with momenta above <span class="nowrap">about $6\text{ GeV}/c$</span> reach these chambers. Station M1, located upstream of the calorimeters, improves the transverse-momentum resolution, while the downstream stations provide both identification and track-direction measurements.
+
+### Event triggering
+
+The sub-detectors and trigger system of the LHCb experiment cannot handle the maximum design luminosity of the LHC. To reduce the luminosity, LHCb therefore crosses the beams at a larger angle. Prior to Upgrade&nbsp;1, this resulted in an average luminosity of $2\times10^{32}\text{ cm}^{-2}\mathrm{s}^{-1}$. At the time, the LHCb experiment had a two-level trigger system. A fast, hardware-only **Level&nbsp;0 (L0)** trigger system was used to reduce the event rate from $40\text{ MHz}$ to $1\text{ MHz}$, which is the rate at which all sub-detectors could read out events. Next, the **High-Level Trigger (HLT)** asynchronously processed the data from the sub-detectors to reduce the event rate to $2\text{ kHz}$ and store the selected events to disk. At L0, a Decision Unit processed data from the calorimeter system and muon system to identify clusters of <span class="nowrap">high‑$p_T$</span> photons and charged particles. In addition, pile-up in the VELO was used to estimate the number of primary proton–proton interactions. The VELO and other tracking detectors were too slow for L0 and were processed at HLT. Since Run&nbsp;3, the hardware L0&nbsp;trigger has been removed and the experiment operates at a higher luminosity <span class="nowrap">($2\times10^{33}\text{ cm}^{-2}\mathrm{s}^{-1}$)</span> with a fully software-based trigger.
+
+### Data sets and software stack
+
+The analyses presented in this work use data collected by the LHCb experiment during **Run&nbsp;2** of the LHC, corresponding to proton–proton collisions at a center-of-mass energy of $13\text{ TeV}$. The full Run&nbsp;2 data set amounts to about $6\text{ fb}^{-1}$, recorded between 2015 and 2018, with subsets selected according to the trigger requirements and detector conditions relevant for the studied channel. Over the years, LHCb has collected several other data sets. During **Run&nbsp;1** (2010–2012), proton–proton collisions were recorded at center-of-mass energies of $7$ and $8\text{ TeV}$, corresponding to an integrated luminosity of <span class="nowrap">about&nbsp;$3\text{ fb}^{-1}$.</span> More recently, **Run&nbsp;3** started in 2022 at a nominal energy of $13.6\text{ TeV}$, with the upgraded detector and trigger system designed to record datasets that will eventually exceed $20\text{ fb}^{-1}$. Heavy-ion data from proton–lead and lead–lead collisions are also available, with smaller integrated luminosities.
+
+Event simulation and reconstruction are performed with the LHCb software stack, built on the Gaudi framework&nbsp;[@Muller:2019ogi]. The detector simulation application ([Gauss](https://lhcb-gauss.docs.cern.ch)) integrates [Pythia](https://pythia.org) for <span class="nowrap">$pp$&nbsp;collisions,</span> [EvtGen](https://evtgen.hepforge.org) for hadron decays, and [Geant4](https://geant4.web.cern.ch) for the detector simulation. In a typical analysis, reconstructed tracks are combined into particle candidates, particle-identification information is used to assign their species, and a kinematic fit with vertex and mass constraints improves the resolution of the reconstructed variables. Based on these candidates, selection criteria are applied to suppress combinatorial and physics background channels, while aiming to retain high signal efficiency. To support this workflow, large inclusive Monte Carlo (MC) productions of heavy-flavour events, such as $b\bar{b}$ and $c\bar{c}$ production, are routinely generated; these contain all hadronisation and decay modes and allow any final state to be filtered. In addition, smaller exclusive signal MC samples are produced for specific decay topologies to optimise the selection criteria. <!-- cspell:ignore Gaudi Geant4 Pythia -->
+
+## BESIII experiment {#sec-besiii}
+
+The Beijing Electron–Positron Collider&nbsp;II (BEPCII) is a double-ring electron–positron collider that operates at center-of-mass (CM) energies between $2$ and $4.95\text{ GeV}$. Originally, the BEPCII collider was designed with a maximum energy of $4.6\text{ GeV}$. To investigate more <span class="nowrap">$XYZ$&nbsp;states,</span> such as $Z_{cs}(3985)^+$, $Y(4630)$, and $Y(4660)$, BEPCII was upgraded to have a maximum energy of $4.95\text{ GeV}$&nbsp;[@BESIII:2022ulv].
+
+The **Beijing Electron Spectrometer (BES)** experiment is located at the Beijing campus of the Institute of High Energy Physics (IHEP) in China and is part of the BEPC facility (@fig-bepcii). BES has gone through three generations since 1988, with the current detector, **BESIII**, beginning operation in 2008 alongside the BEPCII upgrade.
+
+:::{#fig-bepcii}
+[![](images/chapter6/BEPCII.svg)]{.light-content}[![](images/chapter6/BEPCII-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+The Beijing Electron–Positron Collider&nbsp;II with the BESIII experiment located at the storage ring. Adapted from [@BESIII:2009-LayoutBEPC; @Kussner:2022dft, Figure 4.1]. <!-- cspell:ignore Kussner -->
+:::
+
+The BESIII experiment explores the physics of the charm–tau sector in the energy range accessible at BEPCII&nbsp;[@Briere:2016puj]. A large part of its program is devoted to hadron spectroscopy, as it offers high-statistics samples of charmonium, open-charm states, and light hadrons. BESIII has also become a key source of precise cross-section data for processes such as $e^+e^- \to \text{hadrons}$. These serve as inputs to Standard Model calculations, including the hadronic contribution to the muon anomalous magnetic moment. Alongside spectroscopy and cross-section measurements, the experiment investigates charm decays and mixing, <span class="nowrap">$\tau$&nbsp;lepton</span> properties, rare and forbidden processes, and a variety of tests of discrete symmetries.
+
+To carry out this physics program, the BESIII detector is built as a general-purpose magnetic spectrometer arranged cylindrically around the BEPCII interaction point (@fig-bes3-detector-geometry), so that it has wide angular coverage. From the inside outward, the detector consists of a Multilayer Drift Chamber (MDC), a Time-of-Flight (TOF) system, an Electromagnetic Calorimeter (EMC), a superconducting solenoid magnet that provides <span class="nowrap">a&nbsp;$1\text{ T}$&nbsp;axial</span> field, and outer Muon Chambers (MUC). Most subsystems are divided into a cylindrical "barrel" around the beam pipe and two "endcaps" covering the forward and backward regions. The following sections describe these detector subsystems in more detail, grouped by their main functions: tracking, photon reconstruction, particle identification, and event triggering.
+
+:::{#fig-bes3-detector-geometry}
+[![](/images/chapter6/bes3-sub-detectors.svg)]{.light-content}[![](/images/chapter6/bes3-sub-detectors-dark.svg)]{.dark-content .content-visible when-format="html"}
+
+BESIII detector geometry, adapted from @BESIII:2009fln.
+:::
+
+The storage ring of BEPCII consists of two separate beam pipes, with positrons stored in one and electrons in the other. At the interaction point, the two beams cross at an angle of $11\text{ mrad}$, which results in a small transverse momentum to the CM&nbsp;system of the colliding electron–positron pair. The beam axis defines the <span class="nowrap">$z$&nbsp;axis</span> of the lab frame coordinate system, while the crossing plane sets the <span class="nowrap">$x$&nbsp;direction</span> along the net CM&nbsp;momentum; the <span class="nowrap">$y$&nbsp;axis</span> is taken perpendicular to the <span class="nowrap">$xz$&nbsp;plane</span>. In particular, for a beam energy tuned to the <span class="nowrap">$J/\psi$&nbsp;mass,</span> so that $E_\mathrm{beam} = m_{_{J/\psi}}$, the four-momentum of the CM system in the laboratory frame is
+
+$$
+p^\mathrm{lab}_\mathrm{beam} = \left(\sqrt{m_{_{J/\psi}}^2 + p_x^2},\, p_x,\, 0,\, 0\right), \quad \text{with } p_x \approx 34\text{ MeV}/c \,.
+$$ {#eq-lab-frame-momentum}
+
+`\noindent`{=latex}
+This small asymmetry is important for amplitude analyses, since reconstructed four-momenta must be boosted from the laboratory to the CM frame, where the beam system is at rest, such that $p_\mathrm{beam} = \left(m_{_J/\psi}, 0, 0, 0\right)$.
+
+### Tracking
+
+Charged-particle tracking at BESIII is provided by the **Multilayer Drift Chamber (MDC)**, which forms the inner core of the detector. With an inner radius of $59\text{ mm}$ and an outer radius of $810\text{ mm}$, it is closest to the interaction point and therefore well suited for reconstructing low-momentum tracks and determining their ionisation energy loss <span class="nowrap">($dE/dx$)</span> for particle identification. The MDC consists of 43 layers of small drift cells filled with a $\mathrm{He\!:\!C_3H_8\;60\!:\!40}$ gas mixture, chosen to minimise multiple scattering and optimise momentum and $dE/dx$ resolution. Each cell contains a $25\,\mu\mathrm{m}$ gold-plated tungsten sense wire surrounded by eight $110\,\mu\mathrm{m}$ aluminium field wires. As charged particles traverse the chamber, they ionise the gas, and the resulting signals on the sense wires provide position measurements with a resolution of about $130\,\mu\mathrm{m}$ in the radial direction and $2\text{ mm}$ along the wires. The conical shape at the endcaps accommodates the final focusing quadrupoles and results in a solid-angle coverage of about $93\%$ <span class="nowrap">of&nbsp;$4\pi$.</span>
+
+Momentum measurement is enabled by the **Superconducting Solenoid Magnet (SSM)**, which surrounds the MDC, TOF, and EMC&nbsp;[@Zhu:2005-BESIIIDetectorMagnet]. It provides a uniform axial magnetic field <span class="nowrap">of&nbsp;$1.0\text{ T}$,</span> bending the trajectories of charged particles in the MDC to determine their momenta. The magnet is enclosed by an iron yoke, which both enhances the magnetic field and acts as an absorber for separating muons from hadrons in the outer muon system.
+
+### Photon reconstruction
+
+Photons at BESIII are reconstructed in the **Electromagnetic Calorimeter (EMC)**, which surrounds the TOF system at a radius of about $94\text{ cm}$. The EMC consists of 6,240&nbsp;cesium iodide crystals doped with thallium <span class="nowrap">($\mathrm{CsI(Tl)}$)</span> crystals arranged in 56&nbsp;disks pointing toward the interaction point, with a total mass of about <span class="nowrap">$25.6$&nbsp;tons.</span> When photons or electrons enter the crystals, they initiate electromagnetic showers through bremsstrahlung and pair production. The secondary particles deposit their energy in the crystals, from which the position and energy of the incident particle are reconstructed. The large numbers of dense crystal disks allows for a spatial resolution of $\sigma=0.6\text{ cm}/\sqrt{E}$.
+
+Given the relatively low CM energies at BEPCII (at most <span class="nowrap">$4.95\text{ GeV}$),</span> photons and electrons can carry only a few $\text{MeV}$ of energy. In addition, common processes like $\pi^0\to\gamma\gamma$ result in a large opening angle between the two photons, which requires a good position resolution to make it possible to perform cuts on the opening angle. The EMC therefore also plays an important role in the identification of neutral mesons.
+
+### Particle identification
+
+Particle identification at BESIII relies on a combination of energy loss measurement, timing, and muon detection. The <span class="nowrap">$dE/dx$&nbsp;profile</span> measured in the MDC provides separation of particle species at low momenta. This information is complemented by the **Time-of-Flight (TOF)** system, which surrounds the MDC. The TOF barrel consists of two layers of 88&nbsp;plastic scintillator bars located at radii of $81$ <span class="nowrap">and&nbsp;$86\text{ cm}$,</span> while each endcap contains a single layer of 48&nbsp;bars at $1.4\text{ m}$ from the interaction point. With a time resolution of <span class="nowrap">about&nbsp;$100\text{ ps}$,</span> the TOF achieves <span class="nowrap">a&nbsp;$3\sigma$</span> separation between pions and kaons up to momenta of <span class="nowrap">roughly&nbsp;$770\text{ MeV}/c$,</span> and, in combination <span class="nowrap">with&nbsp;$dE/dx$,</span> enables identification of electrons, muons, pions, kaons, and protons across a wide momentum range.
+
+The **Muon Chambers (MUC)** form the outermost subsystem of BESIII. They consist of resistive plate counters (RPCs) embedded in the iron return yoke of the superconducting magnet, at radii between $170$ <span class="nowrap">and&nbsp;$262\text{ cm}$.</span> The RPCs detect ionisation signals left by penetrating charged particles, which are matched to tracks reconstructed in the MDC. Since muons interact only weakly in the calorimeter and magnet yoke, while charged pions are largely absorbed, the MUC provides reliable muon identification above a momentum threshold of <span class="nowrap">about&nbsp;$0.4\text{ GeV}/c$.</span>
+
+### Event triggering
+
+The BESIII trigger operates in two stages: a **Level-1 (L1) hardware trigger** and a **Level-3 (L3) software trigger**. At&nbsp;L1, fast signals from the MDC, TOF, and EMC are processed by a global trigger logic implemented in FPGA-based electronics, running synchronously with the $41.65\text{ MHz}$ bunch crossing frequency of BEPCII. This reduces the event rate to about $4\text{ kHz}$ at the <span class="nowrap">$J/\psi$&nbsp;resonance.</span> The surviving events are then passed to the L3&nbsp;software trigger, which applies more refined selections before writing events to permanent storage.
+
+### Data sets and software stack
+
+The BESIII experiment has accumulated large data sets at many center-of-mass energies between $2$ and $4.95\,\mathrm{GeV}$, corresponding to an integrated luminosity of more than $10\,\mathrm{fb}^{-1}$ since 2009. Dedicated runs have been taken at narrow resonances such as the $J/\psi$, $\psi(2S)$, and $\psi(3770)$, as well as at higher energies in the charmonium-like $XYZ$ region. These samples provide the basis for amplitude analyses and spectroscopy studies of charmonium, open-charm, and light hadron final states.
+
+Event reconstruction and simulation are performed with the [BOSS](https://english.ihep.cas.cn/bes/re/os) (BESIII Offline Software System) framework, which provides event generation, detector simulation, and reconstruction. The initial <span class="nowrap">$e^+e^-$&nbsp;collision</span> is generated with [KKMC](https://arxiv.org/abs/hep-ph/9912214) to include effects from initial-state radiation. Subsequent hadron decays are modelled with [EvtGen](https://evtgen.hepforge.org), while the interaction of particles with the detector material is simulated using [Geant4](https://geant4.web.cern.ch). Reconstructed tracks are combined into particle candidates, whose identities are assigned using particle-identification information from the MDC, TOF, and EMC. A kinematic fit imposing vertex and energy–momentum constraints is then applied to improve resolution and ensure consistency with the known collision energy. Event selection is performed using a set of kinematic and particle-identification criteria designed to suppress background channels while retaining high efficiency for the targeted decay mode. <!-- cspell:ignore KKMC -->
+
+Large inclusive MC samples are regularly generated for specific beam energies in which the <span class="nowrap">$e^+e^-$&nbsp;annihilation</span> and subsequent decays of the relevant resonances <span class="nowrap">($J/\psi$,</span> <span class="nowrap">$\psi(2S)$,</span> open-charm states, etc.) are simulated according to the world-average branching fractions. These serve as the main tool for estimating background channels and efficiencies. In addition, exclusive MC samples are produced for specific decay topologies to optimise selections and validate the analysis chain. Finally, phase-space samples are generated for multi-body decays without detailed dynamical input, which are needed as efficiency-corrected domain sample for amplitude analysis models.
+
+<!-- cspell:disable -->
+
+```{=latex}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
+```

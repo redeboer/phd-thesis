@@ -1,0 +1,19 @@
+\custompagebreak
+\clearpairofpagestyles
+\rehead{\headmark}
+\lohead{\headmark}
+\rohead{\pagemark}
+\lehead{\pagemark}
+
+\defcaptionname{\languagename}{\contentsname}{Table of contents}
+
+% https://github.com/quarto-dev/quarto-cli/discussions/9839#discussioncomment-9629083
+
+\begingroup
+\bookmarksetupnext{italic}
+\pdfbookmark[0]{\contentsname}{toc}
+\setcounter{tocdepth}{2}
+\tableofcontents
+\endgroup
+
+\boldPDFchapterstrue
